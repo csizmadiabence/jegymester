@@ -1,0 +1,10 @@
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\bin\Debug\ticketmaster.exe.config
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\bin\Debug\ticketmaster.exe
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\bin\Debug\ticketmaster.pdb
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.csproj.AssemblyReference.cache
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.TicketMaster.resources
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.Properties.Resources.resources
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.csproj.GenerateResource.cache
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.csproj.CoreCompileInputs.cache
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.exe
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.pdb
