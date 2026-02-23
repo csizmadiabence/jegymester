@@ -42,6 +42,7 @@ namespace ticketmaster
         int animSpeed = 2;
         bool isExpanded = false;
 
+       
         //betűtípus
         private Font pillFont = new Font("Inter Medium", 7);
 
