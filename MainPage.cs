@@ -3,28 +3,33 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.AxHost;
 
 namespace ticketmaster
 {
     public partial class TicketMaster : Form
     {
+        UC_Register RegisterPanel;
+
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn
-            (
-                int nLeftRect,
-                int nTopRect,
-                int nRightRect,
-                int nBottomRect,
-                int nWidthEllipse,
-                int nHeightEllipse
-            );
+        (
+             int nLeftRect,
+             int nTopRect,
+             int nRightRect,
+             int nBottomRect,
+             int nWidthEllipse,
+             int nHeightEllipse
+        );
 
+        //Alkalmazás min gombhoz kell:
         [DllImport("DwmApi")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, int[] attrValue, int attrSize);
 
@@ -42,9 +47,6 @@ namespace ticketmaster
         int animSpeed = 2;
         bool isExpanded = false;
 
-        //betűtípus
-        private Font pillFont = new Font("Inter Medium", 7);
-
         private Pen headerLinePen = new Pen(Color.FromArgb(230, 230, 230), 1);
         public TicketMaster()
         {
@@ -52,46 +54,29 @@ namespace ticketmaster
 
             this.DoubleBuffered = true;
 
+            if (RegisterPanel == null)
+            {
+                RegisterPanel = new UC_Register();
+                this.Controls.Add(RegisterPanel); // Hozzáadjuk a Formhoz
+            }
+
+            RegisterPanel.Visible = false;
+
+            SetupPlaceholders();
+
+            LoadButtonImages();
+
+            SetupTermsCumo();
+
             //Program neve:
             this.Text = "Ticket Master";
 
-            //emailbox
-            SendMessage(EmailBox.Handle, 0x1501, 0, "email@domain.com");
-            SendMessage(txtPassword.Handle, 0x1501, 0, "Enter your password");
-
             this.FormBorderStyle = FormBorderStyle.None;
-            this.Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 30, 30));
+            this.BackColor = BackColor;
 
             typeof(Panel).InvokeMember("DoubleBuffered",
             System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
              null, pnlBottom, new object[] { true });
-
-            //nemtoltibevalamiert
-            picExit.Image = Properties.Resources.exiticon;
-            picExit.BackColor = Color.Transparent;
-
-            //eztse
-            picMin.Image = Properties.Resources.minimizeicon;
-            picMin.BackColor = Color.Transparent;
-
-            //termscumo
-            richTextBox1.Text = "By clicking continue, you agree to our Terms of Service and Privacy Policy";
-
-            int start1 = richTextBox1.Text.IndexOf("Terms of Service");
-            richTextBox1.Select(start1, "Terms of Service".Length);
-            richTextBox1.SelectionColor = Color.Black;
-
-            int start2 = richTextBox1.Text.IndexOf("Privacy Policy");
-            richTextBox1.Select(start2, "Privacy Policy".Length);
-            richTextBox1.SelectionColor = Color.Black;
-
-            richTextBox1.SelectAll();
-            richTextBox1.SelectionAlignment = HorizontalAlignment.Center;
-            richTextBox1.Select(0, 0);
-            richTextBox1.ReadOnly = true;
-            richTextBox1.Cursor = Cursors.Default;
-            richTextBox1.Enter += (s, e) => { this.ActiveControl = null; };
-            richTextBox1.SelectionChanged += (s, e) => { richTextBox1.DeselectAll(); };
 
             //proba$$
             MoviesTable.Rows.Add("Crime 101", "Thriller", "140 mins", "HU, EN");
@@ -109,12 +94,100 @@ namespace ticketmaster
             }
         }
 
-        protected override void WndProc(ref Message m)
+        // Szövegek kiírása a textboxokhoz:
+        private void SetupPlaceholders()
         {
-            base.WndProc(ref m);
-            if (m.Msg == 0x84)
+            SendMessage(EmailBox.Handle, 0x1501, 0, "email@domain.com");
+            SendMessage(txtPassword.Handle, 0x1501, 0, "Enter your password");
+        }
+
+        // Képek betöltése a gombokhoz:
+        private void LoadButtonImages()
+        {
+            picExit.Image = Properties.Resources.exiticon;
+            picExit.BackColor = Color.Transparent;
+
+            picMin.Image = Properties.Resources.minimizeicon;
+            picMin.BackColor = Color.Transparent;
+        }
+
+        //Termscumo kiírása helyesen:
+        private void SetupTermsCumo()
+        {
+            termscumo.Text = "By clicking continue, you agree to our Terms of Service and Privacy Policy";
+
+            int start1 = termscumo.Text.IndexOf("Terms of Service");
+            termscumo.Select(start1, "Terms of Service".Length);
+            termscumo.SelectionColor = Color.Black;
+
+            int start2 = termscumo.Text.IndexOf("Privacy Policy");
+            termscumo.Select(start2, "Privacy Policy".Length);
+            termscumo.SelectionColor = Color.Black;
+
+            termscumo.SelectAll();
+            termscumo.SelectionAlignment = HorizontalAlignment.Center;
+            termscumo.Select(0, 0);
+            termscumo.ReadOnly = true;
+            termscumo.Cursor = Cursors.Default;
+            termscumo.Enter += (s, e) => { this.ActiveControl = null; };
+            termscumo.SelectionChanged += (s, e) => { termscumo.DeselectAll(); };
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            if (tmrAnimate.Enabled)
+                e.Graphics.SmoothingMode = SmoothingMode.None;
+            else
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            int radius = 30;
+            RectangleF rect = new RectangleF(0.5f, 0.5f, this.Width - 1, this.Height - 1);
+
+            using (GraphicsPath path = new GraphicsPath())
             {
-                m.Result = (IntPtr)(0x2);
+                path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+                path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+                path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+                path.CloseFigure();
+
+                this.Region = new Region(path);
+
+                if (!tmrAnimate.Enabled)
+                {
+                    using (PathGradientBrush pgb = new PathGradientBrush(path))
+                    {
+                        pgb.CenterColor = Color.Transparent;
+                        pgb.SurroundColors = new Color[] { Color.FromArgb(6, 0, 0, 0) };
+                        pgb.FocusScales = new PointF(0.99f, 0.99f);
+                        e.Graphics.FillPath(pgb, path);
+                    }
+                }
+
+                Color borderColor = tmrAnimate.Enabled ? Color.FromArgb(80, 0, 0, 0) : Color.FromArgb(40, 0, 0, 0);
+                using (Pen borderPen = new Pen(borderColor, 1))
+                {
+                    e.Graphics.DrawPath(borderPen, path);
+                }
+            }
+        }
+
+        private bool _useComposited = true;
+
+        // Külső árnyék (Drop Shadow) az ablak alá
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                const int CS_DROPSHADOW = 0x20000;
+                const int WS_EX_COMPOSITED = 0x02000000;
+                CreateParams cp = base.CreateParams;
+                cp.ClassStyle |= CS_DROPSHADOW;
+
+                if (_useComposited)
+                    cp.ExStyle |= WS_EX_COMPOSITED;
+
+                return cp;
             }
         }
 
@@ -352,50 +425,55 @@ namespace ticketmaster
             }
         }
 
-        //Animacio:
+        //Animacio a loginpanel-hez (kijön a password az emailbox alól):
         private void tmrAnimate_Tick(object sender, EventArgs e)
         {
+            int currentSpeed = 10;
+            bool moved = false;
+
             if (isExpanded)
             {
-                bool moved = false;
-
                 if (txtPassword.Top < passwordFinalY)
                 {
-                    txtPassword.Top += animSpeed;
+                    txtPassword.Top = Math.Min(txtPassword.Top + currentSpeed, passwordFinalY);
                     moved = true;
                 }
-
                 if (pnlBottom.Top < panelFinalY)
                 {
-                    pnlBottom.Top += animSpeed;
+                    pnlBottom.Top = Math.Min(pnlBottom.Top + currentSpeed, panelFinalY);
                     moved = true;
                 }
-
-                if (!moved) tmrAnimate.Stop();
             }
             else
             {
-                bool moved = false;
-                int originalY = EmailBox.Top;
+                int originalY = EmailBox.Top + 2;
                 int panelOriginalY = EmailBox.Bottom + 10;
 
                 if (txtPassword.Top > originalY)
                 {
-                    txtPassword.Top -= animSpeed;
+                    txtPassword.Top = Math.Max(txtPassword.Top - currentSpeed, originalY);
                     moved = true;
                 }
-
                 if (pnlBottom.Top > panelOriginalY)
                 {
-                    pnlBottom.Top -= animSpeed;
+                    pnlBottom.Top = Math.Max(pnlBottom.Top - currentSpeed, panelOriginalY);
                     moved = true;
                 }
+            }
 
-                if (!moved)
-                {
-                    tmrAnimate.Stop();
-                    txtPassword.Visible = false;
-                }
+            if (!moved)
+            {
+                tmrAnimate.Stop();
+                if (!isExpanded) txtPassword.Visible = false;
+                this.Invalidate();
+            }
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            using (SolidBrush brush = new SolidBrush(this.BackColor))
+            {
+                e.Graphics.FillRectangle(brush, e.ClipRectangle);
             }
         }
 
@@ -404,11 +482,11 @@ namespace ticketmaster
         {
             if (EmailBox.Text.Length > 0 && !isExpanded)
             {
-                txtPassword.Visible = true;
+                _useComposited = false;
 
+                txtPassword.Visible = true;
                 EmailBox.BringToFront();
                 txtPassword.SendToBack();
-
                 txtPassword.Top = EmailBox.Top + 2;
 
                 tmrAnimate.Start();
@@ -416,9 +494,47 @@ namespace ticketmaster
             }
             else if (EmailBox.Text.Length == 0 && isExpanded)
             {
+                _useComposited = false;
                 isExpanded = false;
                 tmrAnimate.Start();
             }
+        }
+
+        //Create account gomb atdob a UC_Register usercontrol forms-ra.
+        private void CreateAccountButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            EmailBox.Visible = false;
+            txtPassword.Visible = false;
+            LoginButton.Visible = false;
+            pnlBottom.Visible = false;
+
+            // 2. Meghívjuk a UserControl belső animációját
+            if (RegisterPanel != null)
+            {
+                RegisterPanel.PlayInAnimation();
+            }
+        }
+        //Go back gomb visszadob a UC_Register usercontrol-ról ide a formsra.
+        public void BackToLogin()
+        {
+            this.SuspendLayout();
+
+            if (RegisterPanel != null)
+            {
+                RegisterPanel.Visible = false;
+            }
+
+            foreach (Control c in this.Controls)
+            {
+                if (c != RegisterPanel)
+                {
+                    c.Visible = true;
+                    LoginButton.Visible = true;
+                }
+            }
+
+            this.Invalidate();
+            this.ResumeLayout();
         }
     }
 }

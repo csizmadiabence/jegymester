@@ -372,34 +372,34 @@
   <data name="&gt;&gt;panel2.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="richTextBox1.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="termscumo.Font" type="System.Drawing.Font, System.Drawing">
     <value>Inter, 8.25pt</value>
   </data>
-  <data name="richTextBox1.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="termscumo.Location" type="System.Drawing.Point, System.Drawing">
     <value>27, 79</value>
   </data>
-  <data name="richTextBox1.ScrollBars" type="System.Windows.Forms.RichTextBoxScrollBars, System.Windows.Forms">
+  <data name="termscumo.ScrollBars" type="System.Windows.Forms.RichTextBoxScrollBars, System.Windows.Forms">
     <value>None</value>
   </data>
-  <data name="richTextBox1.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="termscumo.Size" type="System.Drawing.Size, System.Drawing">
     <value>253, 96</value>
   </data>
-  <data name="richTextBox1.TabIndex" type="System.Int32, mscorlib">
+  <data name="termscumo.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
   </data>
-  <data name="richTextBox1.Text" xml:space="preserve">
+  <data name="termscumo.Text" xml:space="preserve">
     <value>By clicking continue, you agree to our Terms of Service and Privacy Policy</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.Name" xml:space="preserve">
-    <value>richTextBox1</value>
+  <data name="&gt;&gt;termscumo.Name" xml:space="preserve">
+    <value>termscumo</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.Type" xml:space="preserve">
+  <data name="&gt;&gt;termscumo.Type" xml:space="preserve">
     <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.Parent" xml:space="preserve">
+  <data name="&gt;&gt;termscumo.Parent" xml:space="preserve">
     <value>pnlBottom</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;termscumo.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
   <data name="picExit.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
@@ -609,6 +609,39 @@
   <data name="&gt;&gt;TicketButtonMain.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="&gt;&gt;ScreeningsLabel.Name" xml:space="preserve">
+    <value>ScreeningsLabel</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsLabel.Parent" xml:space="preserve">
+    <value>ScreeningsRounded</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsLabel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="ScreeningsRounded.Location" type="System.Drawing.Point, System.Drawing">
+    <value>74, 343</value>
+  </data>
+  <data name="ScreeningsRounded.Size" type="System.Drawing.Size, System.Drawing">
+    <value>93, 20</value>
+  </data>
+  <data name="ScreeningsRounded.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsRounded.Name" xml:space="preserve">
+    <value>ScreeningsRounded</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsRounded.Type" xml:space="preserve">
+    <value>ticketmaster.Controls.RoundedPanel, ticketmaster, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsRounded.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsRounded.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <data name="ScreeningsLabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -642,26 +675,41 @@
   <data name="&gt;&gt;ScreeningsLabel.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="ScreeningsRounded.Location" type="System.Drawing.Point, System.Drawing">
-    <value>74, 343</value>
+  <data name="&gt;&gt;ScreeningsTable.Name" xml:space="preserve">
+    <value>ScreeningsTable</value>
   </data>
-  <data name="ScreeningsRounded.Size" type="System.Drawing.Size, System.Drawing">
-    <value>93, 20</value>
+  <data name="&gt;&gt;ScreeningsTable.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DataGridView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="ScreeningsRounded.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
+  <data name="&gt;&gt;ScreeningsTable.Parent" xml:space="preserve">
+    <value>ScreeningsPanel</value>
   </data>
-  <data name="&gt;&gt;ScreeningsRounded.Name" xml:space="preserve">
-    <value>ScreeningsRounded</value>
+  <data name="&gt;&gt;ScreeningsTable.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
-  <data name="&gt;&gt;ScreeningsRounded.Type" xml:space="preserve">
+  <data name="ScreeningsPanel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>33, 353</value>
+  </data>
+  <data name="ScreeningsPanel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>447, 252</value>
+  </data>
+  <data name="ScreeningsPanel.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="ScreeningsPanel.Text" xml:space="preserve">
+    <value>roundedPanel2</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsPanel.Name" xml:space="preserve">
+    <value>ScreeningsPanel</value>
+  </data>
+  <data name="&gt;&gt;ScreeningsPanel.Type" xml:space="preserve">
     <value>ticketmaster.Controls.RoundedPanel, ticketmaster, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
-  <data name="&gt;&gt;ScreeningsRounded.Parent" xml:space="preserve">
+  <data name="&gt;&gt;ScreeningsPanel.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;ScreeningsRounded.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;ScreeningsPanel.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <metadata name="dataGridViewTextBoxColumn1.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -711,29 +759,38 @@
   <data name="&gt;&gt;ScreeningsTable.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="ScreeningsPanel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>33, 353</value>
+  <data name="&gt;&gt;MoviesLabel.Name" xml:space="preserve">
+    <value>MoviesLabel</value>
   </data>
-  <data name="ScreeningsPanel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>447, 252</value>
+  <data name="&gt;&gt;MoviesLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="ScreeningsPanel.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
+  <data name="&gt;&gt;MoviesLabel.Parent" xml:space="preserve">
+    <value>MoviesRounded</value>
   </data>
-  <data name="ScreeningsPanel.Text" xml:space="preserve">
-    <value>roundedPanel2</value>
+  <data name="&gt;&gt;MoviesLabel.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
-  <data name="&gt;&gt;ScreeningsPanel.Name" xml:space="preserve">
-    <value>ScreeningsPanel</value>
+  <data name="MoviesRounded.Location" type="System.Drawing.Point, System.Drawing">
+    <value>75, 41</value>
   </data>
-  <data name="&gt;&gt;ScreeningsPanel.Type" xml:space="preserve">
+  <data name="MoviesRounded.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 20</value>
+  </data>
+  <data name="MoviesRounded.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="&gt;&gt;MoviesRounded.Name" xml:space="preserve">
+    <value>MoviesRounded</value>
+  </data>
+  <data name="&gt;&gt;MoviesRounded.Type" xml:space="preserve">
     <value>ticketmaster.Controls.RoundedPanel, ticketmaster, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
-  <data name="&gt;&gt;ScreeningsPanel.Parent" xml:space="preserve">
+  <data name="&gt;&gt;MoviesRounded.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;ScreeningsPanel.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="&gt;&gt;MoviesRounded.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
   <data name="MoviesLabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -767,27 +824,6 @@
   </data>
   <data name="&gt;&gt;MoviesLabel.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="MoviesRounded.Location" type="System.Drawing.Point, System.Drawing">
-    <value>75, 41</value>
-  </data>
-  <data name="MoviesRounded.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 20</value>
-  </data>
-  <data name="MoviesRounded.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;MoviesRounded.Name" xml:space="preserve">
-    <value>MoviesRounded</value>
-  </data>
-  <data name="&gt;&gt;MoviesRounded.Type" xml:space="preserve">
-    <value>ticketmaster.Controls.RoundedPanel, ticketmaster, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;MoviesRounded.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;MoviesRounded.ZOrder" xml:space="preserve">
-    <value>6</value>
   </data>
   <data name="MoviesPanel.Location" type="System.Drawing.Point, System.Drawing">
     <value>33, 50</value>

@@ -8,3 +8,5 @@ C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.csp
 C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.csproj.CoreCompileInputs.cache
 C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.exe
 C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.pdb
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.UC_Register.resources
+C:\Users\bence\source\repos\TicketMaster\TicketMaster\obj\Debug\ticketmaster.exe.config
