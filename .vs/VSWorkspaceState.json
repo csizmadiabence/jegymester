@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\backend",
+    "\\backend\\backend",
+    "\\backend\\backend\\Controllers",
+    "\\backend\\backend\\Migrations",
+    "\\backend\\backend\\Models"
   ],
-  "SelectedNode": "\\C:\\Users\\maasz\\source\\repos\\jegymester2",
+  "SelectedNode": "\\backend\\backend\\Program.cs",
   "PreviewInSolutionExplorer": false
 }
