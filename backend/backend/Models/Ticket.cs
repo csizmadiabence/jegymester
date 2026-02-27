@@ -6,6 +6,7 @@ public class Ticket
 
     public int ScreeningId { get; set; }
     public Screening? Screening { get; set; }
+    public Seat Seat { get; set; }
 
     // Opcionalis csak ha van login
     public int? UserId { get; set; }
