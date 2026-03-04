@@ -1,11 +1,14 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.ComponentModel.DataAnnotations;
 
 namespace backend.Models;
 
 public class Seat
 {
+    [Key]
+    public int Id { get; set; }
     public int Row { get; set; }
     public int Number { get; set; }
     public bool IsHidden { get; set; } // A folyosóhoz
