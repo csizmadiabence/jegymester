@@ -25,7 +25,7 @@ namespace ticketmasterwpf
     /// </summary>
     public partial class TicketBuy : Page
     {
-        public string SelectedMovieTitle { get; set; } = "Dune: Part Two"; // Példa adat
+        public string SelectedMovieTitle { get; set; } = "Dune: Part Two";
         public string SelectedShowtime { get; set; } = "17:45";
         public ObservableCollection<TheaterRow> TheaterRows { get; set; }
         private int _selectedCount = 0;

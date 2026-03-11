@@ -2,23 +2,23 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Height="650" Width="1050"
-        Title="ticketmaster" 
+        Title="ticketmaster"
         Icon="Resources/Icons/ticketmaster_icon.png"
         WindowStyle="None" ResizeMode="NoResize"
         Background="Transparent" AllowsTransparency="True"
         WindowStartupLocation="CenterScreen">
 
-    <Border CornerRadius="20" ClipToBounds="True">
-        <Border.Background>
-            <RadialGradientBrush x:Name="MainBackgroundBrush" RadiusX="1.2" RadiusY="1.2" Center="0.5,0.5" GradientOrigin="0.5, 0.2">
-                <GradientStop x:Name="BGGradientStop" Color="#20232A" Offset="0"/>
-                <GradientStop Color="#0D0E12" Offset="0.4"/>
-                <GradientStop Color="#050507" Offset="1"/>
-            </RadialGradientBrush>
-        </Border.Background>
+	<Border CornerRadius="20" ClipToBounds="True">
+		<Border.Background>
+			<RadialGradientBrush x:Name="MainBackgroundBrush" RadiusX="1.2" RadiusY="1.2" Center="0.5,0.5" GradientOrigin="0.5, 0.2">
+				<GradientStop x:Name="BGGradientStop" Color="#20232A" Offset="0"/>
+				<GradientStop Color="#0D0E12" Offset="0.4"/>
+				<GradientStop Color="#050507" Offset="1"/>
+			</RadialGradientBrush>
+		</Border.Background>
 
-        <Grid>
-            <Frame x:Name="MainFrame" Source="SplashPage.xaml" NavigationUIVisibility="Hidden" Background="Transparent"/>
-        </Grid>
-    </Border>
+		<Grid>
+			<Frame x:Name="MainFrame" Source="SplashPage.xaml" NavigationUIVisibility="Hidden" Background="Transparent"/>
+		</Grid>
+	</Border>
 </Window>

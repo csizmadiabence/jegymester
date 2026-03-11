@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\bence\source\repos\ticketmasterwpf\ticketmasterwpf\obj\Debug\
+C:\Users\bence\Source\Repos\jegymester\Frontend\obj\Debug\
 ticketmasterwpf
 none
 false
 DEBUG;TRACE
-C:\Users\bence\source\repos\ticketmasterwpf\ticketmasterwpf\App.xaml
+C:\Users\bence\Source\Repos\jegymester\Frontend\App.xaml
 7-1173813200
 
 11-1739823390
 13-1310406943
 CheckoutPage.xaml;HomePage.xaml;TicketBuy.xaml;LoginPage.xaml;MainWindow.xaml;RegisterPage.xaml;SplashPage.xaml;
 
-False
+True
 

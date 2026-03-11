@@ -18,16 +18,15 @@ namespace ticketmasterwpf
             InitializeComponent();
         }
 
+        //ANIMÁCIÓ
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             string fullText = "ticketmaster";
             LogoPanel.Children.Clear();
             SpectrumCanvas.Children.Clear();
 
-            // Cseréld ki a font nevét, ha nem Calistoga a belső neve!
             FontFamily customFont = new FontFamily(new Uri("pack://application:,,,/"), "./Resources/Assets/#Calistoga");
 
-            // --- 1. PRÉMIUM SZÍNSKÁLA (Figma-stílusú matt grafit/ezüst) ---
             LinearGradientBrush premiumBrush = new LinearGradientBrush();
             premiumBrush.StartPoint = new Point(0, 0);
             premiumBrush.EndPoint = new Point(1, 1);
@@ -55,7 +54,6 @@ namespace ticketmasterwpf
             List<TextBlock> letters = new List<TextBlock>();
             List<Rectangle> spectrumLines = new List<Rectangle>();
 
-            // --- 2. SPEKTRUM VONALAK ELŐKÉSZÍTÉSE (80 csík, középen elrejtve) ---
             int lineCount = 90;
             double totalWidth = 0;
             List<double> widths = new List<double>();
@@ -92,7 +90,6 @@ namespace ticketmasterwpf
                 spectrumLines.Add(line);
             }
 
-            // --- 3. BETŰK ELŐKÉSZÍTÉSE ---
             foreach (char letter in fullText)
             {
                 TransformGroup transformGroup = new TransformGroup();
@@ -122,7 +119,6 @@ namespace ticketmasterwpf
             IEasingFunction easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
             IEasingFunction easeInOut = new CubicEase { EasingMode = EasingMode.EaseInOut };
 
-            // --- 4. KIÍRÁS ANIMÁCIÓ (Felhalványodás és Pop-in) ---
             for (int i = 0; i < letters.Count; i++)
             {
                 var tb = letters[i];
@@ -135,10 +131,8 @@ namespace ticketmasterwpf
                 await Task.Delay(30);
             }
 
-            // Hagyjuk elolvasni a szöveget
             await Task.Delay(1500);
 
-            // --- 5. ÖSSZECSUKLÁS A KÖZÉPRE CSÚSZÓ 'T'-RE ---
             double offsetToCenter = (LogoPanel.ActualWidth / 2) - (letters[0].ActualWidth / 2);
             var tTrans = (TranslateTransform)((TransformGroup)letters[0].RenderTransform).Children[1];
             tTrans.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(0, offsetToCenter, TimeSpan.FromMilliseconds(500)) { EasingFunction = easeIn });
@@ -160,7 +154,6 @@ namespace ticketmasterwpf
 
             await Task.Delay(600);
 
-            // --- 6. "LÉLEGZETVÉTEL" (Anticipation) ---
             var tScale = (ScaleTransform)((TransformGroup)letters[0].RenderTransform).Children[0];
 
             TimeSpan inhaleDuration = TimeSpan.FromMilliseconds(200);
@@ -169,16 +162,14 @@ namespace ticketmasterwpf
 
             await Task.Delay(250);
 
-            // --- 7. A BRUTÁLIS ZOOM ---
             TimeSpan zoomDuration = TimeSpan.FromMilliseconds(400);
             tScale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.8, 15, zoomDuration) { EasingFunction = easeIn });
             tScale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(0.8, 15, zoomDuration) { EasingFunction = easeIn });
 
-            await Task.Delay(400); // Megvárjuk, míg befejeződik a zoom
+            await Task.Delay(400);
 
-            // --- 8. A KEMÉNY VÁGÁS ÉS SPEKTRUM ROBBANÁS ---
-            letters[0].Visibility = Visibility.Hidden; // A betű azonnal kikapcsol
-            SpectrumCanvas.Opacity = 1;                // A csíkok azonnal bekapcsolnak
+            letters[0].Visibility = Visibility.Hidden;
+            SpectrumCanvas.Opacity = 1;
 
             for (int i = 0; i < spectrumLines.Count; i++)
             {
@@ -208,10 +199,8 @@ namespace ticketmasterwpf
                 line.BeginAnimation(UIElement.OpacityProperty, fadeOut);
             }
 
-            // Levágott holtidő: Rövid várakozás, hogy amint elhalványulnak a csíkok, már ugorjunk is
             await Task.Delay(400);
 
-            // --- 9. NAVIGÁCIÓ A FŐOLDALRA ---
             if (NavigationService != null)
             {
                 NavigationService.Navigate(new HomePage());
