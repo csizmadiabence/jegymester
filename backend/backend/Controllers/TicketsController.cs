@@ -25,7 +25,19 @@ public class TicketsController : ControllerBase
         {
             return BadRequest("Nem regisztrált felhasználóknak kötelező megadni az e-mailt és a telefonszámot!");
         }
+        //letezik-e vetites
+        var screeningExists = await _context.Screenings.AnyAsync(s => s.Id == ticket.ScreeningId);
+        if (!screeningExists)
+        {
+            return NotFound($"A megadott vetítés (ID: {ticket.ScreeningId}) nem létezik.");
+        }
 
+        //letezik-e szek
+        var seatExists = await _context.Seats.AnyAsync(s => s.Id == ticket.SeatId);
+        if (!seatExists)
+        {
+            return NotFound($"A megadott szék (ID: {ticket.SeatId}) nem létezik.");
+        }
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
         return Ok(ticket);
@@ -62,5 +74,48 @@ public class TicketsController : ControllerBase
         ticket.IsValidated = true; //penztaros visszaigazolja
         await _context.SaveChangesAsync();
         return Ok("Jegy érvényesítve.");
+    }
+
+    //felhasznalo jegyei lekerese
+    // path: GET api/tickets/user/5
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<IEnumerable<Ticket>>> GetUserTickets(int userId)
+    {
+        //jegy melle vetites es a szek is tarsul, megkeressuk
+        var tickets = await _context.Tickets
+            .Include(t => t.Screening)
+            .Include(t => t.Seat)
+            .Where(t => t.UserId == userId && !t.IsCancelled) // Csak az érvényeseket adjuk vissza!
+            .ToListAsync();
+
+        return Ok(tickets);
+    }
+
+    //egy jegy lekerese id alapjan
+    //path: GET api/tickets/7
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Ticket>> GetTicket(int id)
+    {
+        var ticket = await _context.Tickets
+            .Include(t => t.Screening)
+            .Include(t => t.Seat)
+            .Include(t => t.User) 
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (ticket == null) return NotFound("A jegy nem található.");
+
+        return Ok(ticket);
+    }
+
+    //osszes jegy, az adminnak kell leginkabb
+    //path: GET api/tickets
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Ticket>>> GetAllTickets()
+    {
+        var tickets = await _context.Tickets
+            .Include(t => t.Screening)
+            .ToListAsync();
+
+        return Ok(tickets);
     }
 }

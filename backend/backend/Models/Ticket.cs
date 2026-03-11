@@ -1,17 +1,23 @@
-﻿namespace backend.Models;
+﻿using System.Text.Json.Serialization;
+namespace backend.Models;
 
 public class Ticket
 {
     public int Id { get; set; }
-
     public int ScreeningId { get; set; }
+
+    [JsonIgnore]
     public Screening? Screening { get; set; }
-    public Seat Seat { get; set; }
 
     // Opcionalis csak ha van login
     public int? UserId { get; set; }
+    [JsonIgnore]
     public User? User { get; set; }
 
+    public int SeatId { get; set; }
+    [JsonIgnore] 
+    public Seat? Seat { get; set; }
+    
     // Kotelezo nem regisztralt vasarlas eseten
     public string? GuestEmail { get; set; }
     public string? GuestPhone { get; set; }
@@ -20,7 +26,8 @@ public class Ticket
 
     public bool IsValidated { get; set; } = false; // penztaros allitja
     public bool IsCancelled { get; set; } = false; // torles allapot
-
+    
+    public int Price { get; set; }
     // 4 oras szabaly
     public bool CanBeCancelled
     {
