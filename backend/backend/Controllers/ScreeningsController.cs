@@ -23,10 +23,36 @@ public class ScreeningsController : ControllerBase
     }
 
     [HttpPost] //uj vetites felvetele (admin)
-    public async Task<ActionResult<Screening>> PostScreening(Screening screening)
+    public IActionResult CreateScreening([FromBody] Screening newScreening)
     {
-        _context.Screenings.Add(screening);
-        await _context.SaveChangesAsync();
-        return Ok(screening);
+        // letezik-e a film
+        var movieExists = _context.Movies.Any(m => m.Id == newScreening.MovieId);
+        if (!movieExists)
+        {
+            return BadRequest($"Nem létezik film a megadott ID-val: {newScreening.MovieId}");
+        }
+
+        // mentes
+        _context.Screenings.Add(newScreening);
+        _context.SaveChanges();
+
+        return Ok(newScreening);
+    }
+
+    [HttpDelete("{id}")] // delete
+    public IActionResult DeleteScreening(int id)
+    {
+        
+        var screening = _context.Screenings.Find(id);
+        if (screening == null)
+        {
+            return NotFound($"A {id} azonosítóval nem található vetítés.");
+        }
+
+        _context.Screenings.Remove(screening);
+        _context.SaveChanges();
+        //remelhetoleg 204-es kod jon vissza sikeres torleskor
+        return NoContent();
+
     }
 }
