@@ -1,460 +1,473 @@
 ﻿<Page x:Class="ticketmasterwpf.LoginPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:ticketmasterwpf"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
       d:DesignHeight="550" d:DesignWidth="950"
       Background="Transparent"
       Title="LoginPage">
 
-    <Page.Resources>
-        <LinearGradientBrush x:Key="SplashPremiumBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#A0A5B5" Offset="0.0"/>
-            <GradientStop Color="#FFFFFF" Offset="0.5"/>
-            <GradientStop Color="#606575" Offset="1.0"/>
-        </LinearGradientBrush>
+	<Page.Resources>
+		<LinearGradientBrush x:Key="SplashPremiumBrush" StartPoint="0,0" EndPoint="1,1">
+			<GradientStop Color="#A0A5B5" Offset="0.0"/>
+			<GradientStop Color="#FFFFFF" Offset="0.5"/>
+			<GradientStop Color="#606575" Offset="1.0"/>
+		</LinearGradientBrush>
 
-        <DropShadowEffect x:Key="SplashSubtleGlow" 
-                      Color="#A0A5B5" 
-                      BlurRadius="15" 
-                      ShadowDepth="0" 
+		<DropShadowEffect x:Key="SplashSubtleGlow"
+                      Color="#A0A5B5"
+                      BlurRadius="15"
+                      ShadowDepth="0"
                       Opacity="0.6"/>
 
-        <Style x:Key="ConcentricFocusBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="5"/>
+		<Style x:Key="ConcentricFocusBorderStyle" TargetType="Border">
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="CornerRadius" Value="5"/>
 
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="BorderBrush" Value="Transparent"/>
 
-            <Style.Triggers>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="DodgerBlue"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+			<Style.Triggers>
+				<Trigger Property="IsKeyboardFocusWithin" Value="True">
+					<Setter Property="BorderBrush" Value="DodgerBlue"/>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
 
-        <Storyboard x:Key="PremiumEntranceAnimation">
-            <DoubleAnimation Storyboard.TargetName="MainStackPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1"/>
-            <DoubleAnimation Storyboard.TargetName="MainStackPanelTransform" Storyboard.TargetProperty="Y" From="40" To="0" Duration="0:0:1.5">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
+		<Storyboard x:Key="PremiumEntranceAnimation">
+			<DoubleAnimation Storyboard.TargetName="MainStackPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1"/>
+			<DoubleAnimation Storyboard.TargetName="MainStackPanelTransform" Storyboard.TargetProperty="Y" From="40" To="0" Duration="0:0:1.5">
+				<DoubleAnimation.EasingFunction>
+					<CubicEase EasingMode="EaseOut"/>
+				</DoubleAnimation.EasingFunction>
+			</DoubleAnimation>
 
-            <DoubleAnimation Storyboard.TargetName="ManageStackPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1" BeginTime="0:0:0.3"/>
-            <DoubleAnimation Storyboard.TargetName="ManageStackPanelTransform" Storyboard.TargetProperty="Y" From="-20" To="0" Duration="0:0:1.2" BeginTime="0:0:0.3">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
+			<DoubleAnimation Storyboard.TargetName="ManageStackPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1" BeginTime="0:0:0.3"/>
+			<DoubleAnimation Storyboard.TargetName="ManageStackPanelTransform" Storyboard.TargetProperty="Y" From="-20" To="0" Duration="0:0:1.2" BeginTime="0:0:0.3">
+				<DoubleAnimation.EasingFunction>
+					<CubicEase EasingMode="EaseOut"/>
+				</DoubleAnimation.EasingFunction>
+			</DoubleAnimation>
 
-            <DoubleAnimation Storyboard.TargetName="LogoItemsControl" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8"/>
-            <DoubleAnimation Storyboard.TargetName="LogoTransform" Storyboard.TargetProperty="Y" From="20" To="0" Duration="0:0:1">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
+			<DoubleAnimation Storyboard.TargetName="LogoItemsControl" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8"/>
+			<DoubleAnimation Storyboard.TargetName="LogoTransform" Storyboard.TargetProperty="Y" From="20" To="0" Duration="0:0:1">
+				<DoubleAnimation.EasingFunction>
+					<CubicEase EasingMode="EaseOut"/>
+				</DoubleAnimation.EasingFunction>
+			</DoubleAnimation>
 
-            <DoubleAnimation Storyboard.TargetName="BackToHomeButton" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1" BeginTime="0:0:0.7"/>
-            <DoubleAnimation Storyboard.TargetName="BackToHomeTransform" Storyboard.TargetProperty="Y" From="40" To="0" Duration="0:0:1.2" BeginTime="0:0:0.8">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="PromoSection" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:1.1" BeginTime="0:0:0.5"/>
+			<DoubleAnimation Storyboard.TargetName="BackToHomeButton" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1" BeginTime="0:0:0.7"/>
+			<DoubleAnimation Storyboard.TargetName="BackToHomeTransform" Storyboard.TargetProperty="Y" From="40" To="0" Duration="0:0:1.2" BeginTime="0:0:0.8">
+				<DoubleAnimation.EasingFunction>
+					<CubicEase EasingMode="EaseOut"/>
+				</DoubleAnimation.EasingFunction>
+			</DoubleAnimation>
+			<DoubleAnimation Storyboard.TargetName="PromoSection" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:1.1" BeginTime="0:0:0.5"/>
 
-            <DoubleAnimation Storyboard.TargetName="PromoTransform" Storyboard.TargetProperty="X" From="-100" To="0" Duration="0:0:1.3" BeginTime="0:0:0.5">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-        </Storyboard>
-    </Page.Resources>
+			<DoubleAnimation Storyboard.TargetName="PromoTransform" Storyboard.TargetProperty="X" From="-100" To="0" Duration="0:0:1.3" BeginTime="0:0:0.5">
+				<DoubleAnimation.EasingFunction>
+					<CubicEase EasingMode="EaseOut"/>
+				</DoubleAnimation.EasingFunction>
+			</DoubleAnimation>
+		</Storyboard>
+		<Style x:Key="GlowButtonStyle" TargetType="Button">
+			<Setter Property="Height" Value="28"/>
+			<Setter Property="FontSize" Value="9"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Grid>
+							<Border x:Name="glowLayer"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="1.5"
+                    CornerRadius="8"
+                    Background="Transparent"
+                    Opacity="0"/>
+							<Border x:Name="mainBorder"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="1.5"
+                    CornerRadius="8"
+                    Background="Transparent">
+								<ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  RecognizesAccessKey="True"/>
+							</Border>
+						</Grid>
 
-    <Page.Triggers>
-        <EventTrigger RoutedEvent="Page.Loaded">
-            <BeginStoryboard Storyboard="{StaticResource PremiumEntranceAnimation}"/>
-        </EventTrigger>
-    </Page.Triggers>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="glowLayer" Property="Opacity" Value="1"/>
+								<Setter TargetName="glowLayer" Property="Effect">
+									<Setter.Value>
+										<DropShadowEffect Color="{Binding BorderBrush.Color, RelativeSource={RelativeSource TemplatedParent}}"
+                                          BlurRadius="15"
+                                          ShadowDepth="0"
+                                          Opacity="0.5"
+                                          RenderingBias="Quality"/>
+									</Setter.Value>
+								</Setter>
+								<Setter TargetName="mainBorder" Property="Background" Value="#1AFFFFFF"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Page.Resources>
 
-    <Grid>
-        <StackPanel x:Name="PromoSection" 
-            HorizontalAlignment="Left" 
-            VerticalAlignment="Center" 
-            Margin="50,20,0,0" 
+	<Page.Triggers>
+		<EventTrigger RoutedEvent="Page.Loaded">
+			<BeginStoryboard Storyboard="{StaticResource PremiumEntranceAnimation}"/>
+		</EventTrigger>
+	</Page.Triggers>
+
+	<Grid>
+		<StackPanel x:Name="PromoSection"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Margin="50,20,0,0"
             Width="400"
             Opacity="0">
-            <StackPanel.RenderTransform>
-                <TranslateTransform x:Name="PromoTransform" X="-100"/>
-            </StackPanel.RenderTransform>
+			<StackPanel.RenderTransform>
+				<TranslateTransform x:Name="PromoTransform" X="-100"/>
+			</StackPanel.RenderTransform>
 
-            <Grid Height="140" Margin="0,0,0,20">
-                <Image Source="Resources/Icons/popcorn.png" Width="90" Height="90" 
+			<Grid Height="140" Margin="0,0,0,20">
+				<Image Source="Resources/Icons/popcorn.png" Width="90" Height="90"
                HorizontalAlignment="Left" VerticalAlignment="Top">
-                    <Image.Effect>
-                        <DropShadowEffect Color="#D99058" BlurRadius="25" Opacity="0.4" ShadowDepth="0"/>
-                    </Image.Effect>
-                    <Image.RenderTransform>
-                        <RotateTransform Angle="-10"/>
-                    </Image.RenderTransform>
-                </Image>
+					<Image.Effect>
+						<DropShadowEffect Color="#D99058" BlurRadius="25" Opacity="0.4" ShadowDepth="0"/>
+					</Image.Effect>
+					<Image.RenderTransform>
+						<RotateTransform Angle="-10"/>
+					</Image.RenderTransform>
+				</Image>
 
-                <Image Source="Resources/Icons/softdrink.png" Width="80" Height="80" 
+				<Image Source="Resources/Icons/softdrink.png" Width="80" Height="80"
                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,140,10">
-                    <Image.Effect>
-                        <DropShadowEffect Color="#03DAC6" BlurRadius="25" Opacity="0.4" ShadowDepth="0"/>
-                    </Image.Effect>
-                    <Image.RenderTransform>
-                        <RotateTransform Angle="15"/>
-                    </Image.RenderTransform>
-                </Image>
-            </Grid>
+					<Image.Effect>
+						<DropShadowEffect Color="#03DAC6" BlurRadius="25" Opacity="0.4" ShadowDepth="0"/>
+					</Image.Effect>
+					<Image.RenderTransform>
+						<RotateTransform Angle="15"/>
+					</Image.RenderTransform>
+				</Image>
+			</Grid>
 
-            <TextBlock Text="CINEMA EXPERIENCE" 
-               FontSize="34" 
-               FontWeight="ExtraBold" 
+			<TextBlock Text="CINEMA EXPERIENCE"
+               FontSize="34"
+               FontWeight="ExtraBold"
                Foreground="White" />
 
-            <TextBlock Text="WITH EXTRA GIFT" 
-               FontSize="28" 
-               FontWeight="Bold" 
+			<TextBlock Text="WITH EXTRA GIFT"
+               FontSize="28"
+               FontWeight="Bold"
                Margin="0,2,0,15">
-                <TextBlock.Foreground>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#D99058" Offset="0"/>
-                        <GradientStop Color="#03DAC6" Offset="1"/>
-                    </LinearGradientBrush>
-                </TextBlock.Foreground>
-            </TextBlock>
+				<TextBlock.Foreground>
+					<LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+						<GradientStop Color="#D99058" Offset="0"/>
+						<GradientStop Color="#03DAC6" Offset="1"/>
+					</LinearGradientBrush>
+				</TextBlock.Foreground>
+			</TextBlock>
 
-            <TextBlock Text="Book your tickets online and enjoy a medium popcorn &amp; soda combo on the house for your first visit!" 
-               FontSize="12pt" 
-               Foreground="#B0B0B0" 
-               TextWrapping="Wrap" 
-               LineHeight="22" 
+			<TextBlock Text="Book your tickets online and enjoy a medium popcorn &amp; soda combo on the house for your first visit!"
+               FontSize="12pt"
+               Foreground="#B0B0B0"
+               TextWrapping="Wrap"
+               LineHeight="22"
                Margin="0,0,0,30"/>
 
-            <Border Background="#121212" 
-            BorderBrush="#33FFFFFF" 
-            BorderThickness="1" 
-            CornerRadius="15" 
-            Padding="20,10" 
+			<Border Background="#121212"
+            BorderBrush="#33FFFFFF"
+            BorderThickness="1"
+            CornerRadius="15"
+            Padding="20,10"
             HorizontalAlignment="Left">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Promo Code:" Foreground="#777" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBlock Text="FREEMENU26" Foreground="#D99058" FontWeight="Bold" FontSize="15"/>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-        <StackPanel x:Name="MainStackPanel" VerticalAlignment="Center" HorizontalAlignment="Right" Width="419" Height="434" Margin="0,100,0,0">
-            <StackPanel.RenderTransform>
-                <TranslateTransform x:Name="MainStackPanelTransform" Y="40"/>
-            </StackPanel.RenderTransform>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="Promo Code:" Foreground="#777" VerticalAlignment="Center" Margin="0,0,10,0"/>
+					<TextBlock Text="FREEMENU26" Foreground="#D99058" FontWeight="Bold" FontSize="15"/>
+				</StackPanel>
+			</Border>
+		</StackPanel>
+		<StackPanel x:Name="MainStackPanel" VerticalAlignment="Center" HorizontalAlignment="Right" Width="419" Height="434" Margin="0,100,0,0">
+			<StackPanel.RenderTransform>
+				<TranslateTransform x:Name="MainStackPanelTransform" Y="40"/>
+			</StackPanel.RenderTransform>
 
-            <ItemsControl x:Name="LogoItemsControl" HorizontalAlignment="Center" Margin="0,20,0,15" IsHitTestVisible="False">
-                <ItemsControl.ItemsSource>
-                    <x:Array Type="{x:Type sys:String}">
-                        <sys:String>t</sys:String>
-                        <sys:String>i</sys:String>
-                        <sys:String>c</sys:String>
-                        <sys:String>k</sys:String>
-                        <sys:String>e</sys:String>
-                        <sys:String>t</sys:String>
-                        <sys:String>m</sys:String>
-                        <sys:String>a</sys:String>
-                        <sys:String>s</sys:String>
-                        <sys:String>t</sys:String>
-                        <sys:String>e</sys:String>
-                        <sys:String>r</sys:String>
-                    </x:Array>
-                </ItemsControl.ItemsSource>
+			<ItemsControl x:Name="LogoItemsControl" HorizontalAlignment="Center" Margin="0,20,0,15" IsHitTestVisible="False">
+				<ItemsControl.ItemsSource>
+					<x:Array Type="{x:Type sys:String}">
+						<sys:String>t</sys:String>
+						<sys:String>i</sys:String>
+						<sys:String>c</sys:String>
+						<sys:String>k</sys:String>
+						<sys:String>e</sys:String>
+						<sys:String>t</sys:String>
+						<sys:String>m</sys:String>
+						<sys:String>a</sys:String>
+						<sys:String>s</sys:String>
+						<sys:String>t</sys:String>
+						<sys:String>e</sys:String>
+						<sys:String>r</sys:String>
+					</x:Array>
+				</ItemsControl.ItemsSource>
 
-                <ItemsControl.RenderTransform>
-                    <TranslateTransform x:Name="LogoTransform" Y="20"/>
-                </ItemsControl.RenderTransform>
+				<ItemsControl.RenderTransform>
+					<TranslateTransform x:Name="LogoTransform" Y="20"/>
+				</ItemsControl.RenderTransform>
 
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<StackPanel Orientation="Horizontal"/>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
 
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}" FontSize="40" FontFamily="Resources/Assets/#Calistoga" FontWeight="Bold" Foreground="{StaticResource SplashPremiumBrush}" Effect="{StaticResource SplashSubtleGlow}" Margin="0,0,-6,0" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding}" FontSize="40" FontFamily="Resources/Assets/#Calistoga" FontWeight="Bold" Foreground="{StaticResource SplashPremiumBrush}" Effect="{StaticResource SplashSubtleGlow}" Margin="0,0,-6,0" />
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
 
-            <TextBlock Text="Log in to your account" FontSize="14pt" FontWeight="SemiBold" Foreground="White" 
+			<TextBlock Text="Log in to your account" FontSize="14pt" FontWeight="SemiBold" Foreground="White"
                        HorizontalAlignment="Center" Margin="0,0,0,5"/>
-            <TextBlock Text="Use your email or phone number." FontSize="11pt" Foreground="#A0A0A0" 
+			<TextBlock Text="Use your email or phone number." FontSize="11pt" Foreground="#A0A0A0"
                        HorizontalAlignment="Center" Margin="0,0,0,20"/>
-            <Border x:Name="EmailBorder" Background="White" CornerRadius="5" Height="28" Width="275">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+			<Border x:Name="EmailBorder" Background="White" CornerRadius="5" Height="28" Width="275">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
 
-                    <Image Grid.Column="0" 
-               HorizontalAlignment="Center" 
-               VerticalAlignment="Center" 
-               Height="15" Width="15" 
-               Margin="8,0,0,0" 
+					<Image Grid.Column="0"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Height="15" Width="15"
+               Margin="8,0,0,0"
                Source="/Resources/Icons/user_icon.png"/>
 
-                    <TextBox Grid.Column="1" 
-                 x:Name="EmailInput" 
-                 TextChanged="EmailInput_TextChanged" 
-                 Background="Transparent" 
-                 BorderThickness="0" 
-                 Padding="5,0,5,0" 
-                 FontSize="11pt" 
-                 Foreground="Black" 
-                 VerticalContentAlignment="Center" 
+					<TextBox Grid.Column="1"
+                 x:Name="EmailInput"
+                 TextChanged="EmailInput_TextChanged"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="5,0,5,0"
+                 FontSize="11pt"
+                 Foreground="Black"
+                 VerticalContentAlignment="Center"
                  Text=""/>
-                </Grid>
-            </Border>
-            <Border x:Name="PasswordBorder" Background="White" CornerRadius="5" Height="28" Width="275" Visibility="Collapsed" Margin="0,15,0,0">
+				</Grid>
+			</Border>
+			<Border x:Name="PasswordBorder" Background="White" CornerRadius="5" Height="28" Width="275" Visibility="Collapsed" Margin="0,15,0,0">
 
-                <Border.LayoutTransform>
-                    <ScaleTransform x:Name="PasswordScale" ScaleY="0"/>
-                </Border.LayoutTransform>
+				<Border.LayoutTransform>
+					<ScaleTransform x:Name="PasswordScale" ScaleY="0"/>
+				</Border.LayoutTransform>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
 
-                    <Image Grid.Column="0" 
-               HorizontalAlignment="Center" 
-               VerticalAlignment="Center" 
-               Height="14" Width="14" 
-               Margin="8,0,0,0" 
+					<Image Grid.Column="0"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Height="14" Width="14"
+               Margin="8,0,0,0"
                Source="/Resources/Icons/lock_icon.png"/>
-                    <PasswordBox Grid.Column="1" 
-                     x:Name="PasswordInput" 
-                     Background="Transparent" 
-                     BorderThickness="0" 
-                     Padding="5,0,5,0" 
-                     FontSize="11pt" 
-                     Foreground="Black" 
+					<PasswordBox Grid.Column="1"
+                     x:Name="PasswordInput"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Padding="5,0,5,0"
+                     FontSize="11pt"
+                     Foreground="Black"
                      VerticalContentAlignment="Center"/>
-                </Grid>
-            </Border>
+				</Grid>
+			</Border>
 
-            <Button Content="Login" 
-                Background="#D99058" 
-                Foreground="White" 
-                Height="28" 
+			<Button Content="Login"
+                Background="#D99058"
+                Foreground="White"
+                Height="28"
                 Width="275"
-                Margin="0,15,0,15" 
-                FontSize="9pt" 
+                Margin="0,15,0,15"
+                FontSize="9pt"
                 Cursor="Hand" Click="Login_Click">
 
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="btnBorder" 
-                                        Background="{TemplateBinding Background}" 
-                                        CornerRadius="5" 
+				<Button.Style>
+					<Style TargetType="Button">
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="Button">
+									<Border x:Name="btnBorder"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="5"
                                         BorderThickness="0">
-                                        <ContentPresenter HorizontalAlignment="Center" 
+										<ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
-                                    </Border>
+									</Border>
 
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="btnBorder" Property="Background" Value="#D99958"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="btnBorder" Property="Background" Value="#D99358"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
-            </Button>
-            <Grid Width="275">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+									<ControlTemplate.Triggers>
+										<Trigger Property="IsMouseOver" Value="True">
+											<Setter TargetName="btnBorder" Property="Background" Value="#D99958"/>
+										</Trigger>
+										<Trigger Property="IsPressed" Value="True">
+											<Setter TargetName="btnBorder" Property="Background" Value="#D99358"/>
+										</Trigger>
+									</ControlTemplate.Triggers>
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</Button.Style>
+			</Button>
+			<Grid Width="275">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
 
-                <Separator Background="#444" VerticalAlignment="Center" Margin="0,0,10,0"/>
+				<Separator Background="#444" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
-                <Button Grid.Column="1" 
-                Content="Don't have an account? Sign up" 
-                Click="GoToRegister_Click" 
-                Foreground="#A0A0A0" 
+				<Button Grid.Column="1"
+                Content="Don't have an account? Sign up"
+                Click="GoToRegister_Click"
+                Foreground="#A0A0A0"
                 FontSize="9pt"
                 Cursor="Hand">
-                    <Button.Template>
-                        <ControlTemplate TargetType="{x:Type Button}">
-                            <TextBlock Text="{TemplateBinding Content}" 
+					<Button.Template>
+						<ControlTemplate TargetType="{x:Type Button}">
+							<TextBlock Text="{TemplateBinding Content}"
                                 Background="Transparent">
-                                <TextBlock.Style>
-                                    <Style TargetType="{x:Type TextBlock}">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Foreground" Value="#A0A0A0"/>
-                                                <Setter Property="TextDecorations" Value="Underline"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
+								<TextBlock.Style>
+									<Style TargetType="{x:Type TextBlock}">
+										<Style.Triggers>
+											<Trigger Property="IsMouseOver" Value="True">
+												<Setter Property="Foreground" Value="#A0A0A0"/>
+												<Setter Property="TextDecorations" Value="Underline"/>
+											</Trigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
+						</ControlTemplate>
+					</Button.Template>
+				</Button>
 
-                <Separator Grid.Column="2" Background="#444" VerticalAlignment="Center" Margin="10,0,0,0"/>
-            </Grid>
+				<Separator Grid.Column="2" Background="#444" VerticalAlignment="Center" Margin="10,0,0,0"/>
+			</Grid>
 
-            <Grid Width="235">
-                <TextBlock TextWrapping="Wrap" TextAlignment="Center" FontSize="7pt" Foreground="#777" Margin="0,10,0,0">
-                By clicking continue, you agree to our <Span Foreground="White">Terms of Service</Span> and <Span Foreground="White">Privacy Policy</Span>
-                </TextBlock>
-            </Grid>
-        </StackPanel>
+			<Grid Width="235">
+				<TextBlock TextWrapping="Wrap" TextAlignment="Center" FontSize="7pt" Foreground="#777" Margin="0,10,0,0">
+					By clicking continue, you agree to our <Span Foreground="White">Terms of Service</Span> and <Span Foreground="White">Privacy Policy</Span>
+				</TextBlock>
+			</Grid>
+		</StackPanel>
 
-        <Button x:Name="BackToHomeButton" Content="BACK TO HOME" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="Transparent" Foreground="White" BorderThickness="1.5" BorderBrush="#D99058" Padding="15,6" FontSize="10" FontWeight="Bold" Click="BackToHome_Click" Margin="0,0,50,18" Cursor="Hand">
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="15">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                    </Border>
-                </ControlTemplate>
-            </Button.Template>
+		<Button x:Name="BackToHomeButton" Content="BACK TO HOME" Click="BackToHome_Click"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Style="{StaticResource GlowButtonStyle}" BorderBrush="#D99058" FontSize="10" Height="25" Width="100" Margin="0, 0, 40, 20">
+			<Button.RenderTransform>
+				<TranslateTransform x:Name="BackToHomeTransform" Y="50"/>
+			</Button.RenderTransform>
+		</Button>
+		<StackPanel x:Name="ManageStackPanel" Opacity="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,8,0,0">
+			<StackPanel.RenderTransform>
+				<TranslateTransform x:Name="ManageStackPanelTransform" Y="40"/>
+			</StackPanel.RenderTransform>
 
-            <Button.RenderTransform>
-                <TranslateTransform x:Name="BackToHomeTransform" Y="50"/>
-            </Button.RenderTransform>
-
-            <Button.Style>
-                <Style TargetType="Button">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="btnBorder" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="5" 
-                                BorderThickness="0">
-                                    <ContentPresenter HorizontalAlignment="Center" 
-                                VerticalAlignment="Center"/>
-                                </Border>
-
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="btnBorder" Property="Background" Value="#1A1A1A"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter TargetName="btnBorder" Property="Background" Value="#333333"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </Button.Style>
-        </Button>
-        <StackPanel x:Name="ManageStackPanel" Opacity="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,8,0,0">
-            <StackPanel.RenderTransform>
-                <TranslateTransform x:Name="ManageStackPanelTransform" Y="40"/>
-            </StackPanel.RenderTransform>
-
-            <StackPanel.Resources>
-                <Style TargetType="Button" x:Key="WindowControlBtnStyle">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Width" Value="13"/>
-                    <Setter Property="Height" Value="13"/>
-                    <Setter Property="Cursor" Value="Hand"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="Button">
-                                <Grid>
-                                    <Border x:Name="HoverBorder" Background="#22FFFFFF" CornerRadius="5" Opacity="0"/>
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Grid>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Trigger.EnterActions>
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetName="HoverBorder" 
-                                                             Storyboard.TargetProperty="Opacity" 
+			<StackPanel.Resources>
+				<Style TargetType="Button" x:Key="WindowControlBtnStyle">
+					<Setter Property="Background" Value="Transparent"/>
+					<Setter Property="BorderThickness" Value="0"/>
+					<Setter Property="Width" Value="13"/>
+					<Setter Property="Height" Value="13"/>
+					<Setter Property="Cursor" Value="Hand"/>
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="Button">
+								<Grid>
+									<Border x:Name="HoverBorder" Background="#22FFFFFF" CornerRadius="5" Opacity="0"/>
+									<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+								</Grid>
+								<ControlTemplate.Triggers>
+									<Trigger Property="IsMouseOver" Value="True">
+										<Trigger.EnterActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetName="HoverBorder"
+                                                             Storyboard.TargetProperty="Opacity"
                                                              To="1" Duration="0:0:0.15"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </Trigger.EnterActions>
-                                        <Trigger.ExitActions>
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetName="HoverBorder" 
-                                                             Storyboard.TargetProperty="Opacity" 
+												</Storyboard>
+											</BeginStoryboard>
+										</Trigger.EnterActions>
+										<Trigger.ExitActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetName="HoverBorder"
+                                                             Storyboard.TargetProperty="Opacity"
                                                              To="0" Duration="0:0:0.2"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </Trigger.ExitActions>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </StackPanel.Resources>
+												</Storyboard>
+											</BeginStoryboard>
+										</Trigger.ExitActions>
+									</Trigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+				</Style>
+			</StackPanel.Resources>
 
-            <Button Style="{StaticResource WindowControlBtnStyle}" Click="Exit_Click">
-                <Image Source="/Resources/Icons/exit_icon.png" Width="10" Height="10"/>
-            </Button>
-            <Button Style="{StaticResource WindowControlBtnStyle}" Click="Minimize_Click">
-                <Image Source="/Resources/Icons/minimize_icon.png" Width="10" Height="10"/>
-            </Button>
-        </StackPanel>
-        <Grid VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,10,0,0">
-            <Border x:Name="ErrorToast" Background="#2D2D30" CornerRadius="12" 
+			<Button Style="{StaticResource WindowControlBtnStyle}" Click="Exit_Click">
+				<Image Source="/Resources/Icons/exit_icon.png" Width="10" Height="10"/>
+			</Button>
+			<Button Style="{StaticResource WindowControlBtnStyle}" Click="Minimize_Click">
+				<Image Source="/Resources/Icons/minimize_icon.png" Width="10" Height="10"/>
+			</Button>
+		</StackPanel>
+		<Grid VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,10,0,0">
+			<Border x:Name="ErrorToast" Background="#2D2D30" CornerRadius="12"
             Opacity="0" Visibility="Collapsed" HorizontalAlignment="Center"
             Padding="15,5,15,5" BorderThickness="0">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3"/>
-                </Border.Effect>
+				<Border.Effect>
+					<DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3"/>
+				</Border.Effect>
 
-                <Grid>
-                    <StackPanel Orientation="Horizontal">
-                        <Grid Width="16" Height="16" Margin="0,0,8,0">
-                            <Ellipse x:Name="ErrorIconBack" Fill="IndianRed" Visibility="Visible"/>
-                            <TextBlock x:Name="ErrorIconText" Text="!" Foreground="White" FontSize="9pt" FontWeight="Bold" 
+				<Grid>
+					<StackPanel Orientation="Horizontal">
+						<Grid Width="16" Height="16" Margin="0,0,8,0">
+							<Ellipse x:Name="ErrorIconBack" Fill="IndianRed" Visibility="Visible"/>
+							<TextBlock x:Name="ErrorIconText" Text="!" Foreground="White" FontSize="9pt" FontWeight="Bold"
                        HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
 
-                            <Ellipse x:Name="SuccessIconBack" Fill="MediumSeaGreen" Visibility="Collapsed"/>
-                            <TextBlock x:Name="SuccessIconText" Text="✓" Foreground="White" FontSize="10pt" FontWeight="Bold" 
+							<Ellipse x:Name="SuccessIconBack" Fill="MediumSeaGreen" Visibility="Collapsed"/>
+							<TextBlock x:Name="SuccessIconText" Text="✓" Foreground="White" FontSize="10pt" FontWeight="Bold"
                        HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-                        </Grid>
+						</Grid>
 
-                        <TextBlock x:Name="ErrorText" Foreground="White" FontSize="9pt" 
+						<TextBlock x:Name="ErrorText" Foreground="White" FontSize="9pt"
                    VerticalAlignment="Center" TextWrapping="NoWrap"/>
-                    </StackPanel>
+					</StackPanel>
 
-                    <Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="-15,-5">
-                        <Path x:Name="BgPathLeft" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
-                        <Path x:Name="BgPathRight" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
-                        <Path x:Name="LeftTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        <Path x:Name="RightTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                    </Canvas>
-                </Grid>
-            </Border>
-        </Grid>
-    </Grid>
+					<Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="-15,-5">
+						<Path x:Name="BgPathLeft" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
+						<Path x:Name="BgPathRight" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
+						<Path x:Name="LeftTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+						<Path x:Name="RightTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+					</Canvas>
+				</Grid>
+			</Border>
+		</Grid>
+	</Grid>
 </Page>

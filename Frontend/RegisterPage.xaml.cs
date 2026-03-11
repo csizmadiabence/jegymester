@@ -37,6 +37,7 @@ namespace ticketmasterwpf
 
         private int _toastGeneration = 0;
 
+        //ELLENŐRZÉSEK:
         private void SetupValidation(Control inputControl, Border parentBorder)
         {
             if (inputControl is TextBox textBox)
@@ -152,6 +153,7 @@ namespace ticketmasterwpf
             NavigationService.Navigate(new LoginPage());
         }
 
+        //JELSZÓ MEGTEKINTÉS:
         private void ShowPassword()
         {
             PasswordVisibleInput.Text = PasswordInput.Password;
@@ -220,6 +222,7 @@ namespace ticketmasterwpf
             TogglePasswordConfirmButton.Visibility = PasswordConfirmInput.Password.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        //KEZELŐ GOMBOK:
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
@@ -234,6 +237,7 @@ namespace ticketmasterwpf
             }
         }
 
+        //REGISZTRÁCIÓS GOMB:
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             string errorMsg = "";
@@ -257,13 +261,12 @@ namespace ticketmasterwpf
             ShowToast("Sikeres regisztráció!", true);
         }
 
+        //Hibás vagy éppen sikeres üzenet felül:
         private async void ShowToast(string message, bool isSuccess)
         {
-            // 1. Sorszám kiosztása ennek a konkrét megjelenítésnek
             _toastGeneration++;
             int currentGen = _toastGeneration;
 
-            // Színek beállítása
             Brush toastColor = isSuccess ? Brushes.MediumSeaGreen : Brushes.IndianRed;
             Brush bgColor = isSuccess ? new SolidColorBrush(Color.FromArgb(50, 60, 179, 113)) : new SolidColorBrush(Color.FromArgb(50, 205, 92, 92));
 
@@ -321,20 +324,16 @@ namespace ticketmasterwpf
             LeftTimerStroke.StrokeDashOffset = 0;
             RightTimerStroke.StrokeDashOffset = 0;
 
-            // Animációk elindítása
             ErrorToast.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(1, TimeSpan.FromSeconds(0.2)));
             var vanishAnim = new DoubleAnimation(pathLen, TimeSpan.FromSeconds(5));
             LeftTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, vanishAnim);
             RightTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, vanishAnim);
 
-            // Várakozás 5 másodpercet
             await Task.Delay(5000);
 
-            // 2. ELLENŐRZÉS: Ha időközben jött egy újabb hívás (spam), akkor ez a régi futás egyszerűen leáll itt!
             if (_toastGeneration != currentGen)
                 return;
 
-            // Ha ide eljutottunk, mi vagyunk a legutolsó hívás, nyugodtan eltűnhetünk.
             var fadeOut = new DoubleAnimation(0, TimeSpan.FromSeconds(0.4));
             fadeOut.Completed += (s, e) => {
                 ErrorToast.Visibility = Visibility.Collapsed;

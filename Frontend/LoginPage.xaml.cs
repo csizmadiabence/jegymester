@@ -60,10 +60,6 @@ namespace ticketmasterwpf
             if (EmailInput.Text.Contains("admin")) role = "Admin";
             else if (EmailInput.Text.Contains("cashier")) role = "Cashier";
 
-            ShowToast("Sikeres bejelentkezés!", true);
-
-            await Task.Delay(5500);
-
             HomePage home = new HomePage();
             home.ApplyTestRole(role);
             string displayName = EmailInput.Text.Split('@')[0];

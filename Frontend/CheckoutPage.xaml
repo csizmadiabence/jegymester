@@ -3,194 +3,356 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="CheckoutPage" Background="Transparent">
 
-    <Page.Resources>
-        <Style TargetType="Button" x:Key="ShowtimeBtnStyle">
-            <Setter Property="Background" Value="#2D2D30"/>
-            <Setter Property="Foreground" Value="#DDD"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="Height" Value="24"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="10">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#03DAC6"/>
-                                <Setter Property="Foreground" Value="Black"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+	<Page.Resources>
+		<Style x:Key="GlowButtonStyle" TargetType="Button">
+			<Setter Property="Height" Value="28"/>
+			<Setter Property="FontSize" Value="9"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Grid>
+							<Border x:Name="glowLayer" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="8" Background="Transparent" Opacity="0"/>
+							<Border x:Name="mainBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="8" Background="Transparent">
+								<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							</Border>
+						</Grid>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="glowLayer" Property="Opacity" Value="1"/>
+								<Setter TargetName="glowLayer" Property="Effect">
+									<Setter.Value>
+										<DropShadowEffect Color="{Binding BorderBrush.Color, RelativeSource={RelativeSource TemplatedParent}}" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+									</Setter.Value>
+								</Setter>
+								<Setter TargetName="mainBorder" Property="Background" Value="#1AFFFFFF"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 
-        <Storyboard x:Key="CheckoutEntrance">
-            <DoubleAnimation Storyboard.TargetName="LeftPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8"/>
-            <DoubleAnimation Storyboard.TargetName="LeftTransform" Storyboard.TargetProperty="X" From="-50" To="0" Duration="0:0:1">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="RightPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8" BeginTime="0:0:0.3"/>
-            <DoubleAnimation Storyboard.TargetName="ManageStackPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1" BeginTime="0:0:0.3"/>
-            <DoubleAnimation Storyboard.TargetName="ManageStackPanelTransform" Storyboard.TargetProperty="Y" From="-20" To="0" Duration="0:0:1.2" BeginTime="0:0:0.3">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-        </Storyboard>
-    </Page.Resources>
+		<Storyboard x:Key="CheckoutEntrance">
+			<DoubleAnimation Storyboard.TargetName="LeftPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8"/>
+			<DoubleAnimation Storyboard.TargetName="LeftTransform" Storyboard.TargetProperty="X" From="-50" To="0" Duration="0:0:1">
+				<DoubleAnimation.EasingFunction>
+					<CubicEase EasingMode="EaseOut"/>
+				</DoubleAnimation.EasingFunction>
+			</DoubleAnimation>
+			<DoubleAnimation Storyboard.TargetName="RightPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8" BeginTime="0:0:0.3"/>
+			<DoubleAnimation Storyboard.TargetName="ManageStackPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1" BeginTime="0:0:0.3"/>
+			<DoubleAnimation Storyboard.TargetName="ManageStackPanelTransform" Storyboard.TargetProperty="Y" From="-20" To="0" Duration="0:0:1.2" BeginTime="0:0:0.3">
+				<DoubleAnimation.EasingFunction>
+					<CubicEase EasingMode="EaseOut"/>
+				</DoubleAnimation.EasingFunction>
+			</DoubleAnimation>
+		</Storyboard>
+	</Page.Resources>
 
-    <Page.Triggers>
-        <EventTrigger RoutedEvent="Page.Loaded">
-            <BeginStoryboard Storyboard="{StaticResource CheckoutEntrance}"/>
-        </EventTrigger>
-    </Page.Triggers>
+	<Page.Triggers>
+		<EventTrigger RoutedEvent="Page.Loaded">
+			<BeginStoryboard Storyboard="{StaticResource CheckoutEntrance}"/>
+		</EventTrigger>
+	</Page.Triggers>
 
-    <Grid Margin="40">
-        <Canvas VerticalAlignment="Top" HorizontalAlignment="Left" Panel.ZIndex="1000">
-            <StackPanel x:Name="ManageStackPanel" 
-                    Opacity="0" 
-                    Orientation="Horizontal" 
-                    Canvas.Left="-32" 
-                    Canvas.Top="-32">
-                <StackPanel.RenderTransform>
-                    <TranslateTransform x:Name="ManageStackPanelTransform" Y="40"/>
-                </StackPanel.RenderTransform>
+	<Grid x:Name="RootGrid">
+		<Grid Margin="40">
+			<Canvas VerticalAlignment="Top" HorizontalAlignment="Left" Panel.ZIndex="1000">
+				<StackPanel x:Name="ManageStackPanel" Opacity="0" Orientation="Horizontal" Canvas.Left="-32" Canvas.Top="-32">
+					<StackPanel.RenderTransform>
+						<TranslateTransform x:Name="ManageStackPanelTransform" Y="40"/>
+					</StackPanel.RenderTransform>
+					<StackPanel.Resources>
+						<Style TargetType="Button" x:Key="WindowControlBtnStyle">
+							<Setter Property="Background" Value="Transparent"/>
+							<Setter Property="BorderThickness" Value="0"/>
+							<Setter Property="Width" Value="13"/>
+							<Setter Property="Height" Value="13"/>
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="Button">
+										<Grid>
+											<Border x:Name="HoverBorder" Background="#22FFFFFF" CornerRadius="5" Opacity="0"/>
+											<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Grid>
+										<ControlTemplate.Triggers>
+											<Trigger Property="IsMouseOver" Value="True">
+												<Setter TargetName="HoverBorder" Property="Opacity" Value="1"/>
+											</Trigger>
+										</ControlTemplate.Triggers>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+					</StackPanel.Resources>
+					<Button Style="{StaticResource WindowControlBtnStyle}" Click="Exit_Click">
+						<Image Source="/Resources/Icons/exit_icon.png" Width="10" Height="10"/>
+					</Button>
+					<Button Style="{StaticResource WindowControlBtnStyle}" Click="Minimize_Click">
+						<Image Source="/Resources/Icons/minimize_icon.png" Width="10" Height="10"/>
+					</Button>
+				</StackPanel>
+			</Canvas>
 
-                <StackPanel.Resources>
-                    <Style TargetType="Button" x:Key="WindowControlBtnStyle">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="Width" Value="13"/>
-                        <Setter Property="Height" Value="13"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Grid>
-                                        <Border x:Name="HoverBorder" Background="#22FFFFFF" CornerRadius="5" Opacity="0"/>
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Grid>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="HoverBorder" Property="Opacity" Value="1"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </StackPanel.Resources>
+			<Grid Margin="0,30,0,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="350"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
 
-                <Button Style="{StaticResource WindowControlBtnStyle}" Click="Exit_Click">
-                    <Image Source="/Resources/Icons/exit_icon.png" Width="10" Height="10"/>
-                </Button>
-                <Button Style="{StaticResource WindowControlBtnStyle}" Click="Minimize_Click">
-                    <Image Source="/Resources/Icons/minimize_icon.png" Width="10" Height="10"/>
-                </Button>
-            </StackPanel>
-        </Canvas>
-        
-        <Grid Margin="0,30,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="350"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+				<StackPanel x:Name="LeftPanel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,40,0" Opacity="0">
+					<StackPanel.RenderTransform>
+						<TranslateTransform x:Name="LeftTransform" X="-50"/>
+					</StackPanel.RenderTransform>
+					<Border CornerRadius="15" Width="260" Height="380" BorderBrush="#33FFFFFF" BorderThickness="1" ClipToBounds="True">
+						<Image Source="/Resources/Posters/duneparttwo.jpg" Stretch="UniformToFill"/>
+					</Border>
+					<TextBlock Text="Dune: Part Two" Foreground="White" FontSize="26" FontWeight="ExtraBold" Margin="0,20,0,5"/>
+					<TextBlock Text="Cinema City Balaton" Foreground="#88FFFFFF" FontSize="14" Margin="0,0,0,15"/>
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+						<TextBlock Text="📅" Margin="0,0,8,0" VerticalAlignment="Center"/>
+						<TextBlock Text="Sunday, Mar 1 13:00" Foreground="White" FontSize="13" VerticalAlignment="Center"/>
+					</StackPanel>
+					<WrapPanel>
+						<Border Background="#1AFFFFFF" CornerRadius="5" Padding="8,4" Margin="0,0,8,8">
+							<TextBlock Text="166 min" Foreground="White" FontSize="10"/>
+						</Border>
+						<Border Background="#1AFFFFFF" CornerRadius="5" Padding="8,4" Margin="0,0,8,8">
+							<TextBlock Text="Language: EN" Foreground="White" FontSize="10"/>
+						</Border>
+					</WrapPanel>
+				</StackPanel>
 
-            <StackPanel x:Name="LeftPanel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,40,0" Opacity="0">
-                <StackPanel.RenderTransform>
-                    <TranslateTransform x:Name="LeftTransform" X="-50"/>
-                </StackPanel.RenderTransform>
+				<Grid x:Name="RightPanel" Grid.Column="1" Opacity="0">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+					<TextBlock Text="Select Ticket Types" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,25"/>
+					<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+						<ItemsControl ItemsSource="{Binding SelectedSeatsList}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border Background="#11FFFFFF" CornerRadius="12" Margin="0,0,0,12" Padding="12">
+										<Grid>
+											<StackPanel HorizontalAlignment="Left">
+												<TextBlock Text="Fullprice" Foreground="White" FontSize="15" FontWeight="Bold"/>
+												<TextBlock Text="{Binding SeatInfo}" Foreground="#66FFFFFF" FontSize="12"/>
+											</StackPanel>
+											<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+												<TextBlock Text="3,090 Ft" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+											</StackPanel>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</ScrollViewer>
+					<StackPanel Grid.Row="2" Margin="0,20,0,0">
+						<Separator Background="#33FFFFFF" Margin="0,0,0,15"/>
+						<Grid>
+							<StackPanel>
+								<TextBlock Text="Total amount" Foreground="#88FFFFFF" FontSize="14"/>
+								<TextBlock Text="Includes booking fee" Foreground="#44FFFFFF" FontSize="10"/>
+							</StackPanel>
+							<TextBlock Text="{Binding TotalAmount}" Foreground="FloralWhite" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Right"/>
+						</Grid>
+						<Grid Margin="0,30,0,0">
+							<Button x:Name="BackButton" Content="Back" Click="Back_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="70" Height="25"/>
+							<Button x:Name="PaymentButton" Content="Proceed to Payment" Click="ProceedToPayment_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="140" Height="25"/>
+						</Grid>
+					</StackPanel>
+				</Grid>
+			</Grid>
+		</Grid>
 
-                <Border CornerRadius="15" Width="260" Height="380" BorderBrush="#33FFFFFF" BorderThickness="1" ClipToBounds="True">
-                    <Image Source="/Resources/Posters/duneparttwo.jpg" Stretch="UniformToFill"/>
-                </Border>
+		<Grid x:Name="PurchaseOverlay" Visibility="Collapsed" Panel.ZIndex="2000">
+			<Border Background="#CC000000" CornerRadius="20">
+				<Border Background="#1A1C23" BorderBrush="#1FFFFFFF" Width="420" VerticalAlignment="Center" HorizontalAlignment="Center" BorderThickness="1" CornerRadius="25" Padding="35">
+					<Border.Effect>
+						<DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.6"/>
+					</Border.Effect>
+					<StackPanel>
+						<TextBlock Text="Complete Your Booking" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,5"/>
+						<TextBlock Text="Provide contact details for secure ticket delivery." Foreground="#88FFFFFF" FontSize="11" Margin="0,0,0,25"/>
 
-                <TextBlock Text="Dune: Part Two" Foreground="White" FontSize="26" FontWeight="ExtraBold" Margin="0,20,0,5"/>
-                <TextBlock Text="Cinema City Balaton" Foreground="#88FFFFFF" FontSize="14" Margin="0,0,0,15"/>
+						<Border Background="#0A0A0C" Padding="20" CornerRadius="15" Margin="0,0,0,25" BorderBrush="#1AFFFFFF" BorderThickness="1">
+							<Grid>
+								<StackPanel>
+									<TextBlock Text="ORDER SUMMARY" Foreground="#16C098" FontSize="10" FontWeight="Black"/>
+									<TextBlock x:Name="OverlayMovieTitle" Text="Dune: Part Two" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0"/>
+									<TextBlock x:Name="OverlaySeatInfo" Text="Seats info" Foreground="#88FFFFFF" FontSize="11"/>
+								</StackPanel>
+								<TextBlock x:Name="OverlayTotalPrice" Text="0 Ft" Foreground="White" FontSize="20" FontWeight="Black" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+							</Grid>
+						</Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBlock Text="📅" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="Sunday, Mar 1 13:00" Foreground="White" FontSize="13" VerticalAlignment="Center"/>
-                </StackPanel>
+						<StackPanel x:Name="GuestInfoFields">
+							<TextBlock Text="EMAIL ADDRESS" Foreground="#4DFFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+							<Border Background="#0F0F12" CornerRadius="10" Height="40" Margin="0,0,0,15" BorderBrush="#1AFFFFFF" BorderThickness="1">
+								<TextBox x:Name="GuestEmailBox" Background="Transparent" BorderThickness="0" Foreground="White" VerticalContentAlignment="Center" Padding="15,0" FontSize="12" CaretBrush="#16C098"/>
+							</Border>
 
-                <WrapPanel>
-                    <Border Background="#1AFFFFFF" CornerRadius="5" Padding="8,4" Margin="0,0,8,8">
-                        <TextBlock Text="166 min" Foreground="White" FontSize="10"/>
-                    </Border>
-                    <Border Background="#1AFFFFFF" CornerRadius="5" Padding="8,4" Margin="0,0,8,8">
-                        <TextBlock Text="Language: EN" Foreground="White" FontSize="10"/>
-                    </Border>
-                </WrapPanel>
-            </StackPanel>
+							<TextBlock Text="PHONE NUMBER" Foreground="#4DFFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+							<Border Background="#0F0F12" CornerRadius="10" Height="40" Margin="0,0,0,25" BorderBrush="#1AFFFFFF" BorderThickness="1">
+								<TextBox x:Name="GuestPhoneBox" Background="Transparent" BorderThickness="0" Foreground="White" VerticalContentAlignment="Center" Padding="15,0" FontSize="12" CaretBrush="#16C098"/>
+							</Border>
+						</StackPanel>
 
-            <Grid x:Name="RightPanel" Grid.Column="1" Opacity="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+						<StackPanel x:Name="PaymentProcessing" Visibility="Collapsed" Margin="0,0,0,25">
+							<TextBlock Text="Securing Transaction..." Foreground="#16C098" HorizontalAlignment="Center" Margin="0,0,0,12" FontSize="11" FontWeight="Bold"/>
+							<ProgressBar IsIndeterminate="True" Height="4" Foreground="#16C098" Background="#1AFFFFFF" BorderThickness="0"/>
+						</StackPanel>
 
-                <TextBlock Text="Select Ticket Types" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,25"/>
+						<Grid x:Name="ActionButtonGrid">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<Button Content="BACK" Click="CancelPurchase_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" Margin="0,0,8,0" Height="38"/>
+							<Button Grid.Column="1" Content="PAY NOW" Click="FinalPay_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Margin="8,0,0,0" Height="38"/>
+						</Grid>
+					</StackPanel>
+				</Border>
+			</Border>
+		</Grid>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
-                    <ItemsControl ItemsSource="{Binding SelectedSeatsList}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="#11FFFFFF" CornerRadius="12" Margin="0,0,0,12" Padding="12">
-                                    <Grid>
-                                        <StackPanel HorizontalAlignment="Left">
-                                            <TextBlock Text="Fullprice" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding SeatInfo}" Foreground="#66FFFFFF" FontSize="12"/>
-                                        </StackPanel>
+		<Grid x:Name="SuccessOverlay" Visibility="Collapsed">
+			<Border Background="#CC000000" CornerRadius="20">
+				<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
 
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                            <TextBlock Text="3,090 Ft" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+					<Grid Width="240" Height="160">
+						<Canvas x:Name="ConfettiCanvas" Width="240" Height="160" IsHitTestVisible="False"/>
 
-                <StackPanel Grid.Row="2" Margin="0,20,0,0">
-                    <Separator Background="#33FFFFFF" Margin="0,0,0,15"/>
-                    <Grid>
-                        <StackPanel>
-                            <TextBlock Text="Total amount" Foreground="#88FFFFFF" FontSize="14"/>
-                            <TextBlock Text="Includes booking fee" Foreground="#44FFFFFF" FontSize="10"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding TotalAmount}" Foreground="FloralWhite" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Right"/>
-                    </Grid>
+						<Border Width="70" Height="70" Background="#16C098" CornerRadius="35" VerticalAlignment="Center" HorizontalAlignment="Center">
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="12" ShadowDepth="0" Opacity="0.25"/>
+							</Border.Effect>
+							<TextBlock Text="✓" Foreground="White" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,4"/>
+						</Border>
+					</Grid>
 
-                    <Grid Margin="0,30,0,0">
-                        <Button x:Name="BackButton" Content="BACK" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="Transparent" Foreground="White" BorderThickness="1.5" BorderBrush="#D99058" Padding="15,6" FontSize="10" FontWeight="Bold" Click="Back_Click" Margin="0,0,0,0" Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="15">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                        <Button x:Name="PaymentButton" Content="PROCEED TO PAYMENT" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="Transparent" Foreground="White" BorderThickness="1.5" BorderBrush="#D99058" Padding="15,6" FontSize="10" FontWeight="Bold" Margin="0,0,0,0" Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="15">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </Grid>
-                </StackPanel>
-            </Grid>
-        </Grid>
-    </Grid>
+					<TextBlock Text="Payment Successful!" Foreground="White" FontSize="28" FontWeight="ExtraBold" HorizontalAlignment="Center" Margin="0,5,0,5"/>
+					<TextBlock Text="Your digital pass is ready for use." Foreground="#88FFFFFF" FontSize="14" Margin="0,0,0,35" HorizontalAlignment="Center"/>
+					<Button Content="VIEW DIGITAL PASS" Click="ViewTicket_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Width="220" Height="42"/>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="TicketDigitalOverlay" Visibility="Collapsed">
+			<Border Background="#F2000000" CornerRadius="20">
+
+				<Border Background="White" Width="310" VerticalAlignment="Center" HorizontalAlignment="Center"
+                CornerRadius="20" ClipToBounds="True"
+                SnapsToDevicePixels="True" UseLayoutRounding="True"
+                TextOptions.TextFormattingMode="Display" >
+
+					<Border.Effect>
+						<DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.15"/>
+					</Border.Effect>
+
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+
+						<Border Grid.Row="0" Background="#16C098" Height="80" Padding="15">
+							<StackPanel VerticalAlignment="Center">
+								<TextBlock Text="CINEMA PASS" Foreground="White" FontWeight="Black" FontSize="16" HorizontalAlignment="Center">
+									<TextBlock.RenderTransform>
+										<ScaleTransform ScaleX="1.3" CenterX="75"/>
+									</TextBlock.RenderTransform>
+								</TextBlock>
+								<TextBlock Text="OFFICIAL DIGITAL ACCESS" Foreground="#CCFFFFFF" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0" Opacity="0.9"/>
+							</StackPanel>
+						</Border>
+
+						<Border Grid.Row="1" Padding="25,20" CornerRadius="20">
+							<StackPanel>
+								<TextBlock x:Name="TicketMovieName" Foreground="#111" FontSize="20" FontWeight="ExtraBold" TextWrapping="Wrap"/>
+								<TextBlock x:Name="TicketDateTime" Foreground="#999" FontSize="12" Margin="0,2,0,20"/>
+
+								<Border BorderBrush="#F5F5F5" BorderThickness="0,1,0,1" Padding="0,15">
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="120"/>
+											<ColumnDefinition Width="*"/>
+										</Grid.ColumnDefinitions>
+
+										<StackPanel Grid.Column="0">
+											<TextBlock Text="AUDITORIUM" Foreground="#BBB" FontSize="8" FontWeight="Bold"/>
+											<TextBlock x:Name="TicketRoom" Foreground="#222" FontWeight="Bold" FontSize="14"/>
+										</StackPanel>
+
+										<StackPanel Grid.Column="1" HorizontalAlignment="Right">
+											<TextBlock Text="SEATS" Foreground="#BBB" FontSize="8" FontWeight="Bold" TextAlignment="Right"/>
+											<TextBlock x:Name="TicketSeats" Foreground="#222" FontWeight="Bold" FontSize="14" TextAlignment="Right"/>
+										</StackPanel>
+									</Grid>
+								</Border>
+
+								<StackPanel Margin="0,30,0,5">
+									<Border Background="#111" CornerRadius="15" Padding="20,18" Height="75">
+										<ItemsControl x:Name="BarcodeVector" RenderOptions.EdgeMode="Aliased">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Rectangle Width="{Binding}" Height="40" Fill="White" Margin="1,0" SnapsToDevicePixels="True"/>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</Border>
+									<TextBlock x:Name="TicketID" Foreground="#AAA" FontSize="10" FontWeight="Bold" Margin="0,12,0,0" HorizontalAlignment="Center">
+										<TextBlock.RenderTransform>
+											<ScaleTransform ScaleX="1.2" CenterX="50"/>
+										</TextBlock.RenderTransform>
+									</TextBlock>
+								</StackPanel>
+							</StackPanel>
+						</Border>
+
+						<Button Grid.Row="2" Content="CLOSE PREVIEW" Click="CloseTicket_Click"
+                        Background="#FAFAFA" BorderThickness="0,1,0,0" BorderBrush="#F0F0F0"
+                        Foreground="#16C098" FontWeight="Bold" FontSize="11" Padding="18" Cursor="Hand"/>
+					</Grid>
+				</Border>
+			</Border>
+		</Grid>
+
+		<Grid Grid.RowSpan="4" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,10,0,0" Panel.ZIndex="4000">
+			<Border x:Name="ErrorToast" Background="#2D2D30" CornerRadius="12" Opacity="0" Visibility="Collapsed" Padding="15,5" BorderThickness="0">
+				<Border.Effect>
+					<DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3"/>
+				</Border.Effect>
+				<Grid>
+					<StackPanel Orientation="Horizontal">
+						<Grid Width="16" Height="16" Margin="0,0,8,0">
+							<Ellipse x:Name="ErrorIconBack" Fill="IndianRed"/>
+							<TextBlock x:Name="ErrorIconText" Text="!" Foreground="White" FontSize="9pt" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							<Ellipse x:Name="SuccessIconBack" Fill="#16C098" Visibility="Collapsed"/>
+							<TextBlock x:Name="SuccessIconText" Text="✓" Foreground="White" FontSize="10pt" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+						</Grid>
+						<TextBlock x:Name="ErrorText" Foreground="White" FontSize="9pt" VerticalAlignment="Center" TextWrapping="NoWrap"/>
+					</StackPanel>
+					<Canvas Margin="-15,-5">
+						<Path x:Name="BgPathLeft" Stroke="#22CD5C5C" StrokeThickness="1"/>
+						<Path x:Name="BgPathRight" Stroke="#22CD5C5C" StrokeThickness="1"/>
+						<Path x:Name="LeftTimerStroke" Stroke="IndianRed" StrokeThickness="1.5"/>
+						<Path x:Name="RightTimerStroke" Stroke="IndianRed" StrokeThickness="1.5"/>
+					</Canvas>
+				</Grid>
+			</Border>
+		</Grid>
+	</Grid>
 </Page>

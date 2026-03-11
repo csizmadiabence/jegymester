@@ -13,5 +13,14 @@ namespace ticketmasterwpf
     /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+            EventManager.RegisterClassHandler(typeof(FrameworkElement),
+                FrameworkElement.GotFocusEvent,
+                new RoutedEventHandler((s, e) =>
+                {
+                    if (s is FrameworkElement fe) fe.FocusVisualStyle = null;
+                }));
+        }
     }
 }
