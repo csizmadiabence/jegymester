@@ -2856,23 +2856,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\mohac\\.nuget\\packages\\": {},
-    "E:\\VS comps\\Shared\\NuGetPackages": {}
+    "C:\\Users\\maasz\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mohac\\Source\\Repos\\jegymester\\backend\\backend\\backend.csproj",
+      "projectUniqueName": "C:\\Users\\maasz\\source\\repos\\csizmadiabence\\jegymester\\backend\\backend\\backend.csproj",
       "projectName": "backend",
-      "projectPath": "C:\\Users\\mohac\\Source\\Repos\\jegymester\\backend\\backend\\backend.csproj",
-      "packagesPath": "C:\\Users\\mohac\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mohac\\Source\\Repos\\jegymester\\backend\\backend\\obj\\",
+      "projectPath": "C:\\Users\\maasz\\source\\repos\\csizmadiabence\\jegymester\\backend\\backend\\backend.csproj",
+      "packagesPath": "C:\\Users\\maasz\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\maasz\\source\\repos\\csizmadiabence\\jegymester\\backend\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "E:\\VS comps\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\mohac\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\maasz\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -2899,7 +2899,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
       "net8.0": {
@@ -2945,7 +2945,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

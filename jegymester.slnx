@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="backend/backend/backend.csproj" />
+  <Project Path="Frontend/ticketmasterwpf.csproj" Id="d4993580-d897-4947-b961-e18e38e5d5fd" />
+</Solution>
