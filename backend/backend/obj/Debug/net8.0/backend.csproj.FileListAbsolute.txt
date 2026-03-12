@@ -129,10 +129,10 @@ C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\swae.build.ex.cache
+C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\backend.csproj.Up2Date
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\backend.dll
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\refint\backend.dll
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\backend.pdb
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\backend.genruntimeconfig.cache
 C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\ref\backend.dll
-C:\Users\maasz\source\repos\csizmadiabence\jegymester\backend\backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

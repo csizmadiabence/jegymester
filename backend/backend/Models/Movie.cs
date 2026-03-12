@@ -7,5 +7,5 @@ public class Movie
     public string Description { get; set; } = string.Empty;
     public int DurationMinutes { get; set; }
     // Ide jöhet még: public string? PosterUrl { get; set; }
-    public List<Screening> Screenings { get; set; }
+    public List<Screening>? Screenings { get; set; } 
 }

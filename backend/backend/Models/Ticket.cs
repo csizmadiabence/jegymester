@@ -7,16 +7,17 @@ public class Ticket
     public int ScreeningId { get; set; }
 
     [JsonIgnore]
-    public Screening? Screening { get; set; }
+    public Screening Screening { get; set; }
 
     // Opcionalis csak ha van login
     public int? UserId { get; set; }
+    
     [JsonIgnore]
     public User? User { get; set; }
 
     public int SeatId { get; set; }
     [JsonIgnore] 
-    public Seat? Seat { get; set; }
+    public Seat Seat { get; set; }
     
     // Kotelezo nem regisztralt vasarlas eseten
     public string? GuestEmail { get; set; }
@@ -25,7 +26,7 @@ public class Ticket
     public DateTime PurchaseDate { get; set; } = DateTime.Now;
 
     public bool IsValidated { get; set; } = false; // penztaros allitja
-    public bool IsCancelled { get; set; } = false; // torles allapot
+    public bool IsCancelled { get; set; } = false; // torles allapot 
     
     public int Price { get; set; }
     // 4 oras szabaly
