@@ -14,6 +14,6 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; } //szemelyes adat modositasahoz
-    public <List>UserRole Role { get; set; } = UserRole.User;
+    public UserRole Role { get; set; } = UserRole.User;
     //notmap
 }
