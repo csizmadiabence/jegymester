@@ -9,7 +9,6 @@ public class Ticket
     [JsonIgnore]
     public Screening Screening { get; set; }
 
-    // Opcionalis csak ha van login
     public int? UserId { get; set; }
     
     [JsonIgnore]
@@ -19,7 +18,6 @@ public class Ticket
     [JsonIgnore] 
     public Seat Seat { get; set; }
     
-    // Kotelezo nem regisztralt vasarlas eseten
     public string? GuestEmail { get; set; }
     public string? GuestPhone { get; set; }
 
@@ -29,7 +27,6 @@ public class Ticket
     public bool IsCancelled { get; set; } = false; // torles allapot 
     
     public int Price { get; set; }
-    // 4 oras szabaly
     public bool CanBeCancelled
     {
         get

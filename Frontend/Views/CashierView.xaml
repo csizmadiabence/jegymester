@@ -1,0 +1,169 @@
+﻿<UserControl x:Class="ticketmasterwpf.Views.CashierView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <Grid MaxWidth="1050" HorizontalAlignment="Left" Margin="35,0,35,45">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Cashier Desk" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,10,0,20"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380"/>
+                <ColumnDefinition Width="600"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="0,0,25,0" VerticalAlignment="Top">
+                <Border Background="#0DFFFFFF" CornerRadius="15" Padding="20" BorderBrush="#1FFFFFFF" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="TICKET VALIDATION" Foreground="#FF9800" FontSize="10" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Enter or Scan Ticket ID" Foreground="#33FFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
+                        <Border Style="{StaticResource InputBorderStyle}" Height="32" Margin="0, 0, 0, 15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🔍" FontSize="12" Foreground="#88FFFFFF" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBox x:Name="TicketIdInput" Grid.Column="1" BorderThickness="0" Background="Transparent" Padding="8,0,10,0" VerticalContentAlignment="Center" FontSize="12" Foreground="White" CaretBrush="White" Text=""/>
+                            </Grid>
+                        </Border>
+
+                        <Button Content="Verify Ticket" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FF9800" Height="30" Click="VerifyTicket_Click"/>
+
+                        <Border x:Name="ValidationResultPanel" CornerRadius="10" Padding="15" Margin="0,20,0,0" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock x:Name="ValidationIcon" Text="✅" FontSize="30" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="ValidationTitle" Text="VALID TICKET" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock x:Name="ValidationDetails" Text="Movie Title - 19:30&#x0a;Seat: Row 4, Seat 12" FontSize="11" TextAlignment="Center" Foreground="#AAFFFFFF" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <Border Grid.Column="1" Background="#0DFFFFFF" CornerRadius="15" Padding="25" BorderBrush="#1FFFFFFF" BorderThickness="1" VerticalAlignment="Stretch">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                        <TextBlock Text="POINT OF SALE" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                        <TextBlock Text="Issue multiple tickets in one transaction" Foreground="#16C098" FontSize="12"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Movie &amp; Time" Foreground="#88FFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
+                            <Border Style="{StaticResource InputBorderStyle}" Height="30">
+                                <ComboBox x:Name="PosMovieSelector" ItemsSource="{Binding Movies}" DisplayMemberPath="Title" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="10,0"/>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Type &amp; Qty" Foreground="#88FFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource InputBorderStyle}" Height="30" Margin="0,0,5,0">
+                                    <ComboBox x:Name="PosTicketType" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="5,0">
+                                        <ComboBoxItem Content="Adult ($15)" Tag="15" IsSelected="True" Foreground="White"/>
+                                        <ComboBoxItem Content="Student ($10)" Tag="10" Foreground="White"/>
+                                        <ComboBoxItem Content="Senior ($8)" Tag="8" Foreground="White"/>
+                                    </ComboBox>
+                                </Border>
+                                <Border Grid.Column="1" Style="{StaticResource InputBorderStyle}" Height="30">
+                                    <TextBox x:Name="PosQuantity" Text="1" Background="Transparent" BorderThickness="0" Foreground="White" Padding="5,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+
+                        <Button Grid.Column="4" Content="ADD" VerticalAlignment="Bottom" Width="60" Height="30" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Click="AddToOrder_Click"/>
+                    </Grid>
+
+                    <Border Grid.Row="2" Background="#0A000000" CornerRadius="10" BorderBrush="#1FFFFFFF" BorderThickness="1" Margin="0,0,0,15">
+                        <Grid>
+                            <TextBlock Text="Kosár tartalma üres." Foreground="#44FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Items.Count, ElementName=OrderItemsControl}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="OrderItemsControl" Margin="5">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#1FFFFFFF" BorderThickness="0,0,0,1" Padding="10,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding MovieTitle}" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                                        <TextBlock Text="{Binding Description}" Foreground="#88FFFFFF" FontSize="10"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding PriceString}" Foreground="#16C098" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <Button Grid.Column="2" Content="✕" Foreground="#FF5555" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="RemoveFromOrder_Click"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="3" Background="#1A000000" CornerRadius="10" Padding="15" BorderBrush="#1FFFFFFF" BorderThickness="1">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="TOTAL PAYABLE" Foreground="#88FFFFFF" FontSize="10" FontWeight="Bold"/>
+                                <TextBlock x:Name="TotalPriceText" Text="$0.00" Foreground="#16C098" FontSize="24" FontWeight="Bold"/>
+                            </StackPanel>
+
+                            <Button Content="ISSUE ALL TICKETS" HorizontalAlignment="Right" VerticalAlignment="Center" Width="160" Height="40" BorderBrush="#16C098" Click="IssueTicket_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GlowButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Items.Count, ElementName=OrderItemsControl}" Value="0">
+                                                <Setter Property="IsEnabled" Value="False"/>
+                                                <Setter Property="Opacity" Value="0.5"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

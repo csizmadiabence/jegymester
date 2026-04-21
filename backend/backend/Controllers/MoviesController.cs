@@ -48,4 +48,23 @@ public class MoviesController : ControllerBase
 
         return NoContent(); // 204-es valasz, sikeres torles
     }
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutMovie(int id, Movie movie)
+    {
+        if (id != movie.Id) return BadRequest("Az ID-k nem egyeznek.");
+
+        _context.Entry(movie).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!_context.Movies.Any(e => e.Id == id)) return NotFound();
+            else throw;
+        }
+
+        return NoContent();
+    }
 }

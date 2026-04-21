@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="ticketmasterwpf.Modals.DeleteConfirmModal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="#CC000000">
+
+        <Border Background="#1A1C23" BorderBrush="#1FFFFFFF" BorderThickness="1" 
+                CornerRadius="20" Width="400" Padding="30" 
+                VerticalAlignment="Center" HorizontalAlignment="Center">
+
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="⚠️" FontSize="30" Foreground="#FF5555" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+                <TextBlock Text="Confirm Deletion" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                <TextBlock x:Name="DeleteMessageText" Text="Are you sure you want to delete this item?" Foreground="#88FFFFFF" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,25"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Cancel" Click="CloseModal_Click" Cursor="Hand" Style="{StaticResource GlowButtonStyle}" BorderBrush="LightGray" Padding="8,4" FontSize="10" Height="30" Width="80" Margin="0,0,15,0"/>
+                    <Button Content="Delete" Click="ConfirmDelete_Click" Cursor="Hand" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" Padding="8,4" FontSize="10" Height="30" Width="80"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

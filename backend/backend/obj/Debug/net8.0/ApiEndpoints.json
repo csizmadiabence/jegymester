@@ -62,6 +62,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "backend.Controllers.MoviesController",
+    "Method": "PutMovie",
+    "RelativePath": "api/Movies/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "movie",
+        "Type": "backend.Models.Movie",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "backend.Controllers.ScreeningsController",
     "Method": "GetScreenings",
     "RelativePath": "api/Screenings",

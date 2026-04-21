@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="ticketmasterwpf.Controls.ToastControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="300" Background="Transparent">
+
+    <Border x:Name="ErrorToast" Background="#2D2D30" CornerRadius="12"
+            Opacity="0" Visibility="Collapsed" HorizontalAlignment="Center"
+            Padding="15,5,15,5" BorderThickness="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3"/>
+        </Border.Effect>
+
+        <Grid>
+            <StackPanel Orientation="Horizontal">
+                <Grid Width="16" Height="16" Margin="0,0,8,0">
+                    <Ellipse x:Name="ErrorIconBack" Fill="IndianRed" Visibility="Visible"/>
+                    <TextBlock x:Name="ErrorIconText" Text="!" Foreground="White" FontSize="9pt" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
+
+                    <Ellipse x:Name="SuccessIconBack" Fill="MediumSeaGreen" Visibility="Collapsed"/>
+                    <TextBlock x:Name="SuccessIconText" Text="✓" Foreground="White" FontSize="10pt" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
+
+                <TextBlock x:Name="ErrorText" Foreground="White" FontSize="9pt"
+                           VerticalAlignment="Center" TextWrapping="NoWrap"/>
+            </StackPanel>
+
+            <Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="-15,-5">
+                <Path x:Name="BgPathLeft" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
+                <Path x:Name="BgPathRight" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
+                <Path x:Name="LeftTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Path x:Name="RightTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            </Canvas>
+        </Grid>
+    </Border>
+</UserControl>

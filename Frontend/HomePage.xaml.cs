@@ -1,54 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel; // Szükséges az INotifyPropertyChanged-hez
+using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Runtime.CompilerServices;
+using ticketmasterwpf.Models;
 
 namespace ticketmasterwpf
 {
-    // A felület most már figyeli a változásokat (INotifyPropertyChanged)
     public partial class HomePage : Page, INotifyPropertyChanged
     {
+        // Adatgyűjtemények a felülethez
+        public ObservableCollection<Movie> AllMoviesForAdmin { get; set; } = new ObservableCollection<Movie>();
+        public ObservableCollection<Movie> PagedAdminMovies { get; set; } = new ObservableCollection<Movie>();
         public ObservableCollection<Movie> Movies { get; set; }
         public ObservableCollection<int> PageNumbers { get; set; }
         public ObservableCollection<Movie> ComingSoonMovies { get; set; }
         public ObservableCollection<DateItem> AvailableDates { get; set; }
-        public Movie FeaturedMovie { get; set; }
+        private string _currentSearch = "";
+        private string _currentSort = "ID_DESC";
 
-        // Ez a tulajdonság tárolja az Admin felületen éppen kijelölt filmet
+        private Movie _featuredMovie;
+        public Movie FeaturedMovie
+        {
+            get => _featuredMovie;
+            set { _featuredMovie = value; OnPropertyChanged(); }
+        }
+
         private Movie _selectedMovie;
         public Movie SelectedMovie
         {
             get => _selectedMovie;
-            set
-            {
-                _selectedMovie = value;
-                OnPropertyChanged(); // Jelzi a XAML-nek, hogy frissítse a szerkesztőt
-            }
+            set { _selectedMovie = value; OnPropertyChanged(); }
         }
 
-        public enum UserRole { Guest, User, Cashier, Admin }
-        private int _toastGeneration = 0;
+        private int currentPage = 1;
+        private const int itemsPerPage = 8;
+
+        private string _paginationStatus;
+        public string PaginationStatus
+        {
+            get => _paginationStatus;
+            set { _paginationStatus = value; OnPropertyChanged(); }
+        }
 
         public HomePage()
         {
             InitializeComponent();
 
-            // 1. DÁTUMOK GENERÁLÁSA
             AvailableDates = new ObservableCollection<DateItem>();
+            Movies = new ObservableCollection<Movie>();
+            ComingSoonMovies = new ObservableCollection<Movie>();
+            PageNumbers = new ObservableCollection<int>();
+
+            MovieDetailPopup.ShowToastRequested += (s, message) =>
+            {
+                AppToast.ShowToast(message, true);
+            };
+
             for (int i = 0; i < 7; i++)
             {
                 DateTime d = DateTime.Now.AddDays(i);
@@ -60,185 +78,290 @@ namespace ticketmasterwpf
                 });
             }
 
-            // 2. AKTUÁLIS FILMEK
-            Movies = new ObservableCollection<Movie>
-            {
-                new Movie { Title = "Dune: Part Two", Genre = "Sci-Fi / Action", Duration = "130", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#2C3E50"), Showtimes = new ObservableCollection<string> { "14:30", "17:45", "20:00" } },
-                new Movie { Title = "Oppenheimer", Genre = "Biography / Drama", Duration = "130", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#34495E"), Showtimes = new ObservableCollection<string> { "13:00", "16:30", "19:15" } },
-                new Movie { Title = "Deadpool & Wolverine", Genre = "Action / Comedy", Duration = "130", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#8E44AD"), Showtimes = new ObservableCollection<string> { "10:15", "18:20", "21:30" } },
-                new Movie { Title = "Kung Fu Panda 4", Genre = "Animation / Family", Duration = "130", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#16A085"), Showtimes = new ObservableCollection<string> { "09:30", "14:00" } },
-                new Movie { Title = "The Fall Guy", Genre = "Action / Comedy", Duration = "130", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#D35400"), Showtimes = new ObservableCollection<string> { "16:00", "18:45", "22:00" } }
-            };
-
-            // 3. VÁRHATÓ FILMEK
-            ComingSoonMovies = new ObservableCollection<Movie>
-            {
-                new Movie { Title = "Joker: Folie à Deux", Genre = "Drama / Thriller", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#7B241C"), Showtimes = new ObservableCollection<string> { "COMING OCT" } },
-                new Movie { Title = "Gladiator II", Genre = "Action / Adventure", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#784212"), Showtimes = new ObservableCollection<string> { "COMING NOV" } },
-                new Movie { Title = "Moana 2", Genre = "Animation / Adventure", PlaceholderColor = (Color)ColorConverter.ConvertFromString("#1A5276"), Showtimes = new ObservableCollection<string> { "COMING NOV" } }
-            };
-
-            FeaturedMovie = Movies[0];
-
-            // Kezdetben az első filmet jelöljük ki az Admin panelen is
-            SelectedMovie = Movies[0];
-
             ApplyTestRole("Guest");
             this.DataContext = this;
+
+            LoadMoviesFromApiAsync();
         }
 
-        // --- ADMIN DASHBOARD ESEMÉNYEK ---
+        // ================= API HÍVÁSOK (CRUD) =================
 
-        // Amikor az Admin rákattint egy sorra a táblázatban
-        private void AdminMoviesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void LoadMoviesFromApiAsync()
         {
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] is Movie selected)
+            string apiUrl = "http://localhost:5035/api/Movies";
+            using (HttpClient client = new HttpClient())
             {
-                SelectedMovie = selected;
+                try
+                {
+                    HttpResponseMessage response = await client.GetAsync(apiUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonString = await response.Content.ReadAsStringAsync();
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        var apiMovies = JsonSerializer.Deserialize<List<Movie>>(jsonString, options);
+
+                        if (apiMovies != null)
+                        {
+                            Movies.Clear();
+                            ComingSoonMovies.Clear();
+                            AllMoviesForAdmin.Clear();
+                            foreach (var movie in apiMovies)
+                            {
+                                AllMoviesForAdmin.Add(movie);
+
+                                movie.PlaceholderColor = (Color)ColorConverter.ConvertFromString("#2C3E50");
+                                movie.Showtimes = new ObservableCollection<string> { "14:30", "17:45", "20:15" };
+
+                                if (movie.Status == "Active")
+                                {
+                                    Movies.Add(movie);
+                                }
+                                else if (movie.Status == "Upcoming")
+                                {
+                                    ComingSoonMovies.Add(movie);
+                                }
+                            }
+
+                            RefreshAdminPage();
+
+                            if (Movies.Count > 0)
+                            {
+                                FeaturedMovie = Movies[0];
+                                UpdatePagination(Movies.Count);
+
+                                if (HomeTab.IsChecked == true)
+                                {
+                                    MovieCatalog.SetMode(true, Movies);
+                                }
+                                else if (SoonTab.IsChecked == true)
+                                {
+                                    MovieCatalog.SetMode(false, ComingSoonMovies);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    AppToast.ShowToast("Nem sikerült kapcsolódni az API-hoz!", false);
+                }
             }
         }
 
-        private int currentPage = 1;
-        private const int itemsPerPage = 8;
-        public void UpdatePagination(int totalMovies)
+        private async void AddMoviePopup_OnMovieSaved(object sender, Movie e)
         {
-            int totalPages = (int)Math.Ceiling((double)totalMovies / itemsPerPage);
-
-            PageNumbers.Clear();
-            for (int i = 1; i <= totalPages; i++)
+            string apiUrl = "http://localhost:5035/api/Movies";
+            using (HttpClient client = new HttpClient())
             {
-                PageNumbers.Add(i);
+                try
+                {
+                    string json = JsonSerializer.Serialize(e);
+                    StringContent content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                    HttpResponseMessage response = (e.Id == 0)
+                        ? await client.PostAsync(apiUrl, content)
+                        : await client.PutAsync($"{apiUrl}/{e.Id}", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        AppToast.ShowToast("Mentés sikeres!", true);
+                        LoadMoviesFromApiAsync();
+                    }
+                }
+                catch { AppToast.ShowToast("Hiba a mentés során!", false); }
             }
         }
 
-        // LAPOZÓ LOGIKA
-        private void PageNumber_Click(object sender, RoutedEventArgs e)
+        private async void DeletePopup_OnDeleteConfirmed(object sender, Movie movieToDelete)
         {
-            if (sender is RadioButton rb && rb.Content != null)
+            if (movieToDelete == null) return;
+
+            // A törléshez az ID kell az URL végére: /api/Movies/5
+            string apiUrl = $"http://localhost:5035/api/Movies/{movieToDelete.Id}";
+
+            using (HttpClient client = new HttpClient())
             {
-                currentPage = int.Parse(rb.Content.ToString());
-                UpdateMovieDisplay();
+                try
+                {
+                    var response = await client.DeleteAsync(apiUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        AppToast.ShowToast($"{movieToDelete.Title} sikeresen törölve!", true);
+
+                        // Ez a legfontosabb: újra lekérjük a friss listát az API-ból
+                        // Így az AdminView inventory-ja is azonnal frissül!
+                        LoadMoviesFromApiAsync();
+                    }
+                    else
+                    {
+                        AppToast.ShowToast("Szerver hiba a törlés során!", false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppToast.ShowToast($"Hálózati hiba: {ex.Message}", false);
+                }
             }
         }
 
-        private void NextPage_Click(object sender, RoutedEventArgs e)
+        private void AddScreeningPopup_OnScreeningSaved(object sender, string message)
         {
-            if (currentPage < PageNumbers.Count)
+            AppToast.ShowToast("Vetítés sikeresen rögzítve!", true);
+        }
+
+        private void AddMoviePopup_RefreshRequested(object sender, EventArgs e)
+        {
+            // Egyszerűen meghívjuk a már létező betöltő metódust
+            LoadMoviesFromApiAsync();
+        }
+
+        private void Tab_Checked(object sender, RoutedEventArgs e)
+        {
+            // Ezzel szólunk a Listának, hogy mit kell mutatnia!
+            if (MovieCatalog == null) return;
+
+            if (sender is RadioButton rb)
+            {
+                if (rb.Name == "HomeTab")
+                {
+                    MovieCatalog.Visibility = Visibility.Visible;
+                    MovieCatalog.SetMode(true, Movies); // Rendes lista
+                }
+                else if (rb.Name == "SoonTab")
+                {
+                    MovieCatalog.Visibility = Visibility.Visible;
+                    MovieCatalog.SetMode(false, ComingSoonMovies); // Coming soon
+                }
+                else
+                {
+                    MovieCatalog.Visibility = Visibility.Collapsed; // Más füleknél rejtve van
+                }
+            }
+        }
+
+        // ================= ADMIN PANEL ESEMÉNYEK =================
+
+        private void AdminPanel_AddMovieRequested(object sender, EventArgs e) => AddMoviePopup.OpenModal(null);
+
+        private void AdminPanel_EditMovieRequested(object sender, Movie movie) => AddMoviePopup.OpenModal(movie);
+
+        private void AdminPanel_DeleteMovieRequested(object sender, Movie movie) => DeletePopup.OpenModal(movie);
+
+        private void AdminPanel_AddScreeningRequested(object sender, EventArgs e) => AddScreeningPopup.OpenModal();
+
+        private void AdminPanel_PageNumberRequested(object sender, int page)
+        {
+            currentPage = page;
+            RefreshAdminPage();
+        }
+
+        private void AdminPanel_NextPageRequested(object sender, EventArgs e)
+        {
+            int maxPage = (int)Math.Ceiling((double)AllMoviesForAdmin.Count / itemsPerPage);
+            if (currentPage < maxPage)
             {
                 currentPage++;
-                SyncPaginationSelection();
+                RefreshAdminPage();
             }
         }
-
-        private void PrevPage_Click(object sender, RoutedEventArgs e)
+        private void AdminPanel_PrevPageRequested(object sender, EventArgs e)
         {
             if (currentPage > 1)
             {
                 currentPage--;
-                SyncPaginationSelection();
+                RefreshAdminPage();
             }
         }
 
-        private void SyncPaginationSelection()
+        private void AdminPanel_SearchChanged(object sender, string searchText)
         {
-            UpdateMovieDisplay();
+            _currentSearch = searchText;
+            currentPage = 1;
+            RefreshAdminPage();
         }
 
-        private void UpdateMovieDisplay()
+        private void AdminPanel_SortChanged(object sender, string sortTag)
         {
-            ShowToast($"Page {currentPage} loaded", true);
+            _currentSort = sortTag;
+            RefreshAdminPage();
         }
 
-        // MENÜ ÉS SZERKESZTÉS MOVIE
-        private void EditMovie_Click(object sender, RoutedEventArgs e)
+        private void RefreshAdminPage()
         {
-            if (sender is Button btn && btn.DataContext is Movie movie)
+            if (AllMoviesForAdmin == null) return;
+
+            var query = AllMoviesForAdmin.Where(m =>
+                string.IsNullOrEmpty(_currentSearch) ||
+                m.Title.ToLower().Contains(_currentSearch.ToLower())
+            );
+
+            switch (_currentSort)
             {
-                MovieModalTitle.Text = "Edit Movie Details";
-                SaveMovieBtn.Content = "Update Movie";
-
-                MovieTitleInput.Text = movie.Title;
-                MovieDurationInput.Text = movie.Duration;
-                MovieGenreInput.Text = movie.Genre;
-                MoviePosterInput.Text = "https://...";
-
-                AddMovieModal.Visibility = Visibility.Visible;
+                case "ID_ASC":
+                    query = query.OrderBy(m => m.Id);
+                    break;
+                case "STATUS":
+                    query = query.OrderBy(m => m.Status);
+                    break;
+                case "TITLE_ASC":
+                    query = query.OrderBy(m => m.Title);
+                    break;
+                case "NEWEST":
+                default:
+                    query = query.OrderByDescending(m => m.Id);
+                    break;
             }
+
+            var filteredList = query.ToList();
+
+            // 3. LAPOZÁS
+            var pagedData = filteredList
+                .Skip((currentPage - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .ToList();
+
+            PagedAdminMovies.Clear();
+            foreach (var movie in pagedData) PagedAdminMovies.Add(movie);
+
+            UpdatePagination(filteredList.Count);
         }
 
-        private Movie _movieToBeDeleted;
-        private void DeleteMovie_Click(object sender, RoutedEventArgs e)
+        // ================= MOVIE LIST ESEMÉNYEK =================
+
+        private void MovieCatalog_MovieDetailRequested(object sender, Movie selectedMovie)
         {
-            DeleteConfirmModal.Visibility = Visibility.Visible;
+            // Megnyitjuk az új részletes modált az adott filmmel!
+            MovieDetailPopup.OpenModal(selectedMovie);
         }
 
-        private void ConfirmDelete_Click(object sender, RoutedEventArgs e)
+        // ================= CASHIER PANEL ESEMÉNYEK =================
+
+        private void CashierPanel_VerifyTicketRequested(object sender, string ticketId)
         {
-            if (_movieToBeDeleted != null)
+            // Amíg nincs API, szimuláljuk a találatot
+            if (ticketId == "12345" || ticketId == "0000")
             {
-                Movies.Remove(_movieToBeDeleted);
-                UpdatePagination(Movies.Count);
-                ShowToast("Movie deleted successfully", true);
-
-                _movieToBeDeleted = null;
+                CashierPanel.ShowValidationResult(true, "Dune: Part Two - 19:30\nRoom 1 | Seat: Row 4, Seat 12");
             }
-            DeleteConfirmModal.Visibility = Visibility.Collapsed;
+            else
+            {
+                CashierPanel.ShowValidationResult(false, $"No ticket found in database with ID: {ticketId}");
+            }
         }
-        private void CloseDeleteModal_Click(object sender, RoutedEventArgs e)
+
+        private void CashierPanel_IssueAllTicketsRequested(object sender, ObservableCollection<Views.OrderItem> orderItems)
         {
-            DeleteConfirmModal.Visibility = Visibility.Collapsed;
-            _movieToBeDeleted = null;
+            // Később itt küldjük el az API-nak a rendeléseket egyesével vagy tömbben
+            int totalTickets = orderItems.Count;
+
+            AppToast.ShowToast($"Sikeres tranzakció! {totalTickets} db tétel kiállítva.", true);
         }
 
-        private void Save_Click(object sender, RoutedEventArgs e)
-        {
-            AddMovieModal.Visibility = Visibility.Collapsed;
-            ShowToast("Changes saved", true);
-        }
-
-        private void CloseModal_Click(object sender, RoutedEventArgs e)
-        {
-            AddMovieModal.Visibility = Visibility.Collapsed;
-        }
-
-        private void OpenAddMovie_Click(object sender, RoutedEventArgs e)
-        {
-            MovieModalTitle.Text = "Add New Movie to Database";
-            SaveMovieBtn.Content = "Save Movie";
-
-            MovieTitleInput.Clear();
-            MovieDurationInput.Clear();
-            MovieGenreInput.SelectedIndex = -1;
-            MoviePosterInput.Text = "https://...";
-
-            AddMovieModal.Visibility = Visibility.Visible;
-        }
-        //SCREENINGS
-
-        private void OpenAddScreening_Click(object sender, RoutedEventArgs e)
-        {
-            AddScreeningModal.Visibility = Visibility.Visible;
-        }
-
-        private void CloseScreeningModal_Click(object sender, RoutedEventArgs e)
-        {
-            AddScreeningModal.Visibility = Visibility.Collapsed;
-        }
-
-        private void SaveScreening_Click(object sender, RoutedEventArgs e)
-        {
-
-            AddScreeningModal.Visibility = Visibility.Collapsed;
-            ShowToast("New screening scheduled successfully!", true);
-        }
-        // --- EREDETI ESEMÉNYKEZELŐK ---
+        // ================= UI LOGIKA & NAVIGÁCIÓ =================
 
         public void ApplyTestRole(string role)
         {
-            ProfileTab.Visibility = Visibility.Collapsed;
-            CashierTab.Visibility = Visibility.Collapsed;
-            AdminTab.Visibility = Visibility.Collapsed;
-
+            ProfileTab.Visibility = CashierTab.Visibility = AdminTab.Visibility = Visibility.Collapsed;
             LoginBtn.Visibility = Visibility.Visible;
             LoggedInPanel.Visibility = Visibility.Collapsed;
 
@@ -250,208 +373,39 @@ namespace ticketmasterwpf
 
             switch (role)
             {
-                case "User":
-                    ProfileTab.Visibility = Visibility.Visible;
-                    TopUserNameTxt.Text = "John Doe";
-                    break;
-
-                case "Cashier":
-                    CashierTab.Visibility = Visibility.Visible;
-                    ProfileTab.Visibility = Visibility.Visible;
-                    TopUserNameTxt.Text = "Cashier";
-                    break;
-
-                case "Admin":
-                    AdminTab.Visibility = Visibility.Visible;
-                    ProfileTab.Visibility = Visibility.Visible;
-                    TopUserNameTxt.Text = "Admin";
-                    break;
+                case "User": ProfileTab.Visibility = Visibility.Visible; TopUserNameTxt.Text = "John Doe"; break;
+                case "Cashier": CashierTab.Visibility = ProfileTab.Visibility = Visibility.Visible; TopUserNameTxt.Text = "Cashier"; break;
+                case "Admin": AdminTab.Visibility = ProfileTab.Visibility = Visibility.Visible; TopUserNameTxt.Text = "Admin"; break;
             }
         }
-
-        private void Tab_Checked(object sender, RoutedEventArgs e)
-        {
-            if (MoviesItemsControl == null) return;
-            if (sender is RadioButton rb)
-            {
-                MoviesItemsControl.ItemsSource = (rb.Name == "HomeTab") ? Movies : ComingSoonMovies;
-                var listAnim = (Storyboard)Resources["ListRefreshAnimation"];
-                listAnim?.Begin();
-                MoviesScrollViewer?.ScrollToHome();
-            }
-        }
-
-        private void DateBtn_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is RadioButton btn && btn.DataContext is DateItem selectedDate)
-            {
-                foreach (var date in AvailableDates) date.IsSelected = false;
-                selectedDate.IsSelected = true;
-                var listAnim = (Storyboard)Resources["ListRefreshAnimation"];
-                listAnim.Begin();
-            }
-        }
-
-        private void MovieCard_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if (sender is FrameworkElement el && el.DataContext is Movie m) UpdateAppBackground(m.PlaceholderColor);
-        }
-
-        private void MovieCard_MouseLeave(object sender, MouseEventArgs e)
-        {
-            UpdateAppBackground((Color)ColorConverter.ConvertFromString("#2D313A"));
-        }
-
-        private void UpdateAppBackground(Color target)
-        {
-            var mainWindow = Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
-            {
-                var anim = new ColorAnimation();
-                anim.To = (Color)ColorConverter.ConvertFromString("#20232A");
-                anim.Duration = TimeSpan.FromMilliseconds(500);
-                mainWindow.BGGradientStop.BeginAnimation(GradientStop.ColorProperty, anim);
-            }
-        }
-
-        private void Showtime_Click(object sender, RoutedEventArgs e) => NavigationService?.Navigate(new TicketBuy());
-        private void Login_Click(object sender, RoutedEventArgs e) => NavigationService?.Navigate(new LoginPage());
 
         public void WelcomeUser(string username)
         {
             this.Dispatcher.InvokeAsync(async () =>
             {
-                await Task.Delay(150);
-                ShowToast($"Welcome back, {username}!", true);
-            }, System.Windows.Threading.DispatcherPriority.Loaded);
+                await Task.Delay(500);
+                AppToast.ShowToast($"Welcome back, {username}!", true);
+            });
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
             ApplyTestRole("Guest");
-            ProfileTab.Visibility = CashierTab.Visibility = AdminTab.Visibility = Visibility.Collapsed;
-            LogoutBtn.Visibility = Visibility.Collapsed;
-            LoginBtn.Visibility = Visibility.Visible;
             HomeTab.IsChecked = true;
-            ShowToast($"You have logged out succesfully!", true);
+            AppToast.ShowToast("Sikeres kijelentkezés!", true);
         }
 
-        private void ScrollLeft_Click(object sender, RoutedEventArgs e) => MoviesScrollViewer.ScrollToHorizontalOffset(MoviesScrollViewer.HorizontalOffset - 350);
-        private void ScrollRight_Click(object sender, RoutedEventArgs e) => MoviesScrollViewer.ScrollToHorizontalOffset(MoviesScrollViewer.HorizontalOffset + 350);
+        private void Login_Click(object sender, RoutedEventArgs e) => NavigationService.Navigate(new LoginPage());
 
-        private void MoviesScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        private void UpdatePagination(int totalMovies)
         {
-            MoviesScrollViewer.ScrollToHorizontalOffset(MoviesScrollViewer.HorizontalOffset - e.Delta);
-            e.Handled = true;
+            int totalPages = (int)Math.Ceiling((double)totalMovies / itemsPerPage);
+            PageNumbers.Clear();
+            for (int i = 1; i <= totalPages; i++) PageNumbers.Add(i);
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
-        private void Minimize_Click(object sender, RoutedEventArgs e)
-        {
-            Window window = Window.GetWindow(this);
-            if (window != null) window.WindowState = WindowState.Minimized;
-        }
+        // ================= PROPERTY CHANGED =================
 
-        //Hibás vagy éppen sikeres üzenet felül:
-        private async void ShowToast(string message, bool isSuccess)
-        {
-            _toastGeneration++;
-            int currentGen = _toastGeneration;
-
-            if (isSuccess)
-            {
-                ErrorIconBack.Visibility = Visibility.Collapsed; ErrorIconText.Visibility = Visibility.Collapsed;
-                SuccessIconBack.Visibility = Visibility.Visible; SuccessIconText.Visibility = Visibility.Visible;
-                LeftTimerStroke.Stroke = RightTimerStroke.Stroke = Brushes.MediumSeaGreen;
-                BgPathLeft.Stroke = BgPathRight.Stroke = new SolidColorBrush(Color.FromArgb(40, 60, 179, 113));
-            }
-            else
-            {
-                ErrorIconBack.Visibility = Visibility.Visible; ErrorIconText.Visibility = Visibility.Visible;
-                SuccessIconBack.Visibility = Visibility.Collapsed; SuccessIconText.Visibility = Visibility.Collapsed;
-                LeftTimerStroke.Stroke = RightTimerStroke.Stroke = Brushes.IndianRed;
-                BgPathLeft.Stroke = BgPathRight.Stroke = new SolidColorBrush(Color.FromArgb(40, 205, 92, 92));
-            }
-
-            ErrorText.Text = message;
-            ErrorToast.Opacity = 0;
-            ErrorToast.Visibility = Visibility.Visible;
-            ErrorToast.UpdateLayout();
-
-            double w = ErrorToast.ActualWidth; double h = ErrorToast.ActualHeight;
-            double halfW = w / 2; double r = 12;
-            var inv = System.Globalization.CultureInfo.InvariantCulture;
-
-            string leftData = string.Format(inv, "M {0:0.##},0 L {1:0.##},0 A {1:0.##},{1:0.##} 0 0 0 0,{1:0.##} L 0,{2:0.##} A {1:0.##},{1:0.##} 0 0 0 {1:0.##},{3:0.##} L {0:0.##},{3:0.##}", halfW, r, h - r, h);
-            string rightData = string.Format(inv, "M {0:0.##},0 L {1:0.##},0 A {2:0.##},{2:0.##} 0 0 1 {3:0.##},{2:0.##} L {3:0.##},{4:0.##} A {2:0.##},{2:0.##} 0 0 1 {1:0.##},{5:0.##} L {0:0.##},{5:0.##}", halfW, w - r, r, w, h - r, h);
-
-            LeftTimerStroke.Data = Geometry.Parse(leftData); RightTimerStroke.Data = Geometry.Parse(rightData);
-            BgPathLeft.Data = LeftTimerStroke.Data; BgPathRight.Data = RightTimerStroke.Data;
-
-            double pathLen = halfW + h + halfW + 10;
-            LeftTimerStroke.StrokeDashArray = RightTimerStroke.StrokeDashArray = new DoubleCollection { pathLen, pathLen };
-            LeftTimerStroke.StrokeDashOffset = RightTimerStroke.StrokeDashOffset = 0;
-
-            ErrorToast.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(1, TimeSpan.FromSeconds(0.2)));
-            var vanishAnim = new DoubleAnimation(pathLen, TimeSpan.FromSeconds(5));
-            LeftTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, vanishAnim);
-            RightTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, vanishAnim);
-
-            await Task.Delay(5000);
-            if (_toastGeneration != currentGen) return;
-
-            var fadeOut = new DoubleAnimation(0, TimeSpan.FromSeconds(0.4));
-            fadeOut.Completed += (s, e) => { ErrorToast.Visibility = Visibility.Collapsed; };
-            ErrorToast.BeginAnimation(UIElement.OpacityProperty, fadeOut);
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-    }
-
-    // --- ADATMODELLEK (MÓDOSÍTVA) ---
-
-    // A Movie osztálynak is tudnia kell szólni a UI-nak, ha változik a címe
-    public class Movie : INotifyPropertyChanged
-    {
-        public int Id { get; set; }
-        private string _title;
-        public string Title
-        {
-            get => _title;
-            set { _title = value; OnPropertyChanged(); }
-        }
-        private string _duration;
-        public string Duration
-        {
-            get => _duration;
-            set { _duration = value; OnPropertyChanged(); }
-        }
-
-        public string Genre { get; set; }
-        public Color PlaceholderColor { get; set; }
-        public ObservableCollection<string> Showtimes { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-    }
-
-    public class DateItem : INotifyPropertyChanged
-    {
-        public string DayName { get; set; }
-        public string DateNumber { get; set; }
-        private bool _isSelected;
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set { _isSelected = value; OnPropertyChanged(); }
-        }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {

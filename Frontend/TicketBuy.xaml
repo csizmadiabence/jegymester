@@ -4,6 +4,8 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:ticketmasterwpf"
+      xmlns:controls="clr-namespace:ticketmasterwpf.Controls"
+      xmlns:modals="clr-namespace:ticketmasterwpf.Modals"
       mc:Ignorable="d"
       d:DesignHeight="550" d:DesignWidth="950"
       Title="GuestPage">
@@ -231,64 +233,21 @@
 				<Image Source="/Resources/Icons/minimize_icon.png" Width="10" Height="10"/>
 			</Button>
 		</StackPanel>
-		<StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,40,30,0" Panel.ZIndex="40">
-			<TextBlock Text="{Binding SelectedMovieTitle}"
+        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,40,30,0" Panel.ZIndex="40">
+            <TextBlock Text="{Binding SelectedMovieTitle}"
                Foreground="#FFFFFF"
                FontSize="13"
                FontWeight="Bold"
                TextAlignment="Right"
                Opacity="0.9"/>
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
-				<TextBlock Text="{Binding SelectedShowtime}"
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
+                <TextBlock Text="{Binding SelectedShowtime}"
                    Foreground="#FFFFFF"
                    FontSize="11"
                    FontWeight="Regular"/>
-			</StackPanel>
-		</StackPanel>
-
-		<Grid VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,15,15,0" Panel.ZIndex="50">
-			<Border x:Name="ErrorToast" Background="#2D2D30" CornerRadius="12" Opacity="0" Visibility="Collapsed" HorizontalAlignment="Center" Padding="15,5,15,5" BorderThickness="0">
-				<Border.Effect>
-					<DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3"/>
-				</Border.Effect>
-				<Grid>
-					<StackPanel Orientation="Horizontal">
-						<Grid Width="16" Height="16" Margin="0,0,8,0">
-							<Ellipse x:Name="ErrorIconBack" Fill="IndianRed" Visibility="Visible"/>
-							<TextBlock x:Name="ErrorIconText" Text="!" Foreground="White" FontSize="9pt" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
-							<Ellipse x:Name="SuccessIconBack" Fill="MediumSeaGreen" Visibility="Collapsed"/>
-							<TextBlock x:Name="SuccessIconText" Text="✓" Foreground="White" FontSize="10pt" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-						</Grid>
-						<TextBlock x:Name="ErrorText" Foreground="White" FontSize="9pt" VerticalAlignment="Center" TextWrapping="NoWrap"/>
-					</StackPanel>
-					<Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="-15,-5">
-						<Path x:Name="BgPathLeft" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
-						<Path x:Name="BgPathRight" Stroke="#22CD5C5C" StrokeThickness="1" StrokeLineJoin="Round"/>
-						<Path x:Name="LeftTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-						<Path x:Name="RightTimerStroke" Stroke="IndianRed" StrokeThickness="1.5" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-					</Canvas>
-				</Grid>
-			</Border>
-		</Grid>
-
-		<Grid x:Name="SingleSeatModalOverlay" Background="#AA000000" Visibility="Collapsed" Panel.ZIndex="100">
-			<Border Background="#1A1C23" BorderBrush="#1FFFFFFF" Width="350" Height="160"  BorderThickness="1" CornerRadius="20" Padding="22" TextOptions.TextFormattingMode="Display">
-				<Border.Effect>
-					<DropShadowEffect BlurRadius="50" ShadowDepth="0" Opacity="0.5" Color="Black"/>
-				</Border.Effect>
-
-				<Grid Margin="25">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="*"/>
-						<RowDefinition Height="Auto"/>
-					</Grid.RowDefinitions>
-
-					<TextBlock TextWrapping="Wrap" Foreground="#FFFFFF" FontSize="12" LineHeight="16" TextAlignment="Center" Margin="0, -20, 0, 0" Text="To allow for the maximum occupancy of the cinema hall, please make the selection again without leaving a single seat. Thank you on behalf of other customers."/>
-
-					<Button x:Name="CloseModal" Content="CANCEL" Click="CloseModal_Click" Cursor="Hand" HorizontalAlignment="Center" VerticalAlignment="Bottom" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" FontSize="10" Height="30" Width="70" Margin="0, 0, 0, -30"/>
-				</Grid>
-			</Border>
-		</Grid>
-
-	</Grid>
+            </StackPanel>
+        </StackPanel>
+        <modals:SingleSeatModal x:Name="SingleSeatPopup" Visibility="Collapsed" Panel.ZIndex="9999" Grid.RowSpan="10" Grid.ColumnSpan="10"/>
+        <controls:ToastControl x:Name="AppToast" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,10,0,0" Panel.ZIndex="5000"/>
+    </Grid>
 </Page>

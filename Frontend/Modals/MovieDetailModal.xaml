@@ -1,0 +1,120 @@
+﻿<UserControl x:Class="ticketmasterwpf.Modals.MovieDetailModal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="900">
+
+    <UserControl.Resources>
+        <Storyboard x:Key="OpenModal">
+            <DoubleAnimation Storyboard.TargetName="ModalRoot" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
+        </Storyboard>
+        <Storyboard x:Key="CloseModal">
+            <DoubleAnimation Storyboard.TargetName="ModalRoot" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:0.2"/>
+        </Storyboard>
+    </UserControl.Resources>
+
+    <Grid x:Name="ModalRoot" Visibility="Collapsed">
+        <Border Background="#CC000000" MouseDown="CloseModal_Click" CornerRadius="20"/>
+        <Border Width="850" Height="520" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#1A1C23" CornerRadius="25" BorderThickness="0" SnapsToDevicePixels="True" UseLayoutRounding="True" ClipToBounds="True">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.3" Color="Black"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" CornerRadius="25,0,0,25" ClipToBounds="True">
+                    <Grid>
+                        <Image Source="{Binding PosterUrl}" Stretch="UniformToFill" Opacity="0.3">
+                            <Image.Effect>
+                                <BlurEffect Radius="40"/>
+                            </Image.Effect>
+                        </Image>
+
+                        <Border Background="#22000000"/>
+
+                        <Border x:Name="PosterDisplay" CornerRadius="15" Width="240" Height="360" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="#3FFFFFFF" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="25" ShadowDepth="10" Opacity="0.6" Color="Black"/>
+                            </Border.Effect>
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding PosterUrl}" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1" Margin="40,30">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Button HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource GlowButtonStyle}" Width="25" Height="25" Content="✕" FontSize="15" Click="CloseModal_Click" BorderBrush="#3FFFFFFF"/>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,40,0">
+                        <TextBlock Text="{Binding Title}" FontSize="32" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <Border Background="#16C098" CornerRadius="5" Padding="6,2" Margin="0,0,12,0">
+                                <TextBlock Text="{Binding ImdbRating, StringFormat='IMDb {0}'}" FontSize="11" FontWeight="Bold" Foreground="Black"/>
+                            </Border>
+                            <TextBlock Text="🕒" Foreground="#16C098" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Duration}" Foreground="#88FFFFFF" FontSize="13" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="🎭" Foreground="#16C098" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Genre}" Foreground="#88FFFFFF" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Margin="0,25,0,0">
+                        <TextBlock Text="SYNOPSIS" FontSize="11" FontWeight="Bold" Foreground="#16C098" FontStretch="Expanded" Opacity="0.8"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Height="120" Margin="0,10,0,0">
+                            <TextBlock Text="{Binding Description}" Foreground="#CCFFFFFF" FontSize="14" LineHeight="22" TextWrapping="Wrap"/>
+                        </ScrollViewer>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Margin="0,20,0,25">
+                        <TextBlock Text="AVAILABLE SHOWTIMES" FontSize="11" FontWeight="Bold" Foreground="#16C098" FontStretch="Expanded"  Opacity="0.8" Margin="0,0,0,12"/>
+                        <ItemsControl x:Name="ShowtimesItemsControl" ItemsSource="{Binding Showtimes}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}" Margin="0,0,10,10" Style="{StaticResource GlowButtonStyle}" Width="80" Height="35" Cursor="Hand" Click="Showtime_Click"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock x:Name="NoShowtimesMessage" Text="No screenings available for today." Foreground="#44FFFFFF" FontSize="13" FontStyle="Italic" Visibility="Collapsed"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal">
+                        <Button Width="200" Height="45" Margin="0,0,15,0" Cursor="Hand" Click="GetTicketsNow_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="BtnBorder" Background="#16C098" CornerRadius="12">
+                                        <TextBlock Text="GET TICKETS NOW" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#1A1C23" FontWeight="Bold" FontSize="12"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="BtnBorder" Property="Background" Value="#12A884"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

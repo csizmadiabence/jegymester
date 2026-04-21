@@ -6,6 +6,11 @@ public class Movie
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int DurationMinutes { get; set; }
-    // Ide jöhet még: public string? PosterUrl { get; set; }
-    public List<Screening>? Screenings { get; set; } 
+    public string? ImdbRating { get; set; }
+    public string? PosterUrl { get; set; }
+    public string? Year { get; set; }
+    public string? Genre { get; set; }
+    public string Status { get; set; }
+
+    public List<Screening>? Screenings { get; set; }
 }

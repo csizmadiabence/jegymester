@@ -17,6 +17,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ticketmasterwpf.Models;
 
 namespace ticketmasterwpf
 {
@@ -25,12 +26,31 @@ namespace ticketmasterwpf
     /// </summary>
     public partial class TicketBuy : Page
     {
-        public string SelectedMovieTitle { get; set; } = "Dune: Part Two";
-        public string SelectedShowtime { get; set; } = "17:45";
+        public string SelectedMovieTitle { get; private set; }
+        public string SelectedShowtime { get; private set; }
         public ObservableCollection<TheaterRow> TheaterRows { get; set; }
         private int _selectedCount = 0;
 
-        private int _toastGeneration = 0;
+        public TicketBuy(Movie movie, string time)
+        {
+            InitializeComponent();
+
+            // Ha a movie null, ne menjünk tovább, mert hiba lesz
+            if (movie == null)
+            {
+                // Alapértelmezett értékek, hogy ne szálljon el a program
+                SelectedMovieTitle = "Ismeretlen film";
+                SelectedShowtime = time ?? "00:00";
+            }
+            else
+            {
+                SelectedMovieTitle = movie.Title;
+                SelectedShowtime = time;
+            }
+
+            GenerateSeats();
+            DataContext = this;
+        }
 
         public TicketBuy()
         {
@@ -38,7 +58,7 @@ namespace ticketmasterwpf
             GenerateSeats();
             DataContext = this;
         }
-        //Székek generálása a 9 sorban, a 8 első sorban 12 szék van, a 9. sorban pedig 16 szék:
+
         private void GenerateSeats()
         {
             TheaterRows = new ObservableCollection<TheaterRow>();
@@ -110,23 +130,14 @@ namespace ticketmasterwpf
                 seat.IsSelected = false;
                 toggle.IsChecked = false;
 
-                ShowToast("Cannot select more than 10 seats.", false);
+                AppToast.ShowToast("Cannot select more than 10 seats.", false);
                 return;
             }
 
             _selectedCount = currentSelected;
             UpdateBottomBar();
         }
-        //HA BLOCKER VAN KÖZVETLEN MELLETTE, NEM LEHET KIVÁLASZTANI:
-        private bool IsBlocker(ObservableCollection<Seat> rowSeats, int index)
-        {
-            if (index < 0 || index >= rowSeats.Count) return true;
 
-            var seat = rowSeats[index];
-
-            return seat.IsHidden || seat.IsOccupied || seat.IsSelected;
-        }
-        //Confirm gomb a továbblépéshez:
         private void ConfirmButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedSeats = TheaterRows
@@ -136,24 +147,25 @@ namespace ticketmasterwpf
 
             if (selectedSeats.Count == 0)
             {
-                ShowToast("Please select at least one seat!", false);
+                AppToast.ShowToast("Válassz legalább egy széket!", false);
                 return;
             }
 
+            // --- AZ ELLENŐRZŐ LOGIKA ---
             bool hasSingleEmptySeat = false;
 
-            for (int r = 0; r < TheaterRows.Count; r++)
+            foreach (var row in TheaterRows)
             {
-                var seats = TheaterRows[r].Seats;
-                for (int s = 0; s < seats.Count; s++)
+                var seats = row.Seats;
+                for (int i = 0; i < seats.Count; i++)
                 {
-                    var seat = seats[s];
+                    var seat = seats[i];
+
+                    // Csak azt a széket nézzük, ami ÜRES marad
                     if (!seat.IsHidden && !seat.IsOccupied && !seat.IsSelected)
                     {
-                        bool isLeftBlocked = IsBlocker(seats, s - 1);
-                        bool isRightBlocked = IsBlocker(seats, s + 1);
-
-                        if (isLeftBlocked && isRightBlocked)
+                        // Ha balról ÉS jobbról is "fal" vagy foglalt szék van, akkor lyuk maradt
+                        if (IsSeatBlocked(seats, i - 1) && IsSeatBlocked(seats, i + 1))
                         {
                             hasSingleEmptySeat = true;
                             break;
@@ -163,19 +175,31 @@ namespace ticketmasterwpf
                 if (hasSingleEmptySeat) break;
             }
 
+            // --- DÖNTÉS ---
             if (hasSingleEmptySeat)
             {
-                SingleSeatModalOverlay.Visibility = Visibility.Visible;
+                // Az új, különálló modál megnyitása
+                // Ha írtál neki Open() metódust, akkor azt hívd, ha nem, akkor sima Visibility
+                SingleSeatPopup.Visibility = Visibility.Visible;
             }
             else
             {
-                ShowToast("Seats confirmed! Ready to navigate.", true);
+                // Ha nincs hiba, irány a fizetés
+                NavigationService?.Navigate(new CheckoutPage(selectedSeats, SelectedMovieTitle, SelectedShowtime));
             }
+        }
+
+        // Ezt a segédfüggvényt ne felejtsd el a fájlban hagyni!
+        private bool IsSeatBlocked(ObservableCollection<Seat> rowSeats, int index)
+        {
+            if (index < 0 || index >= rowSeats.Count) return true;
+            var s = rowSeats[index];
+            return s.IsHidden || s.IsOccupied || s.IsSelected;
         }
         //Close modal, ha feljön a hibaüzenet:
         private void CloseModal_Click(object sender, RoutedEventArgs e)
         {
-            SingleSeatModalOverlay.Visibility = Visibility.Collapsed;
+            SingleSeatPopup.Visibility = Visibility.Collapsed;
         }
         //Cancel gomb, visszadob a föoldalra:
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -196,125 +220,5 @@ namespace ticketmasterwpf
                 window.WindowState = WindowState.Minimized;
             }
         }
-
-        //Hibás vagy éppen sikeres üzenet felül:
-        private async void ShowToast(string message, bool isSuccess)
-        {
-            _toastGeneration++;
-            int currentGen = _toastGeneration;
-
-            Brush toastColor = isSuccess ? Brushes.MediumSeaGreen : Brushes.IndianRed;
-            Brush bgColor = isSuccess ? new SolidColorBrush(Color.FromArgb(50, 60, 179, 113)) : new SolidColorBrush(Color.FromArgb(50, 205, 92, 92));
-
-            ErrorToast.BeginAnimation(UIElement.OpacityProperty, null);
-            LeftTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, null);
-            RightTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, null);
-
-            if (isSuccess)
-            {
-                ErrorIconBack.Visibility = Visibility.Collapsed;
-                ErrorIconText.Visibility = Visibility.Collapsed;
-                SuccessIconBack.Visibility = Visibility.Visible;
-                SuccessIconText.Visibility = Visibility.Visible;
-
-                LeftTimerStroke.Stroke = Brushes.MediumSeaGreen;
-                RightTimerStroke.Stroke = Brushes.MediumSeaGreen;
-                BgPathLeft.Stroke = new SolidColorBrush(Color.FromArgb(40, 60, 179, 113));
-                BgPathRight.Stroke = BgPathLeft.Stroke;
-            }
-            else
-            {
-                ErrorIconBack.Visibility = Visibility.Visible;
-                ErrorIconText.Visibility = Visibility.Visible;
-                SuccessIconBack.Visibility = Visibility.Collapsed;
-                SuccessIconText.Visibility = Visibility.Collapsed;
-
-                LeftTimerStroke.Stroke = Brushes.IndianRed;
-                RightTimerStroke.Stroke = Brushes.IndianRed;
-                BgPathLeft.Stroke = new SolidColorBrush(Color.FromArgb(40, 205, 92, 92));
-                BgPathRight.Stroke = BgPathLeft.Stroke;
-            }
-
-            ErrorText.Text = message;
-            ErrorToast.Opacity = 0;
-            ErrorToast.Visibility = Visibility.Visible;
-            ErrorToast.UpdateLayout();
-
-            double w = ErrorToast.ActualWidth;
-            double h = ErrorToast.ActualHeight;
-            double halfW = w / 2;
-            double r = 12;
-            var inv = System.Globalization.CultureInfo.InvariantCulture;
-
-            string leftData = string.Format(inv, "M {0:0.##},0 L {1:0.##},0 A {1:0.##},{1:0.##} 0 0 0 0,{1:0.##} L 0,{2:0.##} A {1:0.##},{1:0.##} 0 0 0 {1:0.##},{3:0.##} L {0:0.##},{3:0.##}", halfW, r, h - r, h);
-            string rightData = string.Format(inv, "M {0:0.##},0 L {1:0.##},0 A {2:0.##},{2:0.##} 0 0 1 {3:0.##},{2:0.##} L {3:0.##},{4:0.##} A {2:0.##},{2:0.##} 0 0 1 {1:0.##},{5:0.##} L {0:0.##},{5:0.##}", halfW, w - r, r, w, h - r, h);
-
-            LeftTimerStroke.Data = Geometry.Parse(leftData);
-            RightTimerStroke.Data = Geometry.Parse(rightData);
-            BgPathLeft.Data = LeftTimerStroke.Data;
-            BgPathRight.Data = RightTimerStroke.Data;
-
-            double pathLen = halfW + h + halfW + 10;
-            LeftTimerStroke.StrokeDashArray = new DoubleCollection { pathLen, pathLen };
-            RightTimerStroke.StrokeDashArray = new DoubleCollection { pathLen, pathLen };
-            LeftTimerStroke.StrokeDashOffset = 0;
-            RightTimerStroke.StrokeDashOffset = 0;
-
-            ErrorToast.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(1, TimeSpan.FromSeconds(0.2)));
-            var vanishAnim = new DoubleAnimation(pathLen, TimeSpan.FromSeconds(5));
-            LeftTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, vanishAnim);
-            RightTimerStroke.BeginAnimation(Shape.StrokeDashOffsetProperty, vanishAnim);
-
-            await Task.Delay(5000);
-
-            if (_toastGeneration != currentGen)
-                return;
-
-            var fadeOut = new DoubleAnimation(0, TimeSpan.FromSeconds(0.4));
-            fadeOut.Completed += (s, e) => {
-                ErrorToast.Visibility = Visibility.Collapsed;
-                if (isSuccess)
-                {
-                    var selectedSeats = TheaterRows
-                            .SelectMany(row => row.Seats)
-                            .Where(seat => seat.IsSelected)
-                            .ToList();
-
-                    NavigationService.Navigate(new CheckoutPage(selectedSeats, SelectedMovieTitle, SelectedShowtime));
-                }
-            };
-            ErrorToast.BeginAnimation(UIElement.OpacityProperty, fadeOut);
-        }
-    }
-
-    public class Seat : INotifyPropertyChanged
-    {
-        public int Row { get; set; }
-        public int Number { get; set; }
-        public bool IsHidden { get; set; }
-
-        private bool _isOccupied;
-        public bool IsOccupied
-        {
-            get => _isOccupied;
-            set { _isOccupied = value; OnPropertyChanged(); }
-        }
-
-        private bool _isSelected;
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set { _isSelected = value; OnPropertyChanged(); }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
-
-    public class TheaterRow
-    {
-        public int RowNumber { get; set; }
-        public ObservableCollection<Seat> Seats { get; set; }
     }
 }

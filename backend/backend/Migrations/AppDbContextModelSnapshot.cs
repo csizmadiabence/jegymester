@@ -30,8 +30,24 @@ namespace backend.Migrations
                     b.Property<int>("DurationMinutes")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Genre")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImdbRating")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PosterUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Year")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -65,6 +81,32 @@ namespace backend.Migrations
                     b.ToTable("Screenings");
                 });
 
+            modelBuilder.Entity("backend.Models.Seat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsOccupied")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSelected")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Row")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Seats");
+                });
+
             modelBuilder.Entity("backend.Models.Ticket", b =>
                 {
                     b.Property<int>("Id")
@@ -83,10 +125,16 @@ namespace backend.Migrations
                     b.Property<bool>("IsValidated")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Price")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ScreeningId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SeatId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
@@ -95,6 +143,8 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ScreeningId");
+
+                    b.HasIndex("SeatId");
 
                     b.HasIndex("UserId");
 
@@ -133,7 +183,7 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.Screening", b =>
                 {
                     b.HasOne("backend.Models.Movie", "Movie")
-                        .WithMany()
+                        .WithMany("Screenings")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -149,13 +199,26 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("backend.Models.Seat", "Seat")
+                        .WithMany()
+                        .HasForeignKey("SeatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("backend.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
 
                     b.Navigation("Screening");
 
+                    b.Navigation("Seat");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Models.Movie", b =>
+                {
+                    b.Navigation("Screenings");
                 });
 #pragma warning restore 612, 618
         }
