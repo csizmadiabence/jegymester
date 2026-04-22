@@ -5,6 +5,90 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/CinemaHalls": {
+      "get": {
+        "tags": [
+          "CinemaHalls"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CinemaHall"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CinemaHall"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CinemaHall"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CinemaHalls"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CinemaHall"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CinemaHall"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CinemaHall"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CinemaHall"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CinemaHall"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CinemaHall"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Movies": {
       "get": {
         "tags": [
@@ -752,6 +836,27 @@
   },
   "components": {
     "schemas": {
+      "CinemaHall": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TheaterRow"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Movie": {
         "type": "object",
         "properties": {
@@ -801,6 +906,27 @@
         },
         "additionalProperties": false
       },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Screening": {
         "type": "object",
         "properties": {
@@ -812,9 +938,9 @@
             "type": "integer",
             "format": "int32"
           },
-          "roomName": {
-            "type": "string",
-            "nullable": true
+          "cinemaHallId": {
+            "type": "integer",
+            "format": "int32"
           },
           "startTime": {
             "type": "string",
@@ -850,6 +976,27 @@
           },
           "isSelected": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TheaterRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rowNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "seats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Seat"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -926,20 +1073,15 @@
             "type": "string",
             "nullable": true
           },
-          "role": {
-            "$ref": "#/components/schemas/UserRole"
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
-      },
-      "UserRole": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
       }
     }
   }
