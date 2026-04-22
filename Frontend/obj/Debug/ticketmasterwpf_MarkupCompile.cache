@@ -16,5 +16,5 @@ C:\Users\maasz\source\repos\jegymester\Frontend\App.xaml
 25-122562138
 CheckoutPage.xaml;Controls\ToastControl.xaml;HomePage.xaml;Modals\AddMovieModal.xaml;Modals\AddScreeningModal.xaml;Modals\DeleteConfirmModal.xaml;Modals\MovieDetailModal.xaml;Modals\SingleSeatModal.xaml;TicketBuy.xaml;LoginPage.xaml;MainWindow.xaml;RegisterPage.xaml;SplashPage.xaml;Views\AdminView.xaml;Views\CashierView.xaml;Views\MovieCatalogView.xaml;Views\ProfileView.xaml;
 
-True
+False
 
