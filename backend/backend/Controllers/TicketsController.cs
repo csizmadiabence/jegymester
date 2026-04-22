@@ -33,13 +33,24 @@ public class TicketsController : ControllerBase
         }
 
         //letezik-e szek
-        var seatExists = await _context.Seats.AnyAsync(s => s.Id == ticket.SeatId);
-        if (!seatExists)
+        var seat = await _context.Seats.FirstOrDefaultAsync(s => s.Id == ticket.SeatId);
+
+        if (seat == null)
         {
             return NotFound($"A megadott szék (ID: {ticket.SeatId}) nem létezik.");
         }
+
+        //szék foglalt-e
+        if (seat.IsOccupied)
+        {
+            return BadRequest("Ez a szék már foglalt!");
+        }
+
+        seat.IsOccupied = true;
+
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
+
         return Ok(ticket);
     }
 
@@ -49,6 +60,7 @@ public class TicketsController : ControllerBase
     {
         var ticket = await _context.Tickets
             .Include(t => t.Screening)
+            .Include(t => t.Seat)
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (ticket == null) return NotFound("A jegy nem létezik.");
@@ -57,6 +69,11 @@ public class TicketsController : ControllerBase
         if ((ticket.Screening.StartTime - DateTime.Now).TotalHours < 4)
         {
             return BadRequest("A törlés nem engedélyezett, mert kevesebb mint 4 óra van a vetítésig!");
+        }
+
+        if (ticket.Seat != null)
+        {
+            ticket.Seat.IsOccupied = false;
         }
 
         ticket.IsCancelled = true;

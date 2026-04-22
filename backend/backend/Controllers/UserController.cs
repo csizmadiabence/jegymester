@@ -36,7 +36,18 @@ public class UsersController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<User>> CreateUser(User user)
 	{
-		_context.Users.Add(user);
+        if (user.Roles == null)
+        {
+            user.Roles = new List<Role>();
+        }
+
+        if (!user.Roles.Any())
+        {
+            var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+            if (defaultRole != null) user.Roles.Add(defaultRole);
+        }
+
+        _context.Users.Add(user);
 		await _context.SaveChangesAsync();
 
 		//201-es statusz good

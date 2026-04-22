@@ -9,12 +9,6 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; } //szemelyes adat modositasahoz
-    public List<Role> Roles { get; set; }
+    public List<Role> Roles { get; set; } = new();
 
 }
-    public class Role
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } // admin, cashier, user
-        public List<User> Users { get; set; }
-    }

@@ -8,10 +8,13 @@ public class Screening
     // Idegen kulcs a filmhez
     public int MovieId { get; set; }
 
-    public string RoomName { get; set; } = string.Empty; 
+    public int CinemaHallId { get; set; }
     public DateTime StartTime { get; set; }
     public decimal Price { get; set; }
 
     [JsonIgnore]
     public Movie? Movie { get; set; }
+
+    [JsonIgnore]
+    public CinemaHall? CinemaHall { get; set; }
 }
