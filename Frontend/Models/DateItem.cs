@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ticketmasterwpf.Models
@@ -7,6 +8,7 @@ namespace ticketmasterwpf.Models
     {
         public string DayName { get; set; }
         public string DateNumber { get; set; }
+        public DateTime FullDate { get; set; }
         private bool _isSelected;
         public bool IsSelected
         {

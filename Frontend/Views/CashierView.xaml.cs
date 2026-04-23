@@ -8,7 +8,6 @@ using ticketmasterwpf.Models;
 
 namespace ticketmasterwpf.Views
 {
-    // A kosár elemeinek modellje
     public class OrderItem
     {
         public string MovieTitle { get; set; }
@@ -19,7 +18,6 @@ namespace ticketmasterwpf.Views
 
     public partial class CashierView : UserControl
     {
-        // Ezeken keresztül szólunk a főoldalnak (HomePage)
         public event EventHandler<string> VerifyTicketRequested;
         public event EventHandler<ObservableCollection<OrderItem>> IssueAllTicketsRequested;
 
@@ -30,7 +28,7 @@ namespace ticketmasterwpf.Views
         {
             InitializeComponent();
             CurrentOrder = new ObservableCollection<OrderItem>();
-            OrderItemsControl.ItemsSource = CurrentOrder; // Bekötjük a XAML-be a listát
+            OrderItemsControl.ItemsSource = CurrentOrder;
         }
 
         // ================= KOSÁR KEZELÉSE =================
@@ -51,7 +49,7 @@ namespace ticketmasterwpf.Views
                 });
 
                 UpdateTotal();
-                PosQuantity.Text = "1"; // Visszaállítjuk 1-re a mennyiséget
+                PosQuantity.Text = "1";
             }
             else
             {
@@ -88,10 +86,8 @@ namespace ticketmasterwpf.Views
         {
             if (CurrentOrder.Count > 0)
             {
-                // Elküldjük a teljes kosarat a HomePage-nek
                 IssueAllTicketsRequested?.Invoke(this, CurrentOrder);
 
-                // Sikeres küldés után ürítünk
                 CurrentOrder.Clear();
                 UpdateTotal();
             }

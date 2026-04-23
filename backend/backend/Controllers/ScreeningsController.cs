@@ -55,4 +55,33 @@ public class ScreeningsController : ControllerBase
         return NoContent();
 
     }
+
+    [HttpPut("{id}")] // edithez
+    public async Task<IActionResult> PutScreening(int id, Screening screening)
+    {
+        if (id != screening.Id)
+        {
+            return BadRequest("ID mismatch");
+        }
+
+        _context.Entry(screening).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!_context.Screenings.Any(e => e.Id == id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return NoContent();
+    }
 }

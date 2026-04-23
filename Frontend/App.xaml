@@ -267,10 +267,37 @@
                                 <Setter TargetName="glowLayer" Property="Opacity" Value="1"/>
                                 <Setter TargetName="glowLayer" Property="Effect">
                                     <Setter.Value>
-                                        <DropShadowEffect Color="{Binding BorderBrush.Color, RelativeSource={RelativeSource TemplatedParent}}" BlurRadius="15" ShadowDepth="0" Opacity="0.5" RenderingBias="Quality"/>
+                                        <DropShadowEffect Color="#16C098" BlurRadius="15" ShadowDepth="0" Opacity="0.5" RenderingBias="Quality"/>
                                     </Setter.Value>
                                 </Setter>
                                 <Setter TargetName="mainBorder" Property="Background" Value="#1AFFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Color x:Key="PrimaryTurquoise">#16C098</Color>
+        <SolidColorBrush x:Key="PrimaryTurquoiseBrush" Color="{StaticResource PrimaryTurquoise}"/>
+
+        <Style x:Key="OutlineButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#3FFFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1AFFFFFF"/>
+                                <Setter Property="BorderBrush" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

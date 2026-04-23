@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
@@ -20,15 +22,25 @@ namespace ticketmasterwpf.Models
         [JsonPropertyName("durationMinutes")]
         public int DurationMinutes { get; set; }
 
-        // --- ÚJ IMDB MEZŐK ---
         [JsonPropertyName("imdbRating")]
         public string ImdbRating { get; set; }
 
+        private string _posterUrl;
         [JsonPropertyName("posterUrl")]
-        public string PosterUrl { get; set; }
+        public string PosterUrl
+        {
+            get => _posterUrl;
+            set
+            {
+                _posterUrl = string.IsNullOrWhiteSpace(value) ? null : value;
+                OnPropertyChanged();
+            }
+        }
 
         [JsonPropertyName("genre")]
         public string Genre { get; set; }
+
+        public List<Screening> Screenings { get; set; } = new List<Screening>();
 
         [JsonIgnore]
         public ObservableCollection<string> Showtimes { get; set; } = new ObservableCollection<string>();
@@ -36,7 +48,23 @@ namespace ticketmasterwpf.Models
         [JsonIgnore]
         public string Duration => $"{DurationMinutes} min";
 
+        [JsonPropertyName("status")]
         public string Status { get; set; }
+
+        [JsonPropertyName("releaseDate")]
+        public DateTime ReleaseDate { get; set; }
+
+        private string _backdropUrl;
+        [JsonPropertyName("backdropUrl")]
+        public string BackdropUrl
+        {
+            get => _backdropUrl;
+            set
+            {
+                _backdropUrl = string.IsNullOrWhiteSpace(value) ? null : value;
+                OnPropertyChanged();
+            }
+        }
 
         [JsonIgnore]
         public System.Windows.Media.Color PlaceholderColor { get; set; }

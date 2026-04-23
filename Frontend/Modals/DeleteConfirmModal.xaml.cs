@@ -7,11 +7,9 @@ namespace ticketmasterwpf.Modals
 {
     public partial class DeleteConfirmModal : UserControl
     {
-        // 1. Esemény, ami visszaadja a törlendő filmet a HomePage-nek
-        public event EventHandler<Movie> OnDeleteConfirmed;
+        public event Action<object, object> OnDeleteConfirmed;
 
-        // Eltároljuk, hogy melyik filmet akarják épp törölni
-        private Movie _movieToDelete;
+        private object _itemToDelete;
 
         public DeleteConfirmModal()
         {
@@ -19,15 +17,14 @@ namespace ticketmasterwpf.Modals
         }
 
         // Főoldal hívja meg a filmmel együtt
-        public void OpenModal(Movie movie)
+        public void OpenModal(object item)
         {
-            _movieToDelete = movie;
+            _itemToDelete = item;
 
-            if (movie != null)
-            {
-                // Így a felhasználó látja is a nevét annak, amit töröl!
-                DeleteMessageText.Text = $"Are you sure you want to delete '{movie.Title}'?\nThis action cannot be undone.";
-            }
+            if (item is Movie m)
+                DeleteMessageText.Text = $"Biztosan törlöd a(z) {m.Title} filmet?";
+            else if (item is Screening s)
+                DeleteMessageText.Text = $"Biztosan törlöd a vetítést: {s.RoomName} ({s.StartTime:HH:mm})?";
 
             this.Visibility = Visibility.Visible;
         }
@@ -35,19 +32,18 @@ namespace ticketmasterwpf.Modals
         private void CloseModal_Click(object sender, RoutedEventArgs e)
         {
             this.Visibility = Visibility.Collapsed;
-            _movieToDelete = null;
+            _itemToDelete = null;
         }
 
         private void ConfirmDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (_movieToDelete != null)
+            if (_itemToDelete != null)
             {
-                // 2. Szólunk a főoldalnak, hogy tényleg törölheti!
-                OnDeleteConfirmed?.Invoke(this, _movieToDelete);
+                OnDeleteConfirmed?.Invoke(this, _itemToDelete);
             }
 
             this.Visibility = Visibility.Collapsed;
-            _movieToDelete = null;
+            _itemToDelete = null;
         }
     }
 }

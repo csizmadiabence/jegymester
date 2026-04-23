@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -14,6 +15,8 @@ namespace ticketmasterwpf.Views
     {
 
         public event EventHandler<Movie> MovieDetailRequested;
+        public event EventHandler<DateTime> DateChanged;
+        public event EventHandler CalendarRequest;
 
         public MovieCatalogView()
         {
@@ -21,14 +24,14 @@ namespace ticketmasterwpf.Views
         }
 
         // ================= ÜZEMMÓD VÁLTÁS (A HomePage hívja meg) =================
-        public void SetMode(bool isNowShowing, IEnumerable movieSource)
+        public void SetMode(bool isNowShowing, ObservableCollection<Movie> movies)
         {
             // Feliratok cseréje
             NowShowingHeader.Visibility = isNowShowing ? Visibility.Visible : Visibility.Collapsed;
             SoonHeader.Visibility = isNowShowing ? Visibility.Collapsed : Visibility.Visible;
 
             // Adatok cseréje
-            MoviesItemsControl.ItemsSource = movieSource;
+            MoviesItemsControl.ItemsSource = movies;
 
             // Frissítő animáció lejátszása és lista visszagörgetése az elejére
             var anim = (Storyboard)this.Resources["ListRefreshAnimation"];
@@ -40,17 +43,30 @@ namespace ticketmasterwpf.Views
 
         private void DateBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is RadioButton btn && btn.DataContext is DateItem selectedDate)
+            if (sender is RadioButton rb && rb.DataContext is DateItem clickedDate)
             {
-                // Ha lekérjük a főoldal adatbázisát (DataContext)
-                if (this.DataContext is HomePage homePage)
-                {
-                    foreach (var date in homePage.AvailableDates) date.IsSelected = false;
-                    selectedDate.IsSelected = true;
+                DateChanged?.Invoke(this, clickedDate.FullDate);
 
-                    var anim = (Storyboard)this.Resources["ListRefreshAnimation"];
-                    anim?.Begin();
+                if (Resources["ListRefreshAnimation"] is Storyboard sb)
+                {
+                    sb.Begin();
                 }
+            }
+        }
+        private void OpenCalendar_Click(object sender, RoutedEventArgs e)
+        {
+            CalendarRequest?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void InlineCalendar_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (InlineCalendar.SelectedDate.HasValue)
+            {
+                DateTime selectedDate = InlineCalendar.SelectedDate.Value;
+
+                CalendarDropDownBtn.IsChecked = false;
+
+                DateChanged?.Invoke(this, selectedDate);
             }
         }
 

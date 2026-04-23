@@ -8,4 +8,5 @@
     public string Poster { get; set; }
     public string imdbRating { get; set; }
     public string Response { get; set; }
+    public string Released { get; set; }
 }

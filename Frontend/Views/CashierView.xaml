@@ -73,7 +73,7 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Movie &amp; Time" Foreground="#88FFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
                             <Border Style="{StaticResource InputBorderStyle}" Height="30">
-                                <ComboBox x:Name="PosMovieSelector" ItemsSource="{Binding Movies}" DisplayMemberPath="Title" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="10,0"/>
+                                <ComboBox x:Name="PosMovieSelector" ItemsSource="{Binding Movies}" DisplayMemberPath="Title" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="10,0" Margin="0,-2,0,-2"/>
                             </Border>
                         </StackPanel>
 
@@ -85,7 +85,7 @@
                                     <ColumnDefinition Width="40"/>
                                 </Grid.ColumnDefinitions>
                                 <Border Style="{StaticResource InputBorderStyle}" Height="30" Margin="0,0,5,0">
-                                    <ComboBox x:Name="PosTicketType" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="5,0">
+                                    <ComboBox x:Name="PosTicketType" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="5, 0" Margin="0,-2,0,-2">
                                         <ComboBoxItem Content="Adult ($15)" Tag="15" IsSelected="True" Foreground="White"/>
                                         <ComboBoxItem Content="Student ($10)" Tag="10" Foreground="White"/>
                                         <ComboBoxItem Content="Senior ($8)" Tag="8" Foreground="White"/>

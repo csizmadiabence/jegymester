@@ -8,6 +8,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ticketmasterwpf.Services;
 
 namespace ticketmasterwpf
 {
@@ -199,7 +200,10 @@ namespace ticketmasterwpf
                 line.BeginAnimation(UIElement.OpacityProperty, fadeOut);
             }
 
-            await Task.Delay(400);
+            await Task.WhenAll(
+                DataService.InitializationTask,
+                Task.Delay(500)
+            );
 
             if (NavigationService != null)
             {

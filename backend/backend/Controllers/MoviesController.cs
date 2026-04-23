@@ -19,7 +19,9 @@ public class MoviesController : ControllerBase
     [HttpGet] // filmek listazasa
     public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
     {
-        return await _context.Movies.ToListAsync();
+        return await _context.Movies
+        .Include(m => m.Screenings)
+        .ToListAsync();
     }
 
     [HttpPost] //uj film
@@ -30,25 +32,26 @@ public class MoviesController : ControllerBase
         return Ok(movie);
     }
 
-    [HttpDelete("{id}")] // piros torles gomb
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMovie(int id)
     {
-        // id alapjan megkeressuk a filmet
-        var movie = await _context.Movies.FindAsync(id);
+        var movie = await _context.Movies
+                                  .Include(m => m.Screenings)
+                                  .FirstOrDefaultAsync(m => m.Id == id);
 
-        // ha nincs 404-es hiba
-        if (movie == null)
-        {
-            return NotFound("A film nem található.");
-        }
+        if (movie == null) return NotFound();
 
-        //ha megvan toroljuk es mentjuk
+        // Debug: Írd ki a konzolra, hogy hány vetítést talál
+        Console.WriteLine($"Törlés előtt: {movie.Screenings.Count} vetítés tartozik a filmhez.");
+
+        _context.Screenings.RemoveRange(movie.Screenings);
         _context.Movies.Remove(movie);
         await _context.SaveChangesAsync();
 
-        return NoContent(); // 204-es valasz, sikeres torles
+        return NoContent();
     }
-    [HttpPut("{id}")]
+
+    [HttpPut("{id}")] // edithez
     public async Task<IActionResult> PutMovie(int id, Movie movie)
     {
         if (id != movie.Id) return BadRequest("Az ID-k nem egyeznek.");
@@ -66,5 +69,16 @@ public class MoviesController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("by-date/{date}")] // film listázása adott napra
+    public async Task<ActionResult<IEnumerable<Movie>>> GetMoviesByDate(DateTime date)
+    {
+        var movies = await _context.Movies
+            .Include(m => m.Screenings)
+            .Where(m => m.Screenings.Any(s => s.StartTime.Date == date.Date))
+            .ToListAsync();
+
+        return Ok(movies);
     }
 }

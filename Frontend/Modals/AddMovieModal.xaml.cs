@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using ticketmasterwpf.Controls;
 using ticketmasterwpf.Models;
 using ticketmasterwpf.Services;
 
@@ -14,12 +16,16 @@ namespace ticketmasterwpf.Modals
         private MovieService _movieService = new MovieService();
         public event EventHandler MovieSaved;
 
+        public event Action<string, bool> ShowToastRequested;
+
         public AddMovieModal()
         {
             InitializeComponent();
         }
 
         private Movie _editingMovie = null;
+        private string _tempBackdropUrl = null;
+        private DateTime _tempReleaseDate = DateTime.MinValue;
 
         public void OpenModal(Movie movie = null)
         {
@@ -27,6 +33,9 @@ namespace ticketmasterwpf.Modals
 
             if (_editingMovie == null)
             {
+                _tempBackdropUrl = null;
+                _tempReleaseDate = DateTime.MinValue;
+
                 MovieModalTitle.Text = "Add New Movie to Database";
                 SaveMovieBtn.Content = "Save Movie";
                 ClearInputs();
@@ -34,6 +43,9 @@ namespace ticketmasterwpf.Modals
             }
             else
             {
+                _tempBackdropUrl = _editingMovie.BackdropUrl;
+                _tempReleaseDate = _editingMovie.ReleaseDate;
+
                 MovieModalTitle.Text = "Edit Movie Details";
                 SaveMovieBtn.Content = "Update Movie";
 
@@ -62,7 +74,6 @@ namespace ticketmasterwpf.Modals
             string title = MovieTitleInput.Text;
             if (string.IsNullOrWhiteSpace(title)) return;
 
-            // Keresés gomb letiltása (vizuális visszajelzés)
             var btn = (Button)sender;
             btn.IsEnabled = false;
 
@@ -79,10 +90,15 @@ namespace ticketmasterwpf.Modals
                     MovieRatingInput.Text = movie.ImdbRating;
                     MoviePosterInput.Text = movie.PosterUrl;
                     MovieDurationInput.Text = movie.DurationMinutes.ToString();
+
+                    _tempBackdropUrl = movie.BackdropUrl;
+                    _tempReleaseDate = movie.ReleaseDate;
+
+                    ShowToastRequested?.Invoke("IMDb data imported successfully!", true);
                 }
                 else
                 {
-                    MessageBox.Show("Movie not found on IMDb.");
+                    ShowToastRequested?.Invoke("Movie not found on IMDb.", false);
                 }
             }
             finally
@@ -95,13 +111,25 @@ namespace ticketmasterwpf.Modals
         {
             if (string.IsNullOrWhiteSpace(MovieTitleInput.Text))
             {
-                MessageBox.Show("Please enter a movie title!");
+                ShowToastRequested?.Invoke("Please enter a movie title!", false);
                 return;
             }
 
             if (!int.TryParse(MovieDurationInput.Text, out int duration))
             {
-                MessageBox.Show("Please enter a valid duration in minutes!");
+                ShowToastRequested?.Invoke("Please enter a valid duration in minutes!", false);
+                return;
+            }
+
+            string inputTitle = MovieTitleInput.Text.Trim();
+
+            bool movieExists = ticketmasterwpf.Services.DataService.AllMovies.Any(m =>
+                m.Title.Equals(inputTitle, StringComparison.OrdinalIgnoreCase) &&
+                (_editingMovie == null || m.Id != _editingMovie.Id));
+
+            if (movieExists)
+            {
+                ShowToastRequested?.Invoke("Error: This movie already exists in the database!", false);
                 return;
             }
 
@@ -114,7 +142,11 @@ namespace ticketmasterwpf.Modals
                 Genre = MovieGenreInput.Text,
                 ImdbRating = MovieRatingInput.Text,
                 PosterUrl = MoviePosterInput.Text,
-                Status = (MovieStatusInput.SelectedItem as ComboBoxItem)?.Content.ToString()
+                Status = (MovieStatusInput.SelectedItem as ComboBoxItem)?.Content.ToString(),
+                BackdropUrl = string.IsNullOrWhiteSpace(_tempBackdropUrl)
+                  ? "https://via.placeholder.com/1280x720.png?text=No+Background"
+                  : _tempBackdropUrl,
+                ReleaseDate = _tempReleaseDate == DateTime.MinValue ? DateTime.UtcNow : _tempReleaseDate
             };
 
             SaveMovieBtn.IsEnabled = false;
@@ -141,21 +173,20 @@ namespace ticketmasterwpf.Modals
 
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show($"{movieData.Title} sikeresen mentve!");
+                        ShowToastRequested?.Invoke($"{movieData.Title} saved successfully!", true);
                         MovieSaved?.Invoke(this, EventArgs.Empty);
-                        ClearInputs();
                         this.Visibility = Visibility.Collapsed;
                     }
                     else
                     {
                         var errorMsg = await response.Content.ReadAsStringAsync();
-                        MessageBox.Show($"Szerver hiba: {errorMsg}");
+                        ShowToastRequested?.Invoke($"Server hiba: {errorMsg}", false);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Hálózati hiba: {ex.Message}");
+                ShowToastRequested?.Invoke($"Network error: {ex.Message}", false);
             }
             finally
             {
@@ -164,7 +195,6 @@ namespace ticketmasterwpf.Modals
             }
         }
 
-        // Segédmetódus a mezők kiürítéséhez
         private void ClearInputs()
         {
             MovieTitleInput.Text = "";

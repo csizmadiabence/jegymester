@@ -110,7 +110,7 @@ namespace ticketmasterwpf.Modals
             }
             else
             {
-                ShowToastRequested?.Invoke(this, "Hiba: A film adatai nem találhatóak!");
+                ShowToastRequested?.Invoke(this, "Error: Movie data not found!");
             }
         }
     }

@@ -16,14 +16,41 @@
                 </DoubleAnimation.EasingFunction>
             </DoubleAnimation>
         </Storyboard>
+
+        <Storyboard x:Key="BannerFadeStoryboard">
+            <DoubleAnimation Storyboard.TargetName="FeaturedBannerContainer" Storyboard.TargetProperty="Opacity" From="1.0" To="0.3" Duration="0:0:0.3" AutoReverse="True"/>
+        </Storyboard>
+
+        <Style x:Key="BannerDotStyle" TargetType="RadioButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="dot" Width="8" Height="8" CornerRadius="4" Background="#44FFFFFF" Margin="4,0" Cursor="Hand">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Checked">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="dot" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)" To="#FFB75E" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="dot" Storyboard.TargetProperty="Width" To="20" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Unchecked"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Page.Resources>
 
     <Page.Triggers>
-		<EventTrigger RoutedEvent="Page.Loaded">
-			<BeginStoryboard Storyboard="{StaticResource PageLoadAnimation}"/>
-		</EventTrigger>
-	</Page.Triggers>
-	<Grid x:Name="RootGrid">
+        <EventTrigger RoutedEvent="Page.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource PageLoadAnimation}"/>
+        </EventTrigger>
+    </Page.Triggers>
+
+    <Grid x:Name="RootGrid">
         <Grid x:Name="MainContentGrid" Opacity="0">
             <Grid.RenderTransform>
                 <TranslateTransform x:Name="MainContentTransform" Y="30"/>
@@ -31,7 +58,7 @@
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="60"/>
-                <RowDefinition Height="220"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
@@ -57,12 +84,11 @@
                     <RadioButton x:Name="CashierTab" Content="CASHIER DESK" Visibility="Collapsed" Style="{StaticResource NavTabButtonStyle}" Checked="Tab_Checked"/>
                     <RadioButton x:Name="AdminTab" Content="MANAGEMENT" Visibility="Collapsed" Style="{StaticResource NavTabButtonStyle}" Checked="Tab_Checked"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
 
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button x:Name="LoginBtn" Content="LOGIN / REGISTER" Click="Login_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" FontSize="10" Height="25" Width="100" Margin="0, 0, 0, -4"/>
 
                     <StackPanel x:Name="LoggedInPanel" Orientation="Horizontal" Visibility="Hidden" Margin="0,0,0,-4">
-
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0" Cursor="Hand">
                             <Border Width="12" Height="12" Background="#16C098" Margin="0,0,6,0" Cursor="Arrow">
                                 <Border.OpacityMask>
@@ -75,15 +101,13 @@
                         <Button x:Name="LogoutBtn" Click="Logout_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FF5555" Width="55" Height="24" Padding="12,0">
                             <TextBlock Text="LOGOUT" Foreground="White" FontWeight="Bold" FontSize="9" VerticalAlignment="Center" Margin="0,1,0,0"/>
                         </Button>
-
                     </StackPanel>
-
                 </StackPanel>
             </Grid>
 
-            <Border Grid.Row="1" Margin="30,5" Height="180" CornerRadius="20">
-                <Border.Style>
-                    <Style TargetType="Border">
+            <StackPanel Grid.Row="1" Margin="0,15,0,0">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
                         <Setter Property="Visibility" Value="Visible"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsChecked, ElementName=AdminTab}" Value="True">
@@ -97,57 +121,78 @@
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </Border.Style>
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0.5">
-                        <GradientStop Color="{Binding FeaturedMovie.PlaceholderColor}" Offset="0"/>
-                        <GradientStop Color="#050507" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.Background>
-                <Grid Margin="30,0">
-                    <StackPanel VerticalAlignment="Center">
-                        <Border Background="#FF9800" CornerRadius="5" HorizontalAlignment="Left" Padding="6,2" Margin="0,0,0,8">
-                            <TextBlock Text="FEATURED MOVIE" Foreground="Black" FontSize="8.5" FontWeight="Bold"/>
+                </StackPanel.Style>
+
+                <Border x:Name="FeaturedBannerContainer" Height="140" Margin="30,0,30,35" CornerRadius="20" ClipToBounds="True">
+                    <Border.Background>
+                        <ImageBrush ImageSource="{Binding FeaturedMovie.BackdropUrl, TargetNullValue={x:Null}, FallbackValue={x:Null}}" Stretch="UniformToFill"/>
+                    </Border.Background>
+
+                    <Grid>
+                        <Border CornerRadius="20">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#E60A0A0C" Offset="0"/>
+                                    <GradientStop Color="#990A0A0C" Offset="0.5"/>
+                                    <GradientStop Color="#000A0A0C" Offset="0.9"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
                         </Border>
-                        <TextBlock Text="{Binding FeaturedMovie.Title}" Foreground="White" FontSize="26.5" FontWeight="ExtraBold"/>
-                        <TextBlock Text="Watch the latest cinematic masterpiece now." Foreground="#AAFFFFFF" FontSize="11" Margin="0,3,0,15"/>
-                        <Button Content="GET TICKETS BELOW" Style="{StaticResource ShowtimeBtnStyle}" HorizontalAlignment="Left" FontSize="11"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-            <Border Grid.Row="0" VerticalAlignment="Bottom" Height="1" Margin="20,0">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#00FFFFFF" Offset="0"/>
-                        <GradientStop Color="#22FFFFFF" Offset="0.05"/>
-                        <GradientStop Color="#22FFFFFF" Offset="0.95"/>
-                        <GradientStop Color="#00FFFFFF" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.Background>
-            </Border>
-            <views:AdminView x:Name="AdminPanel"
-                 Grid.Row="1" Grid.RowSpan="3" Panel.ZIndex="500" 
-                 Visibility="{Binding IsChecked, ElementName=AdminTab, Converter={StaticResource BoolToVis}}" 
-                 Movies="{Binding PagedAdminMovies}"
-                 PageNumbers="{Binding PageNumbers}"
-                 PaginationStatus="{Binding PaginationStatus}"
-                 SearchChanged="AdminPanel_SearchChanged"
-                 SortChanged="AdminPanel_SortChanged"
-                 AddMovieRequested="AdminPanel_AddMovieRequested"
-                 EditMovieRequested="AdminPanel_EditMovieRequested"
-                 DeleteMovieRequested="AdminPanel_DeleteMovieRequested"
-                 AddScreeningRequested="AdminPanel_AddScreeningRequested"
-                 PrevPageRequested="AdminPanel_PrevPageRequested"
-                 NextPageRequested="AdminPanel_NextPageRequested"
-                 PageNumberRequested="AdminPanel_PageNumberRequested" />
+
+                        <StackPanel VerticalAlignment="Center" Margin="30,0,0,0" Width="500" HorizontalAlignment="Left">
+                            <Border Background="#FFB75E" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="0,0,0,6">
+                                <TextBlock Text="FEATURED MOVIE" Foreground="Black" FontSize="9" FontWeight="Bold"/>
+                            </Border>
+                            <TextBlock Text="{Binding FeaturedMovie.Title, FallbackValue='Loading...'}" Foreground="White" FontSize="24" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                            <TextBlock Text="Watch the latest cinematic masterpiece now." Foreground="#CCFFFFFF" FontSize="12" Margin="0,0,0,10"/>
+                            <Button Content="GET TICKETS BELOW" Style="{StaticResource PagingBtnStyle}" Width="130" Height="28" FontSize="10" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0">
+                            <Border BorderBrush="#44FFFFFF" BorderThickness="1" CornerRadius="10" Padding="10,2" Background="#1A000000" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding FeaturedMovie.Genre}" Foreground="#E0E0E0" FontSize="10" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border Background="#2A2A2A" CornerRadius="10" Padding="8,2">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding FeaturedMovie.ImdbRating, FallbackValue='0.0'}" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                                    <TextBlock Text=" ★ Movie" Foreground="#FFB75E" FontSize="9" VerticalAlignment="Center" Margin="2,1,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel x:Name="BannerDotsContainer" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,12">
+                            <RadioButton Style="{StaticResource BannerDotStyle}" IsChecked="True" Tag="0" Click="Dot_Click"/>
+                            <RadioButton Style="{StaticResource BannerDotStyle}" Tag="1" Click="Dot_Click"/>
+                            <RadioButton Style="{StaticResource BannerDotStyle}" Tag="2" Click="Dot_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Height="1" Margin="20,0,20,15">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00FFFFFF" Offset="0"/>
+                            <GradientStop Color="#22FFFFFF" Offset="0.05"/>
+                            <GradientStop Color="#22FFFFFF" Offset="0.95"/>
+                            <GradientStop Color="#00FFFFFF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+            </StackPanel>
+
+            <views:AdminView x:Name="AdminPanel" Grid.Row="1" Grid.RowSpan="3" Panel.ZIndex="500" Visibility="{Binding IsChecked, ElementName=AdminTab, Converter={StaticResource BoolToVis}}" Movies="{Binding PagedAdminMovies}" Screenings="{Binding PagedScreenings}" MoviePaginationStatus="{Binding MoviePaginationStatus}" ScreeningPaginationStatus="{Binding ScreeningPaginationStatus}" SearchChanged="AdminPanel_SearchChanged" SortChanged="AdminPanel_SortChanged" AddMovieRequested="AdminPanel_AddMovieRequested" EditMovieRequested="AdminPanel_EditMovieRequested" DeleteMovieRequested="AdminPanel_DeleteMovieRequested" AddScreeningRequested="AdminPanel_AddScreeningRequested" EditScreeningRequested="AdminPanel_EditScreeningRequested" DeleteScreeningRequested="AdminPanel_DeleteScreeningRequested" PrevPageRequested="AdminPanel_PrevPageRequested" NextPageRequested="AdminPanel_NextPageRequested" PageNumberRequested="AdminPanel_PageNumberRequested" ScreeningSearchChanged="AdminPanel_ScreeningSearchChanged" ScreeningSortChanged="AdminPanel_ScreeningSortChanged"/>
+
             <views:ProfileView Grid.Row="1" Grid.RowSpan="3" Panel.ZIndex="900" Visibility="{Binding IsChecked, ElementName=ProfileTab, Converter={StaticResource BoolToVis}}" />
+
             <views:CashierView x:Name="CashierPanel" Grid.Row="1" Grid.RowSpan="3" Panel.ZIndex="800" Visibility="{Binding IsChecked, ElementName=CashierTab, Converter={StaticResource BoolToVis}}" VerifyTicketRequested="CashierPanel_VerifyTicketRequested" IssueAllTicketsRequested="CashierPanel_IssueAllTicketsRequested" />
-            <views:MovieCatalogView x:Name="MovieCatalog" Grid.Row="2" Grid.RowSpan="2" Margin="0,0,0,5" MovieDetailRequested="MovieCatalog_MovieDetailRequested"/>
+
+            <views:MovieCatalogView x:Name="MovieCatalog" Grid.Row="2" Grid.RowSpan="2" Margin="0,0,0,5" MovieDetailRequested="MovieCatalog_MovieDetailRequested" DateChanged="MovieCatalog_DateChanged"/>
         </Grid>
+
         <modals:AddMovieModal x:Name="AddMoviePopup" Visibility="Collapsed" Panel.ZIndex="2000" Grid.RowSpan="4" MovieSaved="AddMoviePopup_RefreshRequested"/>
-        <modals:AddScreeningModal x:Name="AddScreeningPopup" Visibility="Collapsed" Panel.ZIndex="2000" Grid.RowSpan="4"/>
+        <modals:AddScreeningModal x:Name="AddScreeningPopup" Visibility="Collapsed" Panel.ZIndex="2000" Grid.RowSpan="4" AllMovies="{Binding SelectableMovies}" ScreeningSaved="AddScreeningPopup_ScreeningSaved"/>
         <modals:DeleteConfirmModal x:Name="DeletePopup" Visibility="Collapsed" Panel.ZIndex="3000" Grid.RowSpan="4" OnDeleteConfirmed="DeletePopup_OnDeleteConfirmed"/>
         <controls:ToastControl x:Name="AppToast" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,10,0,0" Panel.ZIndex="5000"/>
-        <modals:MovieDetailModal x:Name="MovieDetailPopup" Visibility="Collapsed" Panel.ZIndex="4000" Grid.RowSpan="4"/>
+        <modals:MovieDetailModal x:Name="MovieDetailPopup" Visibility="Collapsed" Panel.ZIndex="4000" Grid.RowSpan="4" DataContext="{x:Null}"/>
     </Grid>
 </Page>

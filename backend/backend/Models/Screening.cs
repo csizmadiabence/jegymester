@@ -11,7 +11,5 @@ public class Screening
     public string RoomName { get; set; } = string.Empty; 
     public DateTime StartTime { get; set; }
     public decimal Price { get; set; }
-
-    [JsonIgnore]
     public Movie? Movie { get; set; }
 }
