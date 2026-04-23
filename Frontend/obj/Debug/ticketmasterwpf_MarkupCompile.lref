@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿C:\Users\bence\Source\Repos\jegymester\Frontend\obj\Debug\GeneratedInternalTypeHelper.g.cs
 FC:\Users\bence\Source\Repos\jegymester\Frontend\App.xaml;;
 FC:\Users\bence\Source\Repos\jegymester\Frontend\CheckoutPage.xaml;;
@@ -10,4 +11,17 @@ FC:\Users\bence\Source\Repos\jegymester\Frontend\LoginPage.xaml;;
 FC:\Users\bence\Source\Repos\jegymester\Frontend\RegisterPage.xaml;;
 FC:\Users\bence\Source\Repos\jegymester\Frontend\Views\AdminView.xaml;;
 FC:\Users\bence\Source\Repos\jegymester\Frontend\Views\ProfileView.xaml;;
+=======
+﻿
+FC:\Users\maasz\source\repos\jegymester\Frontend\App.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\CheckoutPage.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\HomePage.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\Modals\AddMovieModal.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\Modals\SingleSeatModal.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\TicketBuy.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\LoginPage.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\RegisterPage.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\Views\AdminView.xaml;;
+FC:\Users\maasz\source\repos\jegymester\Frontend\Views\ProfileView.xaml;;
+>>>>>>> 4461f0d188361205378678edd9851f3ebd202252
 

@@ -14,5 +14,11 @@ public class Screening
     public Movie? Movie { get; set; }
 
     [JsonIgnore]
+<<<<<<< HEAD
+=======
+    public Movie? Movie { get; set; }
+
+    [JsonIgnore]
+>>>>>>> 4461f0d188361205378678edd9851f3ebd202252
     public CinemaHall? CinemaHall { get; set; }
 }
