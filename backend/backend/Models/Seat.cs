@@ -32,9 +32,3 @@ public class Seat
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
-// Egy teljes sor (számokkal és székekkel)
-public class TheaterRow
-{
-    public int RowNumber { get; set; }
-    public ObservableCollection<Seat> Seats { get; set; }
-}

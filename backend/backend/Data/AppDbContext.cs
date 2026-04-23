@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using backend.Models;
+﻿using backend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data;
 
@@ -14,4 +14,19 @@ public class AppDbContext : DbContext
     public DbSet<Screening> Screenings { get; set; } 
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<Seat> Seats { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<CinemaHall> CinemaHalls { get; set; }
+    public DbSet<TheaterRow> TheaterRows { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {        
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Role>().HasData(
+            new Role { Id = 1, Name = "Admin" },
+            new Role { Id = 2, Name = "Cashier" },
+            new Role { Id = 3, Name = "User" }
+        );
+    }
+    
 }

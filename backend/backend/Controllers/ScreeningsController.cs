@@ -19,7 +19,10 @@ public class ScreeningsController : ControllerBase
     [HttpGet] //vetitesek listazasa
     public async Task<ActionResult<IEnumerable<Screening>>> GetScreenings()
     {
-        return await _context.Screenings.Include(s => s.Movie).ToListAsync();
+        return await _context.Screenings
+        .Include(s => s.Movie)
+        .Include(s => s.CinemaHall)
+        .ToListAsync();
     }
 
     [HttpPost] //uj vetites felvetele (admin)
