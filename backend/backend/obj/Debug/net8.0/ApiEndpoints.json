@@ -83,6 +83,32 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "backend.Controllers.MoviesController",
+    "Method": "GetMoviesByDate",
+    "RelativePath": "api/Movies/by-date/{date}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "date",
+        "Type": "System.DateTime",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[backend.Models.Movie, backend, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "backend.Controllers.ScreeningsController",
     "Method": "GetScreenings",
     "RelativePath": "api/Screenings",
@@ -129,6 +155,27 @@
       {
         "Name": "id",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.ScreeningsController",
+    "Method": "PutScreening",
+    "RelativePath": "api/Screenings/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "screening",
+        "Type": "backend.Models.Screening",
         "IsRequired": true
       }
     ],

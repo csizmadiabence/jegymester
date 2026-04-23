@@ -151,4 +151,4 @@ C:\Users\bence\source\repos\jegymester\Frontend\obj\Debug\Modals\SingleSeatModal
 C:\Users\bence\source\repos\jegymester\Frontend\obj\Debug\Modals\SingleSeatModal.baml
 C:\Users\bence\source\repos\jegymester\Frontend\bin\Debug\Newtonsoft.Json.dll
 C:\Users\bence\source\repos\jegymester\Frontend\bin\Debug\Newtonsoft.Json.xml
-C:\Users\bence\source\repos\jegymester\Frontend\obj\Debug\ticketmasterwpf.exe.config
+C:\Users\bence\Source\Repos\jegymester\Frontend\obj\Debug\ticketmasterwpf.exe.config

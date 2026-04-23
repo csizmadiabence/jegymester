@@ -23,6 +23,10 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("BackdropUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -37,6 +41,9 @@ namespace backend.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PosterUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")

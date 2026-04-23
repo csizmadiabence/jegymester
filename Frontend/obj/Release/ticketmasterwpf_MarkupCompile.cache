@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\maasz\source\repos\csizmadiabence\jegymester\Frontend\obj\Release\
+C:\Users\bence\Source\Repos\jegymester\Frontend\obj\Release\
 ticketmasterwpf
 none
 false
 TRACE
-C:\Users\maasz\source\repos\csizmadiabence\jegymester\Frontend\App.xaml
-7-1173813200
+C:\Users\bence\Source\Repos\jegymester\Frontend\App.xaml
+171526976198
 
-11-1739823390
-13-1310406943
-CheckoutPage.xaml;HomePage.xaml;TicketBuy.xaml;LoginPage.xaml;MainWindow.xaml;RegisterPage.xaml;SplashPage.xaml;
+28-1604900389
+251507258405
+CheckoutPage.xaml;Controls\ToastControl.xaml;HomePage.xaml;Modals\AddMovieModal.xaml;Modals\AddScreeningModal.xaml;Modals\DeleteConfirmModal.xaml;Modals\MovieDetailModal.xaml;Modals\SingleSeatModal.xaml;TicketBuy.xaml;LoginPage.xaml;MainWindow.xaml;RegisterPage.xaml;SplashPage.xaml;Views\AdminView.xaml;Views\CashierView.xaml;Views\MovieCatalogView.xaml;Views\ProfileView.xaml;
 
 True
 

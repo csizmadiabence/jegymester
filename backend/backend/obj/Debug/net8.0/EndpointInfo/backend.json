@@ -152,6 +152,55 @@
         }
       }
     },
+    "/api/Movies/by-date/{date}": {
+      "get": {
+        "tags": [
+          "Movies"
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Movie"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Movie"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Movie"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Screenings": {
       "get": {
         "tags": [
@@ -235,6 +284,46 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Screenings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Screening"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Screening"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Screening"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -791,6 +880,14 @@
             "type": "string",
             "nullable": true
           },
+          "releaseDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "backdropUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "screenings": {
             "type": "array",
             "items": {
@@ -823,6 +920,9 @@
           "price": {
             "type": "number",
             "format": "double"
+          },
+          "movie": {
+            "$ref": "#/components/schemas/Movie"
           }
         },
         "additionalProperties": false
