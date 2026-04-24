@@ -11,40 +11,59 @@
       Title="GuestPage">
 
 	<Page.Resources>
-		<Style TargetType="ToggleButton" x:Key="SeatStyle">
-			<Setter Property="Background" Value="#4CAF50"/>
-			<Setter Property="Foreground" Value="White"/>
-			<Setter Property="Cursor" Value="Hand"/>
-			<Setter Property="Width" Value="36"/>
-			<Setter Property="Height" Value="28"/>
-			<Setter Property="Margin" Value="2,2"/>
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="ToggleButton">
-						<Border Background="{TemplateBinding Background}" CornerRadius="4,4,2,2">
-							<Grid>
-								<TextBlock Text="{Binding Number}" Foreground="White" FontSize="12"
-                                           FontWeight="Bold" HorizontalAlignment="Center" Margin="0,3,0,0"/>
-								<Rectangle Height="2" Fill="White" Opacity="0.5" VerticalAlignment="Bottom" Margin="4,0,4,3"/>
-							</Grid>
-						</Border>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-			<Style.Triggers>
-				<DataTrigger Binding="{Binding IsOccupied}" Value="True">
-					<Setter Property="Background" Value="#8F9AA3"/>
-					<Setter Property="IsEnabled" Value="False"/>
-				</DataTrigger>
-				<Trigger Property="IsChecked" Value="True">
-					<Setter Property="Background" Value="#385399"/>
-				</Trigger>
-				<DataTrigger Binding="{Binding IsHidden}" Value="True">
-					<Setter Property="Visibility" Value="Hidden"/>
-				</DataTrigger>
-			</Style.Triggers>
-		</Style>
-		<Style x:Key="GlowButtonStyle" TargetType="Button">
+        <Style TargetType="ToggleButton" x:Key="SeatStyle">
+            <Setter Property="Background" Value="#4CAF50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <Border x:Name="SeatBackrest" Background="{TemplateBinding Background}" CornerRadius="4,4,2,2" Margin="0,0,0,6">
+                                <TextBlock x:Name="NumberText" Text="{Binding Number}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" Foreground="{TemplateBinding Foreground}"/>
+                            </Border>
+
+                            <Border x:Name="SeatCushion" Background="{TemplateBinding Background}" CornerRadius="2" Height="4" VerticalAlignment="Bottom" Margin="2,0,2,0" Opacity="0.8"/>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsHidden}" Value="True">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+
+                            <DataTrigger Binding="{Binding Number}" Value="0">
+                                <Setter TargetName="NumberText" Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SeatBackrest" Property="Background" Value="#385399"/>
+                                <Setter TargetName="SeatCushion" Property="Background" Value="#385399"/>
+                            </Trigger>
+
+                            <DataTrigger Binding="{Binding IsOccupied}" Value="True">
+                                <Setter TargetName="SeatBackrest" Property="Background" Value="#555555"/>
+                                <Setter TargetName="SeatCushion" Property="Background" Value="#444444"/>
+                                <Setter TargetName="NumberText" Property="Foreground" Value="#888888"/>
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </DataTrigger>
+
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="False"/>
+                                    <Condition Binding="{Binding IsOccupied}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="SeatBackrest" Property="Background" Value="#66BB6A"/>
+                                <Setter TargetName="SeatCushion" Property="Background" Value="#66BB6A"/>
+                            </MultiDataTrigger>
+
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="GlowButtonStyle" TargetType="Button">
 			<Setter Property="Height" Value="28"/>
 			<Setter Property="FontSize" Value="9"/>
 			<Setter Property="FontWeight" Value="Bold"/>
@@ -56,8 +75,7 @@
 				<Setter.Value>
 					<ControlTemplate TargetType="Button">
 						<Grid>
-							<Border x:Name="glowLayer" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5"
-                    CornerRadius="8" Background="Transparent" Opacity="0"/>
+							<Border x:Name="glowLayer" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="8" Background="Transparent" Opacity="0"/>
 							<Border x:Name="mainBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1.5" CornerRadius="8" Background="Transparent">
 								<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
 							</Border>
@@ -107,47 +125,45 @@
 
 			<StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,30,0,10">
 				<Path Data="M 0,15 Q 150,0 300,15 L 280,20 Q 150,5 20,20 Z" Fill="#E0E0E0" Stretch="Fill" Width="360" Height="20"/>
-				<TextBlock Text="1. terem" HorizontalAlignment="Center" Margin="0,5,0,0" Foreground="White" FontSize="12"/>
+                <TextBlock Text="{Binding SelectedRoomName}" HorizontalAlignment="Center" Margin="0,5,0,0" Foreground="White" FontSize="12"/>
 			</StackPanel>
 
-			<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-				<ItemsControl ItemsSource="{Binding TheaterRows}" HorizontalAlignment="Center" VerticalAlignment="Center">
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<Grid Margin="0,1">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="30"/>
-									<ColumnDefinition Width="Auto"/>
-									<ColumnDefinition Width="30"/>
-								</Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
+                <Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxWidth="850" Margin="20">
+                    <ItemsControl ItemsSource="{Binding TheaterRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
 
-								<TextBlock Text="{Binding RowNumber}" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                           FontWeight="Bold" Foreground="#888" FontSize="14"/>
+                                    <TextBlock Text="{Binding RowNumber}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#66FFFFFF" FontSize="16" FontWeight="Bold"/>
 
-								<ItemsControl Grid.Column="1" ItemsSource="{Binding Seats}">
-									<ItemsControl.ItemsPanel>
-										<ItemsPanelTemplate>
-											<UniformGrid Columns="16"/>
-										</ItemsPanelTemplate>
-									</ItemsControl.ItemsPanel>
-									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-											<ToggleButton Style="{StaticResource SeatStyle}"
-                                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                          Click="Seat_Click"/>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
+                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Seats}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="{Binding DataContext.MaxColumns, RelativeSource={RelativeSource AncestorType=Page}}"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <ToggleButton Style="{StaticResource SeatStyle}" IsChecked="{Binding IsSelected, Mode=TwoWay}" Click="Seat_Click" Width="34" Height="34" Margin="2.5"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
 
-								<TextBlock Grid.Column="2" Text="{Binding RowNumber}" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                           FontWeight="Bold" Foreground="#888" FontSize="14"/>
-							</Grid>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
-			</ScrollViewer>
+                                    <TextBlock Grid.Column="2" Text="{Binding RowNumber}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#66FFFFFF" FontSize="16" FontWeight="Bold"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Viewbox>
+            </ScrollViewer>
 
-			<StackPanel Grid.Row="3" Margin="0,5,0,0">
+            <StackPanel Grid.Row="3" Margin="0,5,0,0">
 				<TextBlock Text="You can book a maximum of 10 seats per transaction." FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,5" Foreground="White"/>
 				<TextBlock Text="Please do not leave an empty seat between selected seats." HorizontalAlignment="Center" Foreground="#AAA" FontSize="11"/>
 
@@ -234,17 +250,9 @@
 			</Button>
 		</StackPanel>
         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,40,30,0" Panel.ZIndex="40">
-            <TextBlock Text="{Binding SelectedMovieTitle}"
-               Foreground="#FFFFFF"
-               FontSize="13"
-               FontWeight="Bold"
-               TextAlignment="Right"
-               Opacity="0.9"/>
+            <TextBlock Text="{Binding SelectedMovieTitle}" Foreground="#FFFFFF" FontSize="13" FontWeight="Bold" TextAlignment="Right" Opacity="0.9"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
-                <TextBlock Text="{Binding SelectedShowtime}"
-                   Foreground="#FFFFFF"
-                   FontSize="11"
-                   FontWeight="Regular"/>
+                <TextBlock Text="{Binding SelectedShowtime}" Foreground="#FFFFFF" FontSize="11" FontWeight="Regular"/>
             </StackPanel>
         </StackPanel>
         <modals:SingleSeatModal x:Name="SingleSeatPopup" Visibility="Collapsed" Panel.ZIndex="9999" Grid.RowSpan="10" Grid.ColumnSpan="10"/>

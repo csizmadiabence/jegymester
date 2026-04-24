@@ -24,7 +24,7 @@ namespace ticketmasterwpf.Modals
             if (item is Movie m)
                 DeleteMessageText.Text = $"Biztosan törlöd a(z) {m.Title} filmet?";
             else if (item is Screening s)
-                DeleteMessageText.Text = $"Biztosan törlöd a vetítést: {s.RoomName} ({s.StartTime:HH:mm})?";
+                DeleteMessageText.Text = $"Biztosan törlöd a vetítést: {s.CinemaHall?.Name} ({s.StartTime:HH:mm})?";
 
             this.Visibility = Visibility.Visible;
         }

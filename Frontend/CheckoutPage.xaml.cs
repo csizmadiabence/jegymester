@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,31 +11,38 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using ticketmasterwpf.Models;
+using ticketmasterwpf.Services;
 
 namespace ticketmasterwpf
 {
     public partial class CheckoutPage : Page
     {
+        private List<Seat> _seats;
+        private Screening _screening;
+        private dynamic currentUser = null;
+
         public string SelectedMovieTitle { get; set; }
         public string SelectedShowtime { get; set; }
         public List<SeatDisplayModel> SelectedSeatsList { get; set; }
         public string TotalAmount { get; set; }
 
-        private dynamic currentUser = null;
-
-        public CheckoutPage(List<Seat> seats, string title, string time)
+        public CheckoutPage(List<Seat> seats, Screening screening)
         {
             InitializeComponent();
 
-            SelectedMovieTitle = title;
-            SelectedShowtime = time;
+            _seats = seats;
+            _screening = screening;
+
+            SelectedMovieTitle = screening?.Movie?.Title ?? "Unknown Movie";
+            SelectedShowtime = screening?.StartTime.ToString("yyyy.MM.dd. HH:mm") ?? "00:00";
 
             SelectedSeatsList = seats.Select(s => new SeatDisplayModel
             {
                 SeatInfo = $"ROW: {s.Row} | SEAT: {s.Number}"
             }).ToList();
 
-            int total = seats.Count * 3090;
+            decimal pricePerTicket = screening?.Price ?? 3090;
+            decimal total = seats.Count * pricePerTicket;
             TotalAmount = $"{total:N0} Ft";
 
             this.DataContext = this;
@@ -50,7 +60,7 @@ namespace ticketmasterwpf
             Window window = Window.GetWindow(this);
             if (window != null) window.WindowState = WindowState.Minimized;
         }
-        //TOVÁBBLÉPÉS A VÁSÁRLÁSHOZ
+
         private void ProceedToPayment_Click(object sender, RoutedEventArgs e)
         {
             OverlayMovieTitle.Text = SelectedMovieTitle;
@@ -65,16 +75,15 @@ namespace ticketmasterwpf
 
             PurchaseOverlay.Visibility = Visibility.Visible;
         }
-        //VÁSÁRLÁS MEGSZAKÍTÁS
+
         private void CancelPurchase_Click(object sender, RoutedEventArgs e)
         {
             PurchaseOverlay.Visibility = Visibility.Collapsed;
         }
 
-        //VÁSÁRLÁS VÉGLEGESÍTÉS
+        // VÁSÁRLÁS VÉGLEGESÍTÉS - Bekötve a Backendhez
         private async void FinalPay_Click(object sender, RoutedEventArgs e)
         {
-            // Egyszerű validáció
             if (string.IsNullOrWhiteSpace(GuestEmailBox.Text))
             {
                 AppToast.ShowToast("Email is required!", false);
@@ -84,18 +93,47 @@ namespace ticketmasterwpf
             ActionButtonGrid.IsEnabled = false;
             PaymentProcessing.Visibility = Visibility.Visible;
 
-            await Task.Delay(2000); // Fizetés szimulálása
+            try
+            {
+                // Jegyek elmentése a szerverre
+                using (var client = new HttpClient())
+                {
+                    foreach (var seat in _seats)
+                    {
+                        var ticket = new Ticket
+                        {
+                            ScreeningId = _screening.Id,
+                            SeatId = seat.Id,
+                            GuestEmail = GuestEmailBox.Text,
+                            GuestPhone = GuestPhoneBox.Text,
+                            Price = (int)_screening.Price,
+                            PurchaseDate = DateTime.Now
+                        };
 
-            // Átváltás a Siker képernyőre
-            PurchaseOverlay.Visibility = Visibility.Collapsed;
-            SuccessOverlay.Visibility = Visibility.Visible;
-            StartConfettiExplosion();
+                        string json = JsonSerializer.Serialize(ticket);
+                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+                        await client.PostAsync("http://localhost:5035/api/Tickets", content);
+                    }
+                }
 
-            AppToast.ShowToast("Payment Successful!", true);
-            ResetPurchaseProcess();
+                await Task.Delay(1500);
 
+                PurchaseOverlay.Visibility = Visibility.Collapsed;
+                SuccessOverlay.Visibility = Visibility.Visible;
+                StartConfettiExplosion();
+
+                AppToast.ShowToast("Payment Successful!", true);
+            }
+            catch (Exception)
+            {
+                AppToast.ShowToast("Connection error: Jegymentés sikertelen!", false);
+            }
+            finally
+            {
+                ResetPurchaseProcess();
+            }
         }
-        //TODO
+
         private void ViewTicket_Click(object sender, RoutedEventArgs e)
         {
             TicketMovieName.Text = SelectedMovieTitle;
@@ -104,34 +142,21 @@ namespace ticketmasterwpf
             TicketID.Text = generatedID;
             TicketSeats.Text = string.Join(", ", SelectedSeatsList.Select(s => s.SeatInfo.Replace("ROW: ", "R").Replace(" | SEAT: ", " S")));
 
+            // Barcode generálás
             Random rnd = new Random();
             List<double> barWidths = new List<double>();
             double[] possibleWidths = { 1.0, 2.0, 3.0 };
-
-            for (int i = 0; i < 40; i++)
-            {
-                barWidths.Add(possibleWidths[rnd.Next(possibleWidths.Length)]);
-            }
+            for (int i = 0; i < 40; i++) barWidths.Add(possibleWidths[rnd.Next(possibleWidths.Length)]);
             BarcodeVector.ItemsSource = barWidths;
 
             SuccessOverlay.Visibility = Visibility.Collapsed;
             TicketDigitalOverlay.Visibility = Visibility.Visible;
         }
 
-        //RandomBarcode
-        private void GenerateVectorBarcode()
-        {
-            List<int> bars = new List<int>();
-            for (int i = 0; i < 45; i++)
-            {
-                bars.Add(1);
-            }
-            BarcodeVector.ItemsSource = bars;
-        }
-
         private void CloseTicket_Click(object sender, RoutedEventArgs e)
         {
             TicketDigitalOverlay.Visibility = Visibility.Collapsed;
+            NavigationService.Navigate(new HomePage());
         }
 
         private void ResetPurchaseProcess()
@@ -140,7 +165,6 @@ namespace ticketmasterwpf
             PaymentProcessing.Visibility = Visibility.Collapsed;
         }
 
-        //CONFETTI A VÁSÁRLÁSNÁL
         private void StartConfettiExplosion()
         {
             ConfettiCanvas.Children.Clear();
@@ -163,7 +187,7 @@ namespace ticketmasterwpf
                 };
 
                 Canvas.SetLeft(confetti, 120);
-                Canvas.SetTop(confetti, 80); ;
+                Canvas.SetTop(confetti, 80);
                 ConfettiCanvas.Children.Add(confetti);
 
                 double angle = rnd.NextDouble() * 2 * Math.PI;
@@ -171,14 +195,11 @@ namespace ticketmasterwpf
                 double targetX = Math.Cos(angle) * distance;
                 double targetY = Math.Sin(angle) * distance;
 
-                double durationValue = rnd.NextDouble() * 2.0 + 2.0;
-                TimeSpan duration = TimeSpan.FromSeconds(durationValue);
-
+                TimeSpan duration = TimeSpan.FromSeconds(rnd.NextDouble() * 2.0 + 2.0);
                 var sb = new Storyboard();
 
                 var animX = new DoubleAnimation(0, targetX, duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
                 var animY = new DoubleAnimation(0, targetY, duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-
                 var animRot = new DoubleAnimation(0, rnd.Next(180, 540), duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
 
                 var animOpacity = new DoubleAnimationUsingKeyFrames();
@@ -188,23 +209,21 @@ namespace ticketmasterwpf
 
                 Storyboard.SetTarget(animX, confetti);
                 Storyboard.SetTargetProperty(animX, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.X)"));
-
                 Storyboard.SetTarget(animY, confetti);
                 Storyboard.SetTargetProperty(animY, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"));
-
                 Storyboard.SetTarget(animRot, confetti);
                 Storyboard.SetTargetProperty(animRot, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[1].(RotateTransform.Angle)"));
-
                 Storyboard.SetTarget(animOpacity, confetti);
                 Storyboard.SetTargetProperty(animOpacity, new PropertyPath("Opacity"));
 
-                sb.Children.Add(animX);
-                sb.Children.Add(animY);
-                sb.Children.Add(animRot);
-                sb.Children.Add(animOpacity);
-
+                sb.Children.Add(animX); sb.Children.Add(animY); sb.Children.Add(animRot); sb.Children.Add(animOpacity);
                 sb.Begin();
             }
         }
+    }
+
+    public class SeatDisplayModel
+    {
+        public string SeatInfo { get; set; }
     }
 }

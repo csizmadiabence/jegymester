@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using ticketmasterwpf.Models;
 using ticketmasterwpf.Controls;
+using ticketmasterwpf.Models;
+using ticketmasterwpf.Services;
 
 namespace ticketmasterwpf.Modals
 {
@@ -76,41 +78,33 @@ namespace ticketmasterwpf.Modals
             if (e.Key == Key.Escape) CloseModal();
         }
 
-        private void GetTicketsNow_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedMovie?.Showtimes != null && _selectedMovie.Showtimes.Count > 0)
-            {
-                string firstTime = _selectedMovie.Showtimes[0];
-
-                CloseModal();
-
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                if (mainWindow?.MainFrame != null)
-                {
-                    mainWindow.MainFrame.Navigate(new TicketBuy(_selectedMovie, firstTime));
-                }
-            }
-        }
-
         private void Showtime_Click(object sender, RoutedEventArgs e)
         {
             var movie = this.DataContext as Movie;
-
             string selectedTime = (sender as Button)?.Content?.ToString() ?? "00:00";
 
             if (movie != null)
             {
-                CloseModal();
+                var tempScreening = movie.Screenings?.FirstOrDefault(s =>
+                    s.StartTime.ToString("HH:mm") == selectedTime);
 
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                if (mainWindow != null && mainWindow.MainFrame != null)
+                if (tempScreening != null)
                 {
-                    mainWindow.MainFrame.Navigate(new TicketBuy(movie, selectedTime));
+                    var fullScreening = DataService.AllScreenings.FirstOrDefault(s => s.Id == tempScreening.Id);
+
+                    if (fullScreening != null)
+                    {
+                        CloseModal();
+                        var mainWindow = Application.Current.MainWindow as MainWindow;
+                        mainWindow?.MainFrame.Navigate(new TicketBuy(fullScreening));
+                    }
+                    else
+                    {
+                        var mainWindow = Application.Current.MainWindow as MainWindow;
+                        mainWindow?.MainFrame.Navigate(new TicketBuy(tempScreening));
+                        ShowToastRequested?.Invoke(this, "Warning: Detailed screening data still loading...");
+                    }
                 }
-            }
-            else
-            {
-                ShowToastRequested?.Invoke(this, "Error: Movie data not found!");
             }
         }
     }

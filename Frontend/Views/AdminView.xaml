@@ -423,7 +423,7 @@
 
                                                             <TextBlock Grid.Column="1" Text="{Binding Movie.Title}" Foreground="White" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
 
-                                                            <TextBlock Grid.Column="2" Text="{Binding RoomName}" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="2" Text="{Binding CinemaHall.Name}" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Center"/>
 
                                                             <TextBlock Grid.Column="3" Text="{Binding StartTime, StringFormat='yyyy.MM.dd HH:mm'}" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Center"/>
 
@@ -541,7 +541,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <Button Content="+ Add" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Padding="8,4" FontSize="10" Height="30" Width="45"/>
+                            <Button Content="+ Add" Click="OpenAddCustomer_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Padding="8,4" FontSize="10" Height="30" Width="45"/>
                         </StackPanel>
                     </Grid>
 
@@ -555,7 +555,7 @@
                             <Grid Margin="15,0" TextElement.Foreground="#44FFFFFF" TextElement.FontSize="11">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="40"/>
-                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2.5*"/>
                                     <ColumnDefinition Width="2.5*"/>
                                     <ColumnDefinition Width="1.5*"/>
                                     <ColumnDefinition Width="1*"/>
@@ -563,16 +563,16 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Text="ID" HorizontalAlignment="Left"/>
-                                <TextBlock Grid.Column="1" Text="Full Name" HorizontalAlignment="Left"/>
+                                <TextBlock Grid.Column="1" Text="Username" HorizontalAlignment="Left"/>
                                 <TextBlock Grid.Column="2" Text="Email Address" HorizontalAlignment="Left" Margin="10,0,0,0"/>
                                 <TextBlock Grid.Column="3" Text="Phone" HorizontalAlignment="Left" Margin="-15,0,0,0"/>
-                                <TextBlock Grid.Column="4" Text="Role" HorizontalAlignment="Left" Margin="0,0,23,0"/>
+                                <TextBlock Grid.Column="4" Text="Role" HorizontalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Grid.Column="5" Text="Manage" HorizontalAlignment="Right"/>
                             </Grid>
                         </Border>
 
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding Customers}">
+                            <ItemsControl ItemsSource="{Binding Customers, ElementName=adminRoot}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <RadioButton GroupName="AdminCustomerSelection" Cursor="Hand">
@@ -582,48 +582,48 @@
                                                         <Grid VerticalAlignment="Center">
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="40"/>
-                                                                <ColumnDefinition Width="2*"/>
+                                                                <ColumnDefinition Width="2.5*"/>
                                                                 <ColumnDefinition Width="2.5*"/>
                                                                 <ColumnDefinition Width="1.5*"/>
-                                                                <ColumnDefinition Width="1*"/>
+                                                                <ColumnDefinition Width="1.5*"/>
                                                                 <ColumnDefinition Width="85"/>
                                                             </Grid.ColumnDefinitions>
 
                                                             <TextBlock Text="{Binding Id}" Foreground="#66FFFFFF" FontSize="11" VerticalAlignment="Center"/>
-                                                            <TextBlock Grid.Column="1" Text="{Binding FullName}" Foreground="White" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
-                                                            <TextBlock Grid.Column="2" Text="{Binding Email}" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Center"/>
-                                                            <TextBlock Grid.Column="3" Text="{Binding Phone}" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Username}" Foreground="White" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="2" Text="{Binding Email}" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                                            <TextBlock Grid.Column="3" Text="{Binding PhoneNumber, TargetNullValue='-', FallbackValue='-'}" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Center" Margin="-15,0,0,0"/>
 
-                                                            <Border Grid.Column="4" CornerRadius="6" VerticalAlignment="Center" Padding="8,2" Margin="0,0,15,0" HorizontalAlignment="Left">
+                                                            <Border Grid.Column="4" CornerRadius="6" VerticalAlignment="Center" Padding="8,2" Margin="0,0,15,0" HorizontalAlignment="Center">
                                                                 <Border.Style>
                                                                     <Style TargetType="Border">
                                                                         <Setter Property="Background" Value="#1A4FACFE"/>
                                                                         <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding Role}" Value="Admin">
+                                                                            <DataTrigger Binding="{Binding RoleDisplay}" Value="Admin">
                                                                                 <Setter Property="Background" Value="#1AFF5555"/>
                                                                             </DataTrigger>
-                                                                            <DataTrigger Binding="{Binding Role}" Value="Cashier">
+                                                                            <DataTrigger Binding="{Binding RoleDisplay}" Value="Cashier">
                                                                                 <Setter Property="Background" Value="#1AE0A96D"/>
                                                                             </DataTrigger>
-                                                                            <DataTrigger Binding="{Binding Role}" Value="User">
-                                                                                <Setter Property="Background" Value="#1AE0A96D"/>
+                                                                            <DataTrigger Binding="{Binding RoleDisplay}" Value="User">
+                                                                                <Setter Property="Background" Value="#1A4FACFE"/>
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>
                                                                 </Border.Style>
 
-                                                                <TextBlock Text="{Binding Role}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center">
+                                                                <TextBlock Text="{Binding RoleDisplay}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center">
                                                                     <TextBlock.Style>
                                                                         <Style TargetType="TextBlock">
                                                                             <Setter Property="Foreground" Value="#4FACFE"/>
                                                                             <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding Role}" Value="Admin">
+                                                                                <DataTrigger Binding="{Binding RoleDisplay}" Value="Admin">
                                                                                     <Setter Property="Foreground" Value="#FF5555"/>
                                                                                 </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Role}" Value="Cashier">
+                                                                                <DataTrigger Binding="{Binding RoleDisplay}" Value="Cashier">
                                                                                     <Setter Property="Foreground" Value="#E0A96D"/>
                                                                                 </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Role}" Value="User">
+                                                                                <DataTrigger Binding="{Binding RoleDisplay}" Value="User">
                                                                                     <Setter Property="Foreground" Value="SkyBlue"/>
                                                                                 </DataTrigger>
                                                                             </Style.Triggers>
@@ -633,7 +633,7 @@
                                                             </Border>
 
                                                             <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                <Button Width="14" Height="14" Margin="0,0,6,0" Cursor="Hand" Background="Transparent" BorderThickness="0">
+                                                                <Button Click="EditCustomer_Click" Width="14" Height="14" Margin="0,0,6,0" Cursor="Hand" Background="Transparent" BorderThickness="0">
                                                                     <Button.Template>
                                                                         <ControlTemplate TargetType="Button">
                                                                             <Border x:Name="iconColor" Background="#4FACFE">
@@ -650,7 +650,7 @@
                                                                     </Button.Template>
                                                                 </Button>
 
-                                                                <Button Width="14" Height="14" Margin="0,0,3,0" Cursor="Hand" Background="Transparent" BorderThickness="0">
+                                                                <Button Click="DeleteCustomer_Click" Width="14" Height="14" Margin="0,0,3,0" Cursor="Hand" Background="Transparent" BorderThickness="0">
                                                                     <Button.Template>
                                                                         <ControlTemplate TargetType="Button">
                                                                             <Border x:Name="iconColor" Background="#FF5555">
@@ -686,10 +686,10 @@
                         </ScrollViewer>
                     </Grid>
                     <Grid Grid.Row="2" Margin="0,20,0,0">
-                        <TextBlock Text="Showing data 1 to 8 of 16 entries" Foreground="#44FFFFFF" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CustomerPaginationStatus, ElementName=adminRoot}" Foreground="#44FFFFFF" FontSize="11" VerticalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="&lt;" Style="{StaticResource PagingBtnStyle}"/>
-                            <ItemsControl ItemsSource="{Binding PageNumbers}">
+                            <Button Content="&lt;" Click="PrevPage_Click" Style="{StaticResource PagingBtnStyle}"/>
+                            <ItemsControl ItemsSource="{Binding CustomerPageNumbers, ElementName=adminRoot}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Horizontal"/>
@@ -697,11 +697,11 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <RadioButton Content="{Binding Number}" GroupName="ScreeningPages" Style="{StaticResource PagingNumStyle}" IsChecked="{Binding IsActive, Mode=TwoWay}" Click="PageNumber_Click"/>
+                                        <RadioButton Content="{Binding Number}" GroupName="CustomerPages" IsChecked="{Binding IsActive}" Click="PageNumber_Click" Style="{StaticResource PagingNumStyle}"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button Content="&gt;" Style="{StaticResource PagingBtnStyle}"/>
+                            <Button Content="&gt;" Click="NextPage_Click" Style="{StaticResource PagingBtnStyle}"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

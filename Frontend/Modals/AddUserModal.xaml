@@ -1,0 +1,71 @@
+﻿<UserControl x:Class="ticketmasterwpf.Modals.AddUserModal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ticketmasterwpf.Modals"
+             xmlns:controls="clr-namespace:ticketmasterwpf.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="550" d:DesignWidth="600">
+    <Grid>
+        <Border Background="#CC000000" CornerRadius="20">
+            <Border Background="#1A1C23" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="25" Width="550" Padding="30" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock x:Name="UserModalTitle" Text="Add New User" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="25"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Username" Foreground="#88FFFFFF" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Border Style="{StaticResource InputBorderStyle}" Margin="0,0,0,20">
+                                <TextBox x:Name="UsernameInput" BorderThickness="0" Background="Transparent" Padding="13,8" FontSize="13" Foreground="White" CaretBrush="White"/>
+                            </Border>
+
+                            <TextBlock Text="Email Address" Foreground="#88FFFFFF" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Border Style="{StaticResource InputBorderStyle}" Margin="0,0,0,20">
+                                <TextBox x:Name="EmailInput" BorderThickness="0" Background="Transparent" Padding="13,8" FontSize="13" Foreground="White" CaretBrush="White"/>
+                            </Border>
+
+                            <TextBlock Text="Phone Number" Foreground="#88FFFFFF" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Border Style="{StaticResource InputBorderStyle}">
+                                <TextBox x:Name="PhoneInput" BorderThickness="0" Background="Transparent" Padding="13,8" FontSize="13" Foreground="White" CaretBrush="White"/>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Password" Foreground="#88FFFFFF" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Border Style="{StaticResource InputBorderStyle}" Margin="0,0,0,20">
+                                <PasswordBox x:Name="PasswordInput" BorderThickness="0" Background="Transparent" Padding="13,8" FontSize="13" Foreground="White" CaretBrush="White"/>
+                            </Border>
+
+                            <TextBlock Text="Confirm Password" Foreground="#88FFFFFF" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Border Style="{StaticResource InputBorderStyle}" Margin="0,0,0,20">
+                                <PasswordBox x:Name="ConfirmPasswordInput" BorderThickness="0" Background="Transparent" Padding="13,8" FontSize="13" Foreground="White" CaretBrush="White"/>
+                            </Border>
+
+                            <TextBlock Text="User Roles" Foreground="#88FFFFFF" Padding="0,3" FontSize="11" FontWeight="SemiBold" Margin="0,-3,0,8"/>
+                            <Border Style="{StaticResource InputBorderStyle}" Padding="13,8">
+                                <StackPanel x:Name="RoleCheckboxes" Orientation="Vertical">
+                                    <CheckBox x:Name="UserRoleCb" Content="User" Foreground="White" Margin="0,0,0,6" Click="UserRole_Click"/>
+                                    <CheckBox x:Name="CashierRoleCb" Content="Cashier" Foreground="White" Margin="0,0,0,6" Click="HigherRole_Click"/>
+                                    <CheckBox x:Name="AdminRoleCb" Content="Admin" Foreground="White" Click="HigherRole_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,35,0,0">
+                        <Button Content="Cancel" Click="CloseModal_Click" Cursor="Hand" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" Padding="8,4" FontSize="10" Height="30" Width="70" Margin="0,0,15,0"/>
+                        <Button x:Name="SaveUserBtn" Content="Save User" Click="Save_Click" Cursor="Hand" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Padding="8,4" FontSize="10" Height="30" Width="100"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+        <controls:ToastControl x:Name="AppToast" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,10,0,0" Panel.ZIndex="5000"/>
+    </Grid>
+</UserControl>

@@ -22,6 +22,9 @@ namespace ticketmasterwpf.Views
         public event EventHandler<Movie> DeleteMovieRequested;
         public event EventHandler AddScreeningRequested;
         public event EventHandler<Screening> DeleteScreeningRequested;
+        public event EventHandler AddCustomerRequested;
+        public event EventHandler<User> EditCustomerRequested;
+        public event EventHandler<User> DeleteCustomerRequested;
 
         // Lapozáshoz tartozó események
         public event EventHandler PrevPageRequested;
@@ -46,8 +49,21 @@ namespace ticketmasterwpf.Views
         public static readonly DependencyProperty ScreeningPageNumbersProperty = DependencyProperty.Register("ScreeningPageNumbers", typeof(ObservableCollection<PageItem>), typeof(AdminView));
         public ObservableCollection<PageItem> ScreeningPageNumbers { get => (ObservableCollection<PageItem>)GetValue(ScreeningPageNumbersProperty); set => SetValue(ScreeningPageNumbersProperty, value); }
 
-        public static readonly DependencyProperty MoviesProperty = DependencyProperty.Register("Movies", typeof(ObservableCollection<Movie>), typeof(AdminView));
+        public static readonly DependencyProperty CustomerPaginationStatusProperty = DependencyProperty.Register("CustomerPaginationStatus", typeof(string), typeof(AdminView));
 
+        public string CustomerPaginationStatus { get => (string)GetValue(CustomerPaginationStatusProperty); set => SetValue(CustomerPaginationStatusProperty, value); }
+
+        public static readonly DependencyProperty CustomerPageNumbersProperty = DependencyProperty.Register("CustomerPageNumbers", typeof(ObservableCollection<PageItem>), typeof(AdminView));
+        public ObservableCollection<PageItem> CustomerPageNumbers { get => (ObservableCollection<PageItem>)GetValue(CustomerPageNumbersProperty); set => SetValue(CustomerPageNumbersProperty, value); }
+
+        public static readonly DependencyProperty CustomersProperty = DependencyProperty.Register("Customers", typeof(ObservableCollection<User>), typeof(AdminView));
+        public ObservableCollection<User> Customers
+        {
+            get => (ObservableCollection<User>)GetValue(CustomersProperty);
+            set => SetValue(CustomersProperty, value);
+        }
+
+        public static readonly DependencyProperty MoviesProperty = DependencyProperty.Register("Movies", typeof(ObservableCollection<Movie>), typeof(AdminView));
         public ObservableCollection<Movie> Movies
         {
             get => (ObservableCollection<Movie>)GetValue(MoviesProperty);
@@ -123,6 +139,23 @@ namespace ticketmasterwpf.Views
             if (sender is Button btn && btn.DataContext is Screening screening)
             {
                 DeleteScreeningRequested?.Invoke(this, screening);
+            }
+        }
+        private void OpenAddCustomer_Click(object sender, RoutedEventArgs e) => AddCustomerRequested?.Invoke(this, EventArgs.Empty);
+
+        private void EditCustomer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is User user)
+            {
+                EditCustomerRequested?.Invoke(this, user);
+            }
+        }
+
+        private void DeleteCustomer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is User user)
+            {
+                DeleteCustomerRequested?.Invoke(this, user);
             }
         }
 

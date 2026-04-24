@@ -21,6 +21,7 @@ namespace ticketmasterwpf
     public partial class HomePage : Page, INotifyPropertyChanged
     {
         // Adatgyűjtemények a felülethez
+        public ObservableCollection<CinemaHall> CinemaHalls { get; set; } = new ObservableCollection<CinemaHall>();
         public ObservableCollection<Screening> AllScreeningsForAdmin { get; set; } = new ObservableCollection<Screening>();
         public ObservableCollection<Movie> AllMoviesForAdmin { get; set; } = new ObservableCollection<Movie>();
         public ObservableCollection<Movie> PagedAdminMovies { get; set; } = new ObservableCollection<Movie>();
@@ -29,9 +30,10 @@ namespace ticketmasterwpf
         public ObservableCollection<Movie> SelectableMovies { get; set; } = new ObservableCollection<Movie>();
         public ObservableCollection<PageItem> MoviePageNumbers { get; set; } = new ObservableCollection<PageItem>();
         public ObservableCollection<PageItem> ScreeningPageNumbers { get; set; } = new ObservableCollection<PageItem>();
+        public ObservableCollection<PageItem> CustomerPageNumbers { get; set; } = new ObservableCollection<PageItem>();
         public ObservableCollection<Movie> ComingSoonMovies { get; set; } = new ObservableCollection<Movie>();
         public ObservableCollection<DateItem> AvailableDates { get; set; } = new ObservableCollection<DateItem>();
-        public ObservableCollection<object> Customers { get; set; } = new ObservableCollection<object>();
+        public ObservableCollection<User> Customers { get; set; } = new ObservableCollection<User>();
         public ObservableCollection<object> AllTickets { get; set; } = new ObservableCollection<object>();
         public ObservableCollection<object> UserTickets { get; set; } = new ObservableCollection<object>();
         public ObservableCollection<int> PageNumbers { get; set; } = new ObservableCollection<int>();
@@ -83,6 +85,7 @@ namespace ticketmasterwpf
         // Pagination változók
         private int _moviePage = 1;
         private int _screeningPage = 1;
+        private int _customerPage = 1;
 
         private string _moviePaginationStatus;
         public string MoviePaginationStatus
@@ -116,6 +119,16 @@ namespace ticketmasterwpf
             {
                 AppToast.ShowToast(message, isSuccess);
             };
+            AddUserPopup.ShowToastRequested += (message, isSuccess) =>
+            {
+                AppToast.ShowToast(message, isSuccess);
+            };
+            ProfilePanel.ShowToastRequested += (message, isSuccess) => {
+                AppToast.ShowToast(message, isSuccess);
+            };
+            ProfilePanel.ProfileUpdated += (s, e) => {
+                ApplyTestRole(DataService.CurrentUser);
+            };
 
             for (int i = 0; i < 7; i++)
             {
@@ -129,25 +142,42 @@ namespace ticketmasterwpf
                 });
             }
 
-            // --- IDŐZÍTŐ INICIALIZÁLÁSA (5 mp) ---
             _rotationTimer = new DispatcherTimer();
             _rotationTimer.Interval = TimeSpan.FromSeconds(5);
             _rotationTimer.Tick += RotationTimer_Tick;
 
-            ApplyTestRole("Guest");
             this.DataContext = this;
 
-            // 1. ÁTVESSZÜK AZ ADATOKAT A DATASERVICE-BŐL
             AllMoviesForAdmin = DataService.AllMovies;
             AllScreeningsForAdmin = DataService.AllScreenings;
 
-            // 2. KÜLÖNLEGES LISTÁK FELTÖLTÉSE (Kiemelt, Selectable, Coming Soon)
             InitializeSpecialLists();
 
-            // 3. UI FRISSÍTÉSE
+            this.Loaded += HomePage_Loaded;
+        }
+
+        private async void HomePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            await DataService.FetchMovies();
+            await DataService.FetchScreenings();
+            await DataService.FetchUsers();
+
+            if (DataService.CurrentUser != null)
+            {
+                ApplyTestRole(DataService.CurrentUser);
+            }
+            else
+            {
+                ApplyTestRole(null);
+            }
+
+            //await DataService.FetchCinemaHalls(); 
+
+            InitializeSpecialLists();
             RefreshAdminPage();
             RefreshScreeningsPage();
             UpdateHomeCatalogByDate(DateTime.Today);
+            RefreshUsersPage();
         }
 
         private void InitializeSpecialLists()
@@ -156,8 +186,14 @@ namespace ticketmasterwpf
 
             SelectableMovies.Clear();
             ComingSoonMovies.Clear();
+            CinemaHalls.Clear();
 
             var activeOrUpcomingMovies = AllMoviesForAdmin.Where(m => m.Status != "Not Active").ToList();
+
+            foreach (var hall in DataService.AllCinemaHalls)
+            {
+                CinemaHalls.Add(hall);
+            }
 
             foreach (var movie in AllMoviesForAdmin)
             {
@@ -258,7 +294,6 @@ namespace ticketmasterwpf
                     {
                         AppToast.ShowToast("Movie saved successfully!", true);
 
-                        // ÚJ: A DataService hívása a törölt helyett
                         await DataService.FetchMovies();
 
                         InitializeSpecialLists();
@@ -401,14 +436,17 @@ namespace ticketmasterwpf
         private void AdminPanel_AddScreeningRequested(object sender, EventArgs e) => AddScreeningPopup.OpenModal();
         private void AdminPanel_EditScreeningRequested(object sender, Screening screening) => AddScreeningPopup.OpenModal(screening);
         private void AdminPanel_DeleteScreeningRequested(object sender, Screening screening) { _itemToDelete = screening; DeletePopup.OpenModal(screening); }
+        private void AdminPanel_AddCustomerRequested(object sender, EventArgs e) => AddUserPopup.OpenModal(null);
+        private void AdminPanel_EditCustomerRequested(object sender, User user) => AddUserPopup.OpenModal(user);
+        private void AdminPanel_DeleteCustomerRequested(object sender, User user) { _itemToDelete = user; DeletePopup.OpenModal(user); }
 
-        private void AdminPanel_PageNumberRequested(object sender, int page)
+        private void AdminPanel_PageNumberRequested(object sender, int page)    
         {
             if (AdminTab.IsChecked == true)
             {
-                // Attól függően állítjuk a lapot, hogy melyik táblázatot nézzük
                 if (AdminPanel.SubMovies.IsChecked == true) { _moviePage = page; RefreshAdminPage(); }
                 else if (AdminPanel.SubScreenings.IsChecked == true) { _screeningPage = page; RefreshScreeningsPage(); }
+                else if (AdminPanel.SubCustomers.IsChecked == true) { _customerPage = page; RefreshUsersPage(); }
             }
         }
 
@@ -424,6 +462,11 @@ namespace ticketmasterwpf
                 int maxPage = (int)Math.Ceiling((double)AllScreeningsForAdmin.Count / itemsPerPage);
                 if (_screeningPage < maxPage) { _screeningPage++; RefreshScreeningsPage(); }
             }
+            else if (AdminPanel.SubCustomers.IsChecked == true)
+            {
+                int maxPage = (int)Math.Ceiling((double)DataService.AllUsers.Count / itemsPerPage);
+                if (_customerPage < maxPage) { _customerPage++; RefreshUsersPage(); }
+            }
         }
 
         private void AdminPanel_PrevPageRequested(object sender, EventArgs e)
@@ -435,6 +478,10 @@ namespace ticketmasterwpf
             else if (AdminPanel.SubScreenings.IsChecked == true && _screeningPage > 1)
             {
                 _screeningPage--; RefreshScreeningsPage();
+            }
+            else if (AdminPanel.SubCustomers.IsChecked == true && _customerPage > 1)
+            {
+                _customerPage--; RefreshUsersPage();
             }
         }
 
@@ -462,6 +509,12 @@ namespace ticketmasterwpf
         {
             _screeningSort = sortTag;
             RefreshScreeningsPage();
+        }
+
+        private async void AddUserPopup_UserSaved(object sender, EventArgs e)
+        {
+            await DataService.FetchUsers();
+            RefreshUsersPage();
         }
 
         private void RefreshAdminPage()
@@ -519,6 +572,19 @@ namespace ticketmasterwpf
             UpdateScreeningPagination(filteredList.Count);
         }
 
+        private void RefreshUsersPage()
+        {
+            var filteredList = DataService.AllUsers.ToList();
+            var pagedData = filteredList.Skip((_customerPage - 1) * itemsPerPage).Take(itemsPerPage).ToList();
+
+            Customers.Clear();
+            foreach (var user in pagedData)
+            {
+                Customers.Add(user);
+            }
+            UpdateCustomerPagination(filteredList.Count);
+        }
+
         // ================= MOVIE LIST & CASHIER ESEMÉNYEK =================
 
         private void MovieCatalog_MovieDetailRequested(object sender, Movie selectedMovie) => MovieDetailPopup.OpenModal(selectedMovie);
@@ -540,24 +606,30 @@ namespace ticketmasterwpf
         }
 
         // ================= USER & SYSTEM =================
-
-        public void ApplyTestRole(string role)
+        public void ApplyTestRole(User user)
         {
             ProfileTab.Visibility = CashierTab.Visibility = AdminTab.Visibility = Visibility.Collapsed;
             LoginBtn.Visibility = Visibility.Visible;
             LoggedInPanel.Visibility = Visibility.Collapsed;
 
-            if (role != "Guest" && !string.IsNullOrEmpty(role))
+            if (user != null)
             {
                 LoginBtn.Visibility = Visibility.Collapsed;
                 LoggedInPanel.Visibility = Visibility.Visible;
-            }
 
-            switch (role)
-            {
-                case "User": ProfileTab.Visibility = Visibility.Visible; TopUserNameTxt.Text = "John Doe"; break;
-                case "Cashier": CashierTab.Visibility = ProfileTab.Visibility = Visibility.Visible; TopUserNameTxt.Text = "Cashier"; break;
-                case "Admin": AdminTab.Visibility = ProfileTab.Visibility = Visibility.Visible; TopUserNameTxt.Text = "Admin"; break;
+                TopUserNameTxt.Text = user.Username;
+                UserNameText.Text = user.Username;
+
+                if (user.Roles != null)
+                {
+                    ProfileTab.Visibility = Visibility.Visible;
+
+                    if (user.Roles.Any(r => r.Name == "Admin"))
+                        AdminTab.Visibility = Visibility.Visible;
+
+                    if (user.Roles.Any(r => r.Name == "Cashier"))
+                        CashierTab.Visibility = Visibility.Visible;
+                }
             }
         }
 
@@ -572,7 +644,6 @@ namespace ticketmasterwpf
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            ApplyTestRole("Guest");
             HomeTab.IsChecked = true;
             AppToast.ShowToast("Successfully logged out!", true);
         }
@@ -584,7 +655,6 @@ namespace ticketmasterwpf
             int totalPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
             if (totalPages == 0) totalPages = 1;
 
-            // --- CSÚSZÓABLAK: Max 3 oldalszám ---
             int maxPagesToShow = 3;
             int startPage = Math.Max(1, _moviePage - 1);
             int endPage = startPage + maxPagesToShow - 1;
@@ -609,7 +679,6 @@ namespace ticketmasterwpf
             int totalPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
             if (totalPages == 0) totalPages = 1;
 
-            // --- CSÚSZÓABLAK: Max 3 oldalszám ---
             int maxPagesToShow = 3;
             int startPage = Math.Max(1, _screeningPage - 1);
             int endPage = startPage + maxPagesToShow - 1;
@@ -627,6 +696,27 @@ namespace ticketmasterwpf
             int startItem = totalItems == 0 ? 0 : ((_screeningPage - 1) * itemsPerPage) + 1;
             int endItem = Math.Min(_screeningPage * itemsPerPage, totalItems);
             ScreeningPaginationStatus = $"Showing screenings {startItem} to {endItem} of {totalItems} entries";
+        }
+
+        private void UpdateCustomerPagination(int totalItems)
+        {
+            int totalPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
+            if (totalPages == 0) totalPages = 1;
+
+            int maxPagesToShow = 3;
+            int startPage = Math.Max(1, _customerPage - 1);
+            int endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage < maxPagesToShow - 1)
+                startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+
+            CustomerPageNumbers.Clear();
+            for (int i = startPage; i <= endPage; i++)
+                CustomerPageNumbers.Add(new PageItem { Number = i, IsActive = (i == _customerPage) });
+
+            int startItem = totalItems == 0 ? 0 : ((_customerPage - 1) * itemsPerPage) + 1;
+            int endItem = Math.Min(_customerPage * itemsPerPage, totalItems);
+
+            AdminPanel.CustomerPaginationStatus = $"Showing users {startItem} to {endItem} of {totalItems} entries";
         }
 
         // ================= PROPERTY CHANGED =================

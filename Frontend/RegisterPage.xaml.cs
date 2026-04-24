@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,6 +15,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ticketmasterwpf.Services;
+using ticketmasterwpf.Models;
 
 namespace ticketmasterwpf
 {
@@ -99,7 +102,7 @@ namespace ticketmasterwpf
 
             if (!isLongEnough || !hasUpperCase || !hasSpecial)
             {
-                errorMessage = "A jelszó legyen minimum 6 karakter, 1 nagybetű és 1 különleges karakter!";
+                errorMessage = "The password must be at least 6 characters long, contain 1 uppercase letter, and 1 special character!";
                 return false;
             }
 
@@ -107,7 +110,7 @@ namespace ticketmasterwpf
             {
                 if (pass != PasswordInput.Password)
                 {
-                    errorMessage = "A két jelszó nem egyezik!";
+                    errorMessage = "The two passwords do not match!";
                     return false;
                 }
             }
@@ -236,16 +239,15 @@ namespace ticketmasterwpf
         }
 
         //REGISZTRÁCIÓS GOMB:
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        private async void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             string errorMsg = "";
 
-            if (string.IsNullOrWhiteSpace(NameInput.Text)) errorMsg = "Kérlek, add meg a nevedet!";
-            else if (!CheckTextBoxValidity(EmailInput)) errorMsg = "Érvénytelen e-mail formátum!";
-            else if (!CheckTextBoxValidity(PhoneInput)) errorMsg = "Érvénytelen telefonszám!";
-            else if (string.IsNullOrEmpty(PasswordInput.Password)) errorMsg = "Kérlek, adj meg egy jelszót!";
-            else if (PasswordInput.Password != PasswordConfirmInput.Password) errorMsg = "A két jelszó nem egyezik!";
-
+            if (string.IsNullOrWhiteSpace(NameInput.Text)) errorMsg = "Please enter your name!";
+            else if (!CheckTextBoxValidity(EmailInput)) errorMsg = "Invalid email format!";
+            else if (!CheckTextBoxValidity(PhoneInput)) errorMsg = "Invalid phone number!";
+            else if (string.IsNullOrEmpty(PasswordInput.Password)) errorMsg = "Please enter a password!";
+            else if (PasswordInput.Password != PasswordConfirmInput.Password) errorMsg = "The two passwords do not match!";
             string passError;
             if (string.IsNullOrEmpty(errorMsg) && !CheckPasswordValidity(PasswordInput, out passError))
                 errorMsg = passError;
@@ -256,7 +258,27 @@ namespace ticketmasterwpf
                 return;
             }
 
-            AppToast.ShowToast("Sikeres regisztráció!", true);
+            var newUser = new User
+            {
+                Username = NameInput.Text,
+                Email = EmailInput.Text,
+                PhoneNumber = PhoneInput.Text,
+                PasswordHash = PasswordInput.Password,
+                Roles = new()
+            };
+
+            bool isSuccess = await DataService.RegisterUserAsync(newUser);
+
+            if (isSuccess)
+            {
+                AppToast.ShowToast("Successful registration!", true);
+                await Task.Delay(1000);
+                NavigationService.Navigate(new LoginPage());
+            }
+            else
+            {
+                AppToast.ShowToast("Error occurred! The email might already be taken.", false);
+            }
         }
     }
 }

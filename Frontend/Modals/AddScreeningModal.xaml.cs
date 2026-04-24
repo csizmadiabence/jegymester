@@ -26,6 +26,14 @@ namespace ticketmasterwpf.Modals
             set => SetValue(AllMoviesProperty, value);
         }
 
+        public static readonly DependencyProperty AllCinemaHallsProperty = DependencyProperty.Register("AllCinemaHalls", typeof(ObservableCollection<CinemaHall>), typeof(AddScreeningModal));
+
+        public ObservableCollection<CinemaHall> AllCinemaHalls
+        {
+            get => (ObservableCollection<CinemaHall>)GetValue(AllCinemaHallsProperty);
+            set => SetValue(AllCinemaHallsProperty, value);
+        }
+
         private Screening _editingScreening = null;
 
         public AddScreeningModal()
@@ -42,6 +50,7 @@ namespace ticketmasterwpf.Modals
             {
                 ModalTitle.Text = "Schedule New Screening";
                 SaveScreeningBtn.Content = "Save Screening";
+                HallSelector.SelectedIndex = -1;
                 ClearInputs();
             }
             else
@@ -53,15 +62,16 @@ namespace ticketmasterwpf.Modals
                 DateInput.Text = _editingScreening.StartTime.ToString("yyyy-MM-dd");
                 TimeInput.Text = _editingScreening.StartTime.ToString("HH:mm");
                 PriceInput.Text = _editingScreening.Price.ToString();
+                HallSelector.SelectedValue = _editingScreening.CinemaHallId;
             }
             this.Visibility = Visibility.Visible;
         }
 
         private async void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (MovieSelector.SelectedValue == null)
+            if (MovieSelector.SelectedValue == null || HallSelector.SelectedValue == null)
             {
-                ShowToastRequested?.Invoke("Please select a movie!", false);
+                ShowToastRequested?.Invoke("Please select both a movie and a hall!", false);
                 return;
             }
 
@@ -77,7 +87,7 @@ namespace ticketmasterwpf.Modals
                 bool screeningExists = ticketmasterwpf.Services.DataService.AllScreenings.Any(s =>
                     s.MovieId == selectedMovieId &&
                     s.StartTime == startDateTime &&
-                    s.RoomName == roomName &&
+                    s.CinemaHall?.Name == roomName &&
                     (_editingScreening == null || s.Id != _editingScreening.Id));
 
                 if (screeningExists)
@@ -95,10 +105,10 @@ namespace ticketmasterwpf.Modals
                 var screeningData = new Screening
                 {
                     Id = _editingScreening?.Id ?? 0,
-                    MovieId = selectedMovieId,
-                    RoomName = roomName,
-                    StartTime = startDateTime,
-                    Price = price
+                    MovieId = (int)MovieSelector.SelectedValue,
+                    CinemaHallId = (int)HallSelector.SelectedValue,
+                    StartTime = DateTime.Parse($"{DateInput.Text} {TimeInput.Text}"),
+                    Price = decimal.Parse(PriceInput.Text)
                 };
 
                 using (var client = new HttpClient())
@@ -150,6 +160,8 @@ namespace ticketmasterwpf.Modals
             DateInput.Text = DateTime.Today.ToString("yyyy-MM-dd");
             TimeInput.Text = "18:30";
             PriceInput.Text = "2500";
+            MovieSelector.SelectedIndex = -1;
+            HallSelector.SelectedIndex = -1;
         }
 
         private void CloseModal_Click(object sender, RoutedEventArgs e)

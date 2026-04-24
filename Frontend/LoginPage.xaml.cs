@@ -13,6 +13,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ticketmasterwpf.Services;
 
 namespace ticketmasterwpf
 {
@@ -48,25 +49,33 @@ namespace ticketmasterwpf
         {
             if (string.IsNullOrWhiteSpace(EmailInput.Text) || string.IsNullOrWhiteSpace(PasswordInput.Password))
             {
-                AppToast.ShowToast("Minden mezőt ki kell tölteni!", false);
+                AppToast.ShowToast("All fields must be filled!", false);
                 return;
             }
 
-            string role = "User";
-            if (EmailInput.Text.Contains("admin")) role = "Admin";
-            else if (EmailInput.Text.Contains("cashier")) role = "Cashier";
+            bool isSuccess = await DataService.LoginUserAsync(EmailInput.Text, PasswordInput.Password);
 
-            HomePage home = new HomePage();
-            home.ApplyTestRole(role);
-            string displayName = EmailInput.Text.Split('@')[0];
-
-            var mainWindow = Application.Current.MainWindow as MainWindow;
-
-            if (mainWindow != null)
+            if (isSuccess && DataService.CurrentUser != null)
             {
-                mainWindow.MainFrame.Navigate(home);
+                string role = "User";
+                if (DataService.CurrentUser.Roles != null && DataService.CurrentUser.Roles.Any())
+                {
+                    role = DataService.CurrentUser.Roles.First().Name;
+                }
 
-                home.WelcomeUser(displayName);
+                HomePage home = new HomePage();
+                home.ApplyTestRole(DataService.CurrentUser);
+
+                var mainWindow = Application.Current.MainWindow as MainWindow;
+                if (mainWindow != null)
+                {
+                    mainWindow.MainFrame.Navigate(home);
+                    home.WelcomeUser(DataService.CurrentUser.Username);
+                }
+            }
+            else
+            {
+                AppToast.ShowToast("Wrong e-mail or password!", false);
             }
         }
         //Átnavigál a reg oldalra:

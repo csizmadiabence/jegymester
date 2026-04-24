@@ -16,13 +16,15 @@ public class ScreeningsController : ControllerBase
         _context = context;
     }
 
-    [HttpGet] //vetitesek listazasa
+    [HttpGet]
     public async Task<ActionResult<IEnumerable<Screening>>> GetScreenings()
     {
         return await _context.Screenings
-        .Include(s => s.Movie)
-        .Include(s => s.CinemaHall)
-        .ToListAsync();
+            .Include(s => s.Movie)
+            .Include(s => s.CinemaHall)
+            .ThenInclude(ch => ch.Rows)
+            .ThenInclude(r => r.Seats)
+            .ToListAsync();
     }
 
     [HttpPost] //uj vetites felvetele (admin)

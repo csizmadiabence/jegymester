@@ -9,7 +9,7 @@
     <RootNamespace>ticketmasterwpf</RootNamespace>
     <AssemblyName>ticketmasterwpf</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -120,6 +120,9 @@
     <Compile Include="Modals\AddScreeningModal.xaml.cs">
       <DependentUpon>AddScreeningModal.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Modals\AddUserModal.xaml.cs">
+      <DependentUpon>AddUserModal.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Modals\DeleteConfirmModal.xaml.cs">
       <DependentUpon>DeleteConfirmModal.xaml</DependentUpon>
     </Compile>
@@ -129,14 +132,18 @@
     <Compile Include="Modals\SingleSeatModal.xaml.cs">
       <DependentUpon>SingleSeatModal.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\CinemaHall.cs" />
     <Compile Include="Models\DateItem.cs" />
     <Compile Include="Models\Movie.cs" />
     <Compile Include="Models\OmdbResponse.cs" />
     <Compile Include="Models\PageItem.cs" />
+    <Compile Include="Models\Role.cs" />
     <Compile Include="Models\Screening.cs" />
     <Compile Include="Models\Seat.cs" />
     <Compile Include="Models\SeatDisplayModel.cs" />
     <Compile Include="Models\TheaterRow.cs" />
+    <Compile Include="Models\Ticket.cs" />
+    <Compile Include="Models\User.cs" />
     <Compile Include="Services\DataService.cs" />
     <Compile Include="Services\MovieService.cs" />
     <Compile Include="TicketBuy.xaml.cs">
@@ -180,6 +187,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Modals\AddScreeningModal.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modals\AddUserModal.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

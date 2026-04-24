@@ -5,6 +5,7 @@ namespace ticketmasterwpf.Models
 {
     public class Seat : INotifyPropertyChanged
     {
+        public int Id { get; set; }
         public int Row { get; set; }
         public int Number { get; set; }
         public bool IsHidden { get; set; }

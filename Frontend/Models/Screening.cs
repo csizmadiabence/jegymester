@@ -6,9 +6,10 @@ namespace ticketmasterwpf.Models
     {
         public int Id { get; set; }
         public int MovieId { get; set; }
-        public string RoomName { get; set; } = string.Empty;
+        public int CinemaHallId { get; set; }
         public DateTime StartTime { get; set; }
         public decimal Price { get; set; }
         public Movie? Movie { get; set; }
+        public CinemaHall? CinemaHall { get; set; }
     }
 }

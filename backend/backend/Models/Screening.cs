@@ -14,6 +14,5 @@ public class Screening
 
     public Movie? Movie { get; set; }
 
-    [JsonIgnore]
     public CinemaHall? CinemaHall { get; set; }
 }
