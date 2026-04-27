@@ -33,7 +33,9 @@ namespace ticketmasterwpf.Modals
             _selectedMovie = movie;
             _currentDate = selectedDate;
 
+
             this.DataContext = _selectedMovie;
+
 
 
             PosterDisplay.BorderBrush = new System.Windows.Media.SolidColorBrush(_selectedMovie.PlaceholderColor);
