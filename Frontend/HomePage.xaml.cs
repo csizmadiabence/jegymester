@@ -298,19 +298,12 @@ namespace ticketmasterwpf
 
         private void GetTickets_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Ellenőrizzük, hogy van-e betöltött film a listában
-            if (Movies != null && Movies.Count > 0)
+            if (_featuredMoviesList != null && _featuredMoviesList.Count > 0 &&
+                _currentFeaturedIndex >= 0 && _currentFeaturedIndex < _featuredMoviesList.Count)
             {
-                // 2. Kikeressük azt a filmet, ami éppen a bannerben látható
-                // A _currentBannerIndex-et a banner időzítője folyamatosan frissíti
-                if (_currentBannerIndex >= 0 && _currentBannerIndex < Movies.Count)
-                {
-                    var featuredMovie = Movies[_currentBannerIndex];
+                var currentFeatured = _featuredMoviesList[_currentFeaturedIndex];
 
-                    // 3. Megnyitjuk a modális ablakot az aktuális filmmel és a választott dátummal
-                    // A _selectedDate-et a naptár (MovieCatalog) már kezeli
-                    MovieDetailPopup.OpenModal(featuredMovie, _selectedDate);
-                }
+                MovieDetailPopup.OpenModal(currentFeatured, _selectedDate);
             }
         }
 
