@@ -145,7 +145,7 @@
                             </Border>
                             <TextBlock Text="{Binding FeaturedMovie.Title, FallbackValue='Loading...'}" Foreground="White" FontSize="24" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,2"/>
                             <TextBlock Text="Watch the latest cinematic masterpiece now." Foreground="#CCFFFFFF" FontSize="12" Margin="0,0,0,10"/>
-                            <Button Content="GET TICKETS BELOW" Style="{StaticResource PagingBtnStyle}" Width="130" Height="28" FontSize="10" HorizontalAlignment="Left"/>
+                            <Button x:Name="BannerGetTicketsBtn" Content="GET TICKETS BELOW" Style="{StaticResource PagingBtnStyle}" Click="GetTickets_Click" Cursor="Hand" Width="130" Height="28" FontSize="10" HorizontalAlignment="Left"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0">
