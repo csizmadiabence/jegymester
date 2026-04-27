@@ -235,9 +235,70 @@ namespace ticketmasterwpf.Views
             catch (Exception ex) { ShowToastRequested?.Invoke("Error: " + ex.Message, false); }
         }
 
-        private void UpdatePassword_Click(object sender, RoutedEventArgs e)
+        private async void UpdatePassword_Click(object sender, RoutedEventArgs e)
         {
-            ShowToastRequested?.Invoke("Password update feature coming soon!", false);
+            string currentPwd = CurrentPasswordBox.Password;
+            string newPwd = NewPasswordBox.Password;
+
+            // 1. Check if fields are empty
+            if (string.IsNullOrWhiteSpace(currentPwd) || string.IsNullOrWhiteSpace(newPwd))
+            {
+                ShowToastRequested?.Invoke("Please fill out both password fields!", false);
+                return;
+            }
+
+            if (DataService.CurrentUser == null) return;
+
+            // 2. Verify the current password matches what the user typed
+            if (DataService.CurrentUser.PasswordHash != currentPwd)
+            {
+                ShowToastRequested?.Invoke("Hiba! Incorrect current password.", false);
+                return;
+            }
+
+            // 3. Prepare the user object with the NEW password
+            var updatedUser = new User
+            {
+                Id = DataService.CurrentUser.Id,
+                Username = DataService.CurrentUser.Username,
+                Email = DataService.CurrentUser.Email,
+                PhoneNumber = DataService.CurrentUser.PhoneNumber,
+                PasswordHash = newPwd, // This sends the new password to the backend
+                Roles = new(DataService.CurrentUser.Roles)
+            };
+
+            try
+            {
+                // 4. Send the PUT request to the API
+                using (var client = new HttpClient())
+                {
+                    string apiUrl = $"http://localhost:5035/api/Users/{updatedUser.Id}";
+                    var json = JsonSerializer.Serialize(updatedUser);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await client.PutAsync(apiUrl, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Update local session state
+                        DataService.CurrentUser.PasswordHash = newPwd;
+
+                        ShowToastRequested?.Invoke("Password successfully updated!", true);
+
+                        // Clear the boxes on success
+                        CurrentPasswordBox.Clear();
+                        NewPasswordBox.Clear();
+                    }
+                    else
+                    {
+                        ShowToastRequested?.Invoke("Error saving new password to server.", false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowToastRequested?.Invoke("Network Error: " + ex.Message, false);
+            }
         }
 
         // --- JEGY TÖRLÉSE ---

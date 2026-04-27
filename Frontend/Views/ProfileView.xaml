@@ -108,7 +108,7 @@
                                         <ImageBrush ImageSource="/Resources/Icons/lock_icon.png" Stretch="Uniform"/>
                                     </Border.OpacityMask>
                                 </Border>
-                                <PasswordBox Grid.Column="1" BorderThickness="0" Background="Transparent" Padding="8,0,10,0" VerticalContentAlignment="Center" Foreground="White" CaretBrush="White"/>
+                                <PasswordBox x:Name="CurrentPasswordBox" Grid.Column="1" BorderThickness="0" Background="Transparent" Padding="8,0,10,0" VerticalContentAlignment="Center" Foreground="White" CaretBrush="White"/>
                             </Grid>
                         </Border>
 
@@ -124,7 +124,7 @@
                                         <ImageBrush ImageSource="/Resources/Icons/lock_icon.png" Stretch="Uniform"/>
                                     </Border.OpacityMask>
                                 </Border>
-                                <PasswordBox Grid.Column="1" BorderThickness="0" Background="Transparent" Padding="8,0,10,0" VerticalContentAlignment="Center" Foreground="White" CaretBrush="White"/>
+                                       <PasswordBox x:Name="NewPasswordBox" Grid.Column="1" BorderThickness="0" Background="Transparent" Padding="8,0,10,0" VerticalContentAlignment="Center" Foreground="White" CaretBrush="White"/>
                             </Grid>
                         </Border>
 
