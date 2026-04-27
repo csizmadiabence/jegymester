@@ -76,6 +76,27 @@ namespace ticketmasterwpf.Modals
             }
         }
 
+        private void PrintTicket_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                PrintDialog printDialog = new PrintDialog();
+
+                if (printDialog.ShowDialog() == true)
+                {
+                    string jobName = $"Ticket_{TicketId}";
+
+                    printDialog.PrintVisual(TicketContainer, jobName);
+
+                    (Window.GetWindow(this) as MainWindow)?.ShowToast("PDF generated successfully!", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Hiba történt a PDF generálása közben:\n{ex.Message}", "Hiba", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }

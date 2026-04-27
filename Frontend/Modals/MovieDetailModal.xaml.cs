@@ -14,7 +14,7 @@ namespace ticketmasterwpf.Modals
     {
         private Movie _selectedMovie;
         private DateTime _currentDate;
-        public event EventHandler<string> ShowToastRequested;
+        public event Action<string, bool> ShowToastRequested;
         public MovieDetailModal()
         {
             InitializeComponent();
@@ -98,7 +98,7 @@ namespace ticketmasterwpf.Modals
                 {
                     if (tempScreening.StartTime <= DateTime.Now)
                     {
-                        ShowToastRequested?.Invoke(this, "Sorry, this screening has already started!");
+                        ShowToastRequested?.Invoke("Sorry, this screening has already started!", false);
                         CloseModal();
                         return;
                     }
@@ -124,7 +124,7 @@ namespace ticketmasterwpf.Modals
                             }
                             else
                             {
-                                ShowToastRequested?.Invoke(this, "Error loading theater data!");
+                                ShowToastRequested?.Invoke("Error loading theater data!", false);
                             }
                         }
                         else
@@ -153,12 +153,15 @@ namespace ticketmasterwpf.Modals
         {
             if (_selectedMovie == null) return;
 
+            var mainWindow = Application.Current.MainWindow as MainWindow;
+            mainWindow?.ShowLoading();
+
             try
             {
                 var nextScreening = DataService.AllScreenings
                     .Where(s => s.MovieId == _selectedMovie.Id && s.StartTime >= DateTime.Now)
                     .OrderBy(s => s.StartTime)
-                    .FirstOrDefault(); 
+                    .FirstOrDefault();
 
                 if (nextScreening != null)
                 {
@@ -168,23 +171,25 @@ namespace ticketmasterwpf.Modals
                     if (detailedScreening != null)
                     {
                         CloseModal();
-
-                        var mainWindow = Application.Current.MainWindow as MainWindow;
                         mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
                     }
                     else
                     {
-                        ShowToastRequested?.Invoke(this, "Error: Could not load screening details.");
+                        ShowToastRequested?.Invoke("Error: Could not load screening details.", false);
                     }
                 }
                 else
                 {
-                    ShowToastRequested?.Invoke(this, "No more screenings available for today!");
+                    ShowToastRequested?.Invoke("No more screenings available for today!", false);
                 }
             }
             catch (Exception ex)
             {
-                ShowToastRequested?.Invoke(this, "An error occurred: " + ex.Message);
+                ShowToastRequested?.Invoke($"An error occurred: {ex.Message}", false);
+            }
+            finally
+            {
+                mainWindow?.HideLoading();
             }
         }
     }

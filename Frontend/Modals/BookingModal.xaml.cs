@@ -16,6 +16,7 @@ namespace ticketmasterwpf.Modals
     public partial class BookingModal : UserControl
     {
         public event EventHandler<PaymentEventArgs> PaymentConfirmed;
+        public event Action<string, bool> ShowToastRequested;
 
         public BookingModal(string movieTitle, string seatsInfo, string totalPrice)
         {
@@ -71,13 +72,13 @@ namespace ticketmasterwpf.Modals
 
             if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
-                MessageBox.Show("Please enter a valid email address!", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowToastRequested?.Invoke("Please enter a valid email address!", false);
                 return;
             }
 
             if (!Regex.IsMatch(cleanNumber, @"^[0-9]{7,12}$"))
             {
-                MessageBox.Show("Please enter a valid phone number!", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowToastRequested?.Invoke("Please enter a valid phone number!", false);
                 return;
             }
 

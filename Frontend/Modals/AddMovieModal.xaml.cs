@@ -83,7 +83,6 @@ namespace ticketmasterwpf.Modals
 
                 if (movie != null)
                 {
-                    // Adatok automatikus kitöltése
                     MovieTitleInput.Text = movie.Title;
                     MovieDescriptionInput.Text = movie.Description;
                     MovieGenreInput.Text = movie.Genre;
@@ -109,9 +108,9 @@ namespace ticketmasterwpf.Modals
 
         private async void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(MovieTitleInput.Text))
+            if (string.IsNullOrWhiteSpace(MovieTitleInput.Text) || string.IsNullOrWhiteSpace(MovieGenreInput.Text))
             {
-                ShowToastRequested?.Invoke("Please enter a movie title!", false);
+                ShowToastRequested?.Invoke("Movie title and genre are required!", false);
                 return;
             }
 
@@ -152,6 +151,9 @@ namespace ticketmasterwpf.Modals
             SaveMovieBtn.IsEnabled = false;
             SaveMovieBtn.Content = "Saving...";
 
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
+
             try
             {
                 using (var client = new HttpClient())
@@ -191,7 +193,8 @@ namespace ticketmasterwpf.Modals
             finally
             {
                 SaveMovieBtn.IsEnabled = true;
-                SaveMovieBtn.Content = "Save Movie";
+                SaveMovieBtn.Content = _editingMovie == null ? "Save Movie" : "Update Movie";
+                mainWin?.HideLoading();
             }
         }
 

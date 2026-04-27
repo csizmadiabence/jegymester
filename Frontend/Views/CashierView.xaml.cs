@@ -26,6 +26,7 @@ namespace ticketmasterwpf.Views
         public string SeatDisplay { get; set; }
         public string StatusText { get; set; }
         public bool CanValidate { get; set; }
+        public bool CanCancel { get; set; }
     }
 
     public class AvailableSeatItem
@@ -39,6 +40,7 @@ namespace ticketmasterwpf.Views
         public event EventHandler<string> VerifyTicketRequested;
         public event EventHandler<ObservableCollection<OrderItem>> IssueAllTicketsRequested;
         public event EventHandler<int> ValidateSingleTicketRequested;
+        public event EventHandler<int> CancelSingleTicketRequested;
 
         public event Action<string, bool> ShowToastRequested;
 
@@ -116,11 +118,11 @@ namespace ticketmasterwpf.Views
                 selectedSeat.SeatId != -1)
             {
                 decimal basePrice = s.Price;
-                decimal finalPrice = basePrice;
-                string typeName = type.Content.ToString().Split('(')[0].Trim();
 
-                if (type.Tag.ToString() == "STUDENT") finalPrice -= 200;
-                else if (type.Tag.ToString() == "SENIOR") finalPrice -= 400;
+                double multiplier = double.Parse(type.Tag.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+                decimal finalPrice = basePrice * (decimal)multiplier;
+
+                string typeName = type.Content.ToString().Split('(')[0].Trim();
 
                 CurrentOrder.Add(new OrderItem
                 {
@@ -128,8 +130,7 @@ namespace ticketmasterwpf.Views
                     SeatId = selectedSeat.SeatId,
                     MovieTitle = s.Movie?.Title ?? "Unknown",
                     Description = $"{typeName} - {selectedSeat.DisplayName} ({s.StartTime:HH:mm})",
-                    Price = (int)finalPrice,
-
+                    Price = (int)finalPrice
                 });
 
                 PosSeatSelector.Items.Remove(selectedSeat);
@@ -177,6 +178,14 @@ namespace ticketmasterwpf.Views
             }
         }
 
+        private void SingleSeatCancel_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && int.TryParse(btn.Tag.ToString(), out int ticketId))
+            {
+                CancelSingleTicketRequested?.Invoke(this, ticketId);
+            }
+        }
+
         //SZÉKVÁLASZTÁSHOZ KAPCSOLÓDÓ LOGIKA: Amikor a felhasználó kiválaszt egy vetítést, lekérjük a foglalt székeket, és csak a szabad székeket jelenítjük meg a PosSeatSelector-ban.
 
         private async void PosScreeningSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -198,17 +207,23 @@ namespace ticketmasterwpf.Views
                     foreach (var row in hall.Rows)
                     {
                         if (row.Seats == null) continue;
+
+                        int displayCounter = 1;
+
                         foreach (var seat in row.Seats)
                         {
+                            if (seat.IsHidden) continue;
+
                             if (!occupiedIds.Contains(seat.Id))
                             {
                                 PosSeatSelector.Items.Add(new AvailableSeatItem
                                 {
                                     SeatId = seat.Id,
-                                    DisplayName = $"R{row.RowNumber} S{row.Seats.IndexOf(seat) + 1}"
+                                    DisplayName = $"R{row.RowNumber} S{displayCounter}"
                                 });
                                 freeSeatsCount++;
                             }
+                            displayCounter++;
                         }
                     }
                 }

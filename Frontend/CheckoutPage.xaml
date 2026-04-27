@@ -47,8 +47,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" VerticalAlignment="Top" Margin="0,0,20,0" 
-        Background="#121218" CornerRadius="20" BorderBrush="#1AFFFFFF" BorderThickness="1">
+            <Border Grid.Column="0" VerticalAlignment="Top" Margin="0,0,20,0" Background="#121218" CornerRadius="20" BorderBrush="#1AFFFFFF" BorderThickness="1">
 
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="40" ShadowDepth="10" Opacity="0.4" Color="Black"/>

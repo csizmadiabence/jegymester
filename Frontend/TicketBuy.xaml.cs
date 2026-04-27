@@ -125,13 +125,21 @@ namespace ticketmasterwpf
                 {
                     if (!seats[i].IsSelected && !seats[i].IsOccupied)
                     {
-                        bool leftBlocked = (i == 0) || seats[i - 1].IsSelected || seats[i - 1].IsOccupied;
-                        bool rightBlocked = (i == seats.Count - 1) || seats[i + 1].IsSelected || seats[i + 1].IsOccupied;
+                        bool hasEmptyNeighbor = false;
+                        if (i > 0 && !seats[i - 1].IsSelected && !seats[i - 1].IsOccupied) hasEmptyNeighbor = true;
+                        if (i < seats.Count - 1 && !seats[i + 1].IsSelected && !seats[i + 1].IsOccupied) hasEmptyNeighbor = true;
 
-                        if (leftBlocked && rightBlocked)
+                        if (!hasEmptyNeighbor)
                         {
-                            errorMessage = $"A single empty seat cannot be left in Row {row.RowNumber}!";
-                            return false;
+                            bool leftBlocked = (i == 0) || seats[i - 1].IsSelected || seats[i - 1].IsOccupied;
+                            bool rightBlocked = (i == seats.Count - 1) || seats[i + 1].IsSelected || seats[i + 1].IsOccupied;
+                            bool isUsersFault = (i > 0 && seats[i - 1].IsSelected) || (i < seats.Count - 1 && seats[i + 1].IsSelected);
+
+                            if (leftBlocked && rightBlocked && isUsersFault)
+                            {
+                                errorMessage = $"A single empty seat cannot be left in Row {row.RowNumber}!";
+                                return false;
+                            }
                         }
                     }
                 }

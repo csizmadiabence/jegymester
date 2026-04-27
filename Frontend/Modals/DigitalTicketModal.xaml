@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="320" UseLayoutRounding="True" SnapsToDevicePixels="True">
     <Grid>
-        <Border Background="#1A1C23" CornerRadius="25" BorderBrush="#1AFFFFFF" BorderThickness="1">
+        <Border x:Name="TicketContainer" Background="#1A1C23" CornerRadius="25" BorderBrush="#1AFFFFFF" BorderThickness="1">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="160"/>
@@ -59,7 +59,11 @@
                                 <TextBlock Text="TOTAL PAID" Foreground="#88FFFFFF" FontSize="11"/>
                                 <TextBlock Text="{Binding TotalAmount}" Foreground="#16C098" FontSize="18" FontWeight="Black"/>
                             </StackPanel>
-                            <Button Content="BEZÁR" Click="Close_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" Width="90" Height="35" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Content="SAVE / PRINT" Click="PrintTicket_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Width="90" Height="25" Margin="0,10,10,0"/>
+                                <Button Content="CLOSE" Click="Close_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" Width="60" Height="25" Margin="0,10,0,0"/>
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
                 </Border>

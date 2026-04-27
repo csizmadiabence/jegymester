@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using ticketmasterwpf.Models;
-using ticketmasterwpf.Services; // Adatszerviz importálása
+using ticketmasterwpf.Services;
 
 namespace ticketmasterwpf
 {
@@ -121,9 +121,9 @@ namespace ticketmasterwpf
         {
             InitializeComponent();
 
-            MovieDetailPopup.ShowToastRequested += (s, message) =>
+            MovieDetailPopup.ShowToastRequested += (message, isSuccess) =>
             {
-                AppToast.ShowToast(message, true);
+                AppToast.ShowToast(message, isSuccess);
             };
             AddMoviePopup.ShowToastRequested += (message, isSuccess) =>
             {
@@ -176,29 +176,27 @@ namespace ticketmasterwpf
 
         private async void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            await DataService.FetchMovies();
-            await DataService.FetchScreenings();
-            await DataService.FetchUsers();
-            await DataService.FetchCinemaHalls();
-            await DataService.FetchAllTickets();
-
-            if (DataService.CurrentUser != null)
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
+            try
             {
+                await DataService.FetchMovies();
+                await DataService.FetchScreenings();
+                await DataService.FetchUsers();
+                await DataService.FetchCinemaHalls();
+                await DataService.FetchAllTickets();
+
                 ApplyTestRole(DataService.CurrentUser);
+                InitializeSpecialLists();
+                RefreshAdminPage();
+                RefreshScreeningsPage();
+                UpdateHomeCatalogByDate(DateTime.Today);
+                RefreshUsersPage();
+                RefreshTicketsPage();
+                UpdateDashboardStats();
+                ProfilePanel.FetchUserTickets();
             }
-            else
-            {
-                ApplyTestRole(null);
-            }
-
-            InitializeSpecialLists();
-            RefreshAdminPage();
-            RefreshScreeningsPage();
-            UpdateHomeCatalogByDate(DateTime.Today);
-            RefreshUsersPage();
-            RefreshTicketsPage();
-            UpdateDashboardStats();
-            ProfilePanel.FetchUserTickets();
+            finally { mainWin?.HideLoading(); }
         }
 
         private void InitializeSpecialLists()
@@ -623,7 +621,6 @@ namespace ticketmasterwpf
                 }
             }
 
-            // Ha minden ellenőrzésen átment, megnyitjuk a törlési ablakot
             _itemToDelete = groupedTicket;
             DeletePopup.OpenModal(groupedTicket);
         }
@@ -653,7 +650,13 @@ namespace ticketmasterwpf
         private void AdminPanel_DeleteMovieRequested(object sender, Movie movie) { _itemToDelete = movie; DeletePopup.OpenModal(movie); }
         private void AdminPanel_AddScreeningRequested(object sender, EventArgs e) => AddScreeningPopup.OpenModal();
         private void AdminPanel_EditScreeningRequested(object sender, Screening screening) => AddScreeningPopup.OpenModal(screening);
-        private void AdminPanel_DeleteScreeningRequested(object sender, Screening screening) { _itemToDelete = screening; DeletePopup.OpenModal(screening); }
+        private void AdminPanel_DeleteScreeningRequested(object sender, Screening screening) {
+            if (DateTime.Now >= screening.StartTime)
+            {
+                AppToast.ShowToast("Cannot delete a screening that has already started!", false);
+                return;
+            }
+            _itemToDelete = screening; DeletePopup.OpenModal(screening); }
         private void AdminPanel_AddCustomerRequested(object sender, EventArgs e) => AddUserPopup.OpenModal(null);
         private void AdminPanel_EditCustomerRequested(object sender, User user) => AddUserPopup.OpenModal(user);
         private void AdminPanel_DeleteCustomerRequested(object sender, User user) { _itemToDelete = user; DeletePopup.OpenModal(user); }
@@ -822,12 +825,23 @@ namespace ticketmasterwpf
                 t.GuestEmail == mainTicket.GuestEmail
             ).ToList();
 
-            var uiItems = orderGroup.Select(t => new Views.CashierTicketItem
-            {
-                Id = t.Id,
-                SeatDisplay = GetFormattedSeatName(t),
-                StatusText = t.IsCancelled ? "CANCELLED" : (t.IsValidated ? "ALREADY USED" : "VALID"),
-                CanValidate = !t.IsCancelled && !t.IsValidated
+            var uiItems = orderGroup.Select(t => {
+                var screening = DataService.AllScreenings.FirstOrDefault(s => s.Id == t.ScreeningId);
+
+                bool isTooLate = screening != null && DateTime.Now > screening.StartTime.AddMinutes(5);
+                bool isExpired = isTooLate && !t.IsValidated && !t.IsCancelled;
+
+                return new Views.CashierTicketItem
+                {
+                    Id = t.Id,
+                    SeatDisplay = GetFormattedSeatName(t),
+                    StatusText = t.IsCancelled ? "CANCELLED" :
+                                 (t.IsValidated ? "VALIDATED" :
+                                 (isTooLate ? "EXPIRED (LATE)" : "VALID")),
+
+                    CanValidate = !t.IsCancelled && !t.IsValidated && !isTooLate,
+                    CanCancel = !t.IsCancelled && !t.IsValidated && !isTooLate
+                };
             }).ToList();
 
             CashierPanel.ShowOrderDetails(uiItems);
@@ -837,27 +851,31 @@ namespace ticketmasterwpf
             var ticket = DataService.AllTickets.FirstOrDefault(t => t.Id == ticketId);
             if (ticket == null || ticket.IsCancelled || ticket.IsValidated) return;
 
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
             try
             {
-                using (var client = new HttpClient())
                 {
-                    var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5035/api/Tickets/{ticketId}/validate");
-                    var response = await client.SendAsync(request);
-
-                    if (response.IsSuccessStatusCode)
+                    using (var client = new HttpClient())
                     {
-                        ticket.IsValidated = true;
-                        AppToast.ShowToast($"Seat {GetFormattedSeatName(ticket)} successfully validated!", true);
+                        var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5035/api/Tickets/{ticketId}/validate");
+                        var response = await client.SendAsync(request);
 
-                        RefreshTicketsPage();
-                        ProfilePanel.FetchUserTickets();
+                        if (response.IsSuccessStatusCode)
+                        {
+                            ticket.IsValidated = true;
+                            AppToast.ShowToast($"Seat {GetFormattedSeatName(ticket)} successfully validated!", true);
 
-                        CashierPanel_VerifyTicketRequested(this, ticketId.ToString());
-                    }
-                    else
-                    {
-                        string errorDetail = await response.Content.ReadAsStringAsync();
-                        AppToast.ShowToast($"Validation failed: {errorDetail}", false);
+                            RefreshTicketsPage();
+                            ProfilePanel.FetchUserTickets();
+
+                            CashierPanel_VerifyTicketRequested(this, ticketId.ToString());
+                        }
+                        else
+                        {
+                            string errorDetail = await response.Content.ReadAsStringAsync();
+                            AppToast.ShowToast($"Validation failed: {errorDetail}", false);
+                        }
                     }
                 }
             }
@@ -865,10 +883,58 @@ namespace ticketmasterwpf
             {
                 AppToast.ShowToast("Network error: " + ex.Message, false);
             }
+            finally
+            {
+                mainWin?.HideLoading();
+            }
+        }
+
+        private async void CashierPanel_CancelSingleTicketRequested(object sender, int ticketId)
+        {
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5035/api/Tickets/{ticketId}/cancel");
+                    var response = await client.SendAsync(request);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        AppToast.ShowToast($"Ticket #{ticketId} successfully refunded!", true);
+
+                        await DataService.FetchAllTickets();
+                        RefreshTicketsPage();
+                        UpdateDashboardStats();
+
+                        var ticket = DataService.AllTickets.FirstOrDefault(t => t.Id == ticketId);
+                        if (ticket != null)
+                        {
+                            CashierPanel_VerifyTicketRequested(this, ticket.Id.ToString());
+                        }
+                    }
+                    else
+                    {
+                        string errorDetail = await response.Content.ReadAsStringAsync();
+                        AppToast.ShowToast($"Refund failed: {errorDetail}", false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppToast.ShowToast("Network error: " + ex.Message, false);
+            }
+            finally
+            {
+                mainWin?.HideLoading();
+            }
         }
 
         private async void CashierPanel_IssueAllTicketsRequested(object sender, ObservableCollection<Views.OrderItem> orderItems)
         {
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
             try
             {
                 using (var client = new HttpClient())
@@ -908,7 +974,11 @@ namespace ticketmasterwpf
             }
             catch (Exception ex)
             {
-                AppToast.ShowToast("Connection error: " + ex.Message, false);
+                AppToast.ShowToast("Network error: " + ex.Message, false);
+            }
+            finally
+            {
+                mainWin?.HideLoading();
             }
         }
 

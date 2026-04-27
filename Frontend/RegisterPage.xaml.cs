@@ -251,6 +251,7 @@ namespace ticketmasterwpf
             else if (!CheckTextBoxValidity(PhoneInput)) errorMsg = "Invalid phone number!";
             else if (string.IsNullOrEmpty(PasswordInput.Password)) errorMsg = "Please enter a password!";
             else if (PasswordInput.Password != PasswordConfirmInput.Password) errorMsg = "The two passwords do not match!";
+
             string passError;
             if (string.IsNullOrEmpty(errorMsg) && !CheckPasswordValidity(PasswordInput, out passError))
                 errorMsg = passError;
@@ -261,34 +262,48 @@ namespace ticketmasterwpf
                 return;
             }
 
-            string prefix = ((ComboBoxItem)PhonePrefixCombo.SelectedItem).Tag.ToString();
-            string pureNumber = PhoneInput.Text.Trim().Replace(" ", "").Replace("-", "");
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
 
-            if (pureNumber.StartsWith("06")) pureNumber = pureNumber.Substring(2);
-            if (pureNumber.StartsWith("+36")) pureNumber = pureNumber.Substring(3);
-
-            string finalPhone = prefix + pureNumber;
-
-            var newUser = new User
+            try
             {
-                Username = NameInput.Text,
-                Email = EmailInput.Text,
-                PhoneNumber = finalPhone,
-                PasswordHash = PasswordInput.Password,
-                Roles = new()
-            };
+                string prefix = ((ComboBoxItem)PhonePrefixCombo.SelectedItem).Tag.ToString();
+                string pureNumber = PhoneInput.Text.Trim().Replace(" ", "").Replace("-", "");
 
-            bool isSuccess = await DataService.RegisterUserAsync(newUser);
+                if (pureNumber.StartsWith("06")) pureNumber = pureNumber.Substring(2);
+                if (pureNumber.StartsWith("+36")) pureNumber = pureNumber.Substring(3);
 
-            if (isSuccess)
-            {
-                AppToast.ShowToast("Successful registration!", true);
-                await Task.Delay(1000);
-                NavigationService.Navigate(new LoginPage());
+                string finalPhone = prefix + pureNumber;
+
+                var newUser = new User
+                {
+                    Username = NameInput.Text,
+                    Email = EmailInput.Text,
+                    PhoneNumber = finalPhone,
+                    PasswordHash = PasswordInput.Password,
+                    Roles = new()
+                };
+
+                bool isSuccess = await DataService.RegisterUserAsync(newUser);
+
+                if (isSuccess)
+                {
+                    AppToast.ShowToast("Successful registration!", true);
+                    await Task.Delay(1000);
+                    NavigationService.Navigate(new LoginPage());
+                }
+                else
+                {
+                    AppToast.ShowToast("Error occurred! The email might already be taken.", false);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                AppToast.ShowToast("Error occurred! The email might already be taken.", false);
+                AppToast.ShowToast($"An unexpected error occurred: {ex.Message}", false);
+            }
+            finally
+            {
+                mainWin?.HideLoading();
             }
         }
     }

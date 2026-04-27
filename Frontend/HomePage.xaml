@@ -218,7 +218,7 @@
 
             <views:ProfileView x:Name="ProfilePanel" Grid.Row="1" Grid.RowSpan="3" Panel.ZIndex="900" Visibility="{Binding IsChecked, ElementName=ProfileTab, Converter={StaticResource BoolToVis}}" ViewDigitalPassRequested="ProfilePanel_ViewDigitalPassRequested" CancelTicketRequested="ProfilePanel_CancelTicketRequested"/>
 
-            <views:CashierView x:Name="CashierPanel" Grid.Row="1" Grid.RowSpan="3" Panel.ZIndex="800" Visibility="{Binding IsChecked, ElementName=CashierTab, Converter={StaticResource BoolToVis}}" VerifyTicketRequested="CashierPanel_VerifyTicketRequested" ValidateSingleTicketRequested="CashierPanel_ValidateSingleTicketRequested" IssueAllTicketsRequested="CashierPanel_IssueAllTicketsRequested" Movies="{Binding SelectableMovies}" Screenings="{Binding AllScreeningsForAdmin}"/>
+            <views:CashierView x:Name="CashierPanel" Grid.Row="1" Grid.RowSpan="3" Panel.ZIndex="800" Visibility="{Binding IsChecked, ElementName=CashierTab, Converter={StaticResource BoolToVis}}" VerifyTicketRequested="CashierPanel_VerifyTicketRequested" ValidateSingleTicketRequested="CashierPanel_ValidateSingleTicketRequested" CancelSingleTicketRequested="CashierPanel_CancelSingleTicketRequested" IssueAllTicketsRequested="CashierPanel_IssueAllTicketsRequested" Movies="{Binding SelectableMovies}" Screenings="{Binding AllScreeningsForAdmin}"/>
             
             <views:MovieCatalogView x:Name="MovieCatalog" Grid.Row="2" Grid.RowSpan="2" Margin="0,0,0,5" MovieDetailRequested="MovieCatalog_MovieDetailRequested" DateChanged="MovieCatalog_DateChanged"/>
         </Grid>

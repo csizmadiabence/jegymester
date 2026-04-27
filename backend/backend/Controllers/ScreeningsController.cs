@@ -49,10 +49,10 @@ public class ScreeningsController : ControllerBase
         var movieExists = _context.Movies.Any(m => m.Id == newScreening.MovieId);
         if (!movieExists)
         {
-            return BadRequest($"Nem létezik film a megadott ID-val: {newScreening.MovieId}");
+            return BadRequest($"No movie exists with the given ID: {newScreening.MovieId}");
         }
 
-        // mentes
+        // save
         _context.Screenings.Add(newScreening);
         _context.SaveChanges();
 
@@ -66,7 +66,7 @@ public class ScreeningsController : ControllerBase
         var screening = _context.Screenings.Find(id);
         if (screening == null)
         {
-            return NotFound($"A {id} azonosítóval nem található vetítés.");
+            return NotFound($"No screening found with the given ID: {id}");
         }
 
         _context.Screenings.Remove(screening);

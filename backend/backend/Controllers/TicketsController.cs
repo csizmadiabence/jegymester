@@ -113,7 +113,7 @@ public class TicketsController : ControllerBase
         var ticket = await _context.Tickets.FindAsync(id);
         if (ticket == null) return NotFound();
 
-        ticket.IsValidated = true; //penztaros visszaigazolja
+        ticket.IsValidated = true;
         await _context.SaveChangesAsync();
         return Ok("The ticket has been successfully validated.");
     }

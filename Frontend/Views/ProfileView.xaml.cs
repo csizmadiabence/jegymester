@@ -61,17 +61,16 @@ namespace ticketmasterwpf.Views
                 ProfileUsernameInput.Text = DataService.CurrentUser.Username;
                 ProfileEmailInput.Text = DataService.CurrentUser.Email;
 
-                // 1. JAVÍTÁS: Telefonszám szétválasztása előhívóra és számra
                 string fullPhone = DataService.CurrentUser.PhoneNumber ?? "";
                 bool prefixFound = false;
 
                 foreach (ComboBoxItem item in PhonePrefixCombo.Items)
                 {
                     string tag = item.Tag?.ToString() ?? "";
-                    if (fullPhone.StartsWith(tag) && tag != "+") // Megkeressük a megfelelő országkódot
+                    if (fullPhone.StartsWith(tag) && tag != "+")
                     {
                         PhonePrefixCombo.SelectedItem = item;
-                        ProfilePhoneInput.Text = fullPhone.Substring(tag.Length); // A szám maradéka megy a dobozba
+                        ProfilePhoneInput.Text = fullPhone.Substring(tag.Length);
                         prefixFound = true;
                         break;
                     }
@@ -79,7 +78,7 @@ namespace ticketmasterwpf.Views
 
                 if (!prefixFound)
                 {
-                    ProfilePhoneInput.Text = fullPhone; // Ha nincs egyezés, simán beírjuk
+                    ProfilePhoneInput.Text = fullPhone;
                 }
             }
         }
@@ -240,7 +239,6 @@ namespace ticketmasterwpf.Views
             string currentPwd = CurrentPasswordBox.Password;
             string newPwd = NewPasswordBox.Password;
 
-            // 1. Check if fields are empty
             if (string.IsNullOrWhiteSpace(currentPwd) || string.IsNullOrWhiteSpace(newPwd))
             {
                 ShowToastRequested?.Invoke("Please fill out both password fields!", false);
@@ -249,27 +247,27 @@ namespace ticketmasterwpf.Views
 
             if (DataService.CurrentUser == null) return;
 
-            // 2. Verify the current password matches what the user typed
             if (DataService.CurrentUser.PasswordHash != currentPwd)
             {
                 ShowToastRequested?.Invoke("Hiba! Incorrect current password.", false);
                 return;
             }
 
-            // 3. Prepare the user object with the NEW password
             var updatedUser = new User
             {
                 Id = DataService.CurrentUser.Id,
                 Username = DataService.CurrentUser.Username,
                 Email = DataService.CurrentUser.Email,
                 PhoneNumber = DataService.CurrentUser.PhoneNumber,
-                PasswordHash = newPwd, // This sends the new password to the backend
+                PasswordHash = newPwd,
                 Roles = new(DataService.CurrentUser.Roles)
             };
 
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
+
             try
             {
-                // 4. Send the PUT request to the API
                 using (var client = new HttpClient())
                 {
                     string apiUrl = $"http://localhost:5035/api/Users/{updatedUser.Id}";
@@ -280,12 +278,9 @@ namespace ticketmasterwpf.Views
 
                     if (response.IsSuccessStatusCode)
                     {
-                        // Update local session state
                         DataService.CurrentUser.PasswordHash = newPwd;
 
                         ShowToastRequested?.Invoke("Password successfully updated!", true);
-
-                        // Clear the boxes on success
                         CurrentPasswordBox.Clear();
                         NewPasswordBox.Clear();
                     }
@@ -298,6 +293,10 @@ namespace ticketmasterwpf.Views
             catch (Exception ex)
             {
                 ShowToastRequested?.Invoke("Network Error: " + ex.Message, false);
+            }
+            finally
+            {
+                mainWin?.HideLoading();
             }
         }
 

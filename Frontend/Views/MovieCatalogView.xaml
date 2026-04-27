@@ -219,7 +219,7 @@
 
                         <Rectangle Width="1" Fill="#1FFFFFFF" Margin="5,4" Height="20"/>
 
-                        <ToggleButton x:Name="CalendarDropDownBtn" Background="Transparent" BorderThickness="0" Width="35" Cursor="Hand">
+                        <ToggleButton x:Name="CalendarDropDownBtn" Foreground="#A0A5B5" Background="Transparent" BorderThickness="0" Width="35" Cursor="Hand">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Grid Background="Transparent">

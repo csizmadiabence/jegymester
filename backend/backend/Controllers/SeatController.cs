@@ -43,7 +43,7 @@ public class SeatsController : ControllerBase
 
         if (seat == null)
         {
-            return NotFound($"A {id} azonosítóval nem található szék.");
+            return NotFound($"No seat found with the given ID: {id}");
         }
 
         return Ok(seat);
@@ -56,7 +56,7 @@ public class SeatsController : ControllerBase
         var seat = await _context.Seats.FindAsync(id);
         if (seat == null)
         {
-            return NotFound("A törölni kívánt szék nem létezik.");
+            return NotFound($"No seat found with the given ID: {id}");
         }
 
         _context.Seats.Remove(seat);

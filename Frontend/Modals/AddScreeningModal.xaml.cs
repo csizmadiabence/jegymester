@@ -75,6 +75,23 @@ namespace ticketmasterwpf.Modals
                 return;
             }
 
+            string priceRaw = PriceInput.Text.Replace(',', '.');
+            if (!decimal.TryParse(priceRaw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal price) || price <= 0)
+            {
+                ShowToastRequested?.Invoke("Please enter a valid price!", false);
+                return;
+            }
+
+            if (ticketmasterwpf.Services.DataService.CurrentUser == null ||
+                !ticketmasterwpf.Services.DataService.CurrentUser.Roles.Any(r => r.Name == "Admin"))
+            {
+                ShowToastRequested?.Invoke("Access denied: Admin rights required!", false);
+                return;
+            }
+
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
+
             try
             {
                 DateTime datePart = DateTime.Parse(DateInput.Text);
@@ -99,37 +116,18 @@ namespace ticketmasterwpf.Modals
                 var selectedMovie = AllMovies.FirstOrDefault(m => m.Id == selectedMovieId);
                 if (selectedMovie == null) return;
 
-                int durationInMinutes = selectedMovie.DurationMinutes;
+                DateTime endDateTime = startDateTime.AddMinutes(selectedMovie.DurationMinutes + 15);
+                var overlap = ticketmasterwpf.Services.DataService.AllScreenings.FirstOrDefault(s =>
+                    s.CinemaHallId == selectedHallId &&
+                    s.StartTime.Date == startDateTime.Date &&
+                    (_editingScreening == null || s.Id != _editingScreening.Id) &&
+                    (startDateTime < s.StartTime.AddMinutes((AllMovies.FirstOrDefault(m => m.Id == s.MovieId)?.DurationMinutes ?? 120) + 15) && s.StartTime < endDateTime));
 
-                DateTime endDateTime = startDateTime.AddMinutes(durationInMinutes + 15);
-
-                var existingScreeningsInHall = ticketmasterwpf.Services.DataService.AllScreenings
-                    .Where(s => s.CinemaHallId == selectedHallId &&
-                                s.StartTime.Date == startDateTime.Date &&
-                                (_editingScreening == null || s.Id != _editingScreening.Id))
-                    .ToList();
-
-                foreach (var existingScreening in existingScreeningsInHall)
+                if (overlap != null)
                 {
-                    var existingMovie = AllMovies.FirstOrDefault(m => m.Id == existingScreening.MovieId);
-
-                    int existingDuration = existingMovie?.DurationMinutes ?? 120;
-
-                    DateTime existingStart = existingScreening.StartTime;
-                    DateTime existingEnd = existingStart.AddMinutes(existingDuration + 15);
-
-                    if (startDateTime < existingEnd && existingStart < endDateTime)
-                    {
-                        ShowToastRequested?.Invoke($"Time overlap! Room is occupied from {existingStart:HH:mm} to {existingEnd:HH:mm} (includes 15m cleaning).", false);
-                        return;
-                    }
+                    ShowToastRequested?.Invoke($"Time overlap! Room occupied until {overlap.StartTime.AddMinutes(135):HH:mm}.", false);
+                    return;
                 }
-
-                SaveScreeningBtn.IsEnabled = false;
-                SaveScreeningBtn.Content = "Saving...";
-
-                string priceRaw = PriceInput.Text.Replace(',', '.');
-                decimal price = decimal.Parse(priceRaw, System.Globalization.CultureInfo.InvariantCulture);
 
                 var screeningData = new Screening
                 {
@@ -143,20 +141,12 @@ namespace ticketmasterwpf.Modals
                 using (var client = new HttpClient())
                 {
                     string url = "http://localhost:5035/api/Screenings";
-                    var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                    var json = JsonSerializer.Serialize(screeningData, options);
-                    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                    var json = JsonSerializer.Serialize(screeningData, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    HttpResponseMessage response;
-
-                    if (_editingScreening == null)
-                    {
-                        response = await client.PostAsync(url, content);
-                    }
-                    else
-                    {
-                        response = await client.PutAsync($"{url}/{screeningData.Id}", content);
-                    }
+                    HttpResponseMessage response = (_editingScreening == null)
+                        ? await client.PostAsync(url, content)
+                        : await client.PutAsync($"{url}/{screeningData.Id}", content);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -172,14 +162,13 @@ namespace ticketmasterwpf.Modals
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                ShowToastRequested?.Invoke($"Error: {ex.Message}", false);
+            catch (Exception ex) 
+            { 
+                ShowToastRequested?.Invoke($"Error: {ex.Message}", false); 
             }
-            finally
-            {
-                SaveScreeningBtn.IsEnabled = true;
-                SaveScreeningBtn.Content = _editingScreening == null ? "Save Screening" : "Update Screening";
+            finally 
+            { 
+                mainWin?.HideLoading(); 
             }
         }
 

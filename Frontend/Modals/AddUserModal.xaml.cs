@@ -113,15 +113,29 @@ namespace ticketmasterwpf.Modals
 
         private async void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(UsernameInput.Text) || string.IsNullOrWhiteSpace(EmailInput.Text))
+            string email = EmailInput.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(UsernameInput.Text) || string.IsNullOrWhiteSpace(email))
             {
                 ShowToastRequested?.Invoke("Username and Email are required!", false);
+                return;
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                ShowToastRequested?.Invoke("Please enter a valid email address!", false);
                 return;
             }
 
             if (_editingUser == null && string.IsNullOrWhiteSpace(PasswordInput.Password))
             {
                 ShowToastRequested?.Invoke("Password is required for new users!", false);
+                return;
+            }
+
+            if ((_editingUser == null || !string.IsNullOrEmpty(PasswordInput.Password)) && PasswordInput.Password.Length < 6)
+            {
+                ShowToastRequested?.Invoke("Password must be at least 6 characters long!", false);
                 return;
             }
 
@@ -145,6 +159,7 @@ namespace ticketmasterwpf.Modals
                 Username = UsernameInput.Text,
                 Email = EmailInput.Text,
                 PhoneNumber = finalPhoneNumber,
+                PasswordHash = PasswordInput.Password,
                 Roles = new()
             };
 
@@ -163,6 +178,9 @@ namespace ticketmasterwpf.Modals
 
             SaveUserBtn.IsEnabled = false;
             SaveUserBtn.Content = "Saving...";
+
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
 
             try
             {
@@ -200,6 +218,7 @@ namespace ticketmasterwpf.Modals
             {
                 SaveUserBtn.IsEnabled = true;
                 SaveUserBtn.Content = _editingUser == null ? "Save User" : "Update User";
+                mainWin?.HideLoading();
             }
         }
 

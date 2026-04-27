@@ -45,5 +45,20 @@ namespace ticketmasterwpf
             ModalOverlay.Visibility = Visibility.Collapsed;
             ModalContent.Content = null;
         }
+            
+        public void ShowLoading()
+        {
+            LoadingOverlay.Visibility = Visibility.Visible;
+        }
+
+        public void HideLoading()
+        {
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowToast(string message, bool isSuccess)
+        {
+            AppToast.ShowToast(message, isSuccess);
+        }
     }
 }

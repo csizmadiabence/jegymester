@@ -87,6 +87,11 @@ namespace ticketmasterwpf
 
             var bookingModal = new Modals.BookingModal(SelectedMovieTitle, seatsSummary, TotalAmount);
 
+            bookingModal.ShowToastRequested += (message, isSuccess) =>
+            {
+                AppToast.ShowToast(message, isSuccess);
+            };
+
             bookingModal.PaymentConfirmed += async (s, args) =>
             {
                 await ExecuteFinalPayment(args.email, args.phone);
@@ -97,8 +102,26 @@ namespace ticketmasterwpf
 
         private async Task ExecuteFinalPayment(string email, string phone)
         {
+            var mainWin = Window.GetWindow(this) as MainWindow;
+            mainWin?.ShowLoading();
+
             try
             {
+                var latestOccupiedIds = await DataService.GetOccupiedSeatIds(_screening.Id);
+
+                var conflictSeats = SelectedSeatsList
+                    .Where(s => latestOccupiedIds.Contains(s.Seat.Id))
+                    .ToList();
+
+                if (conflictSeats.Any())
+                {
+                    mainWin?.HideLoading();
+                    string seatNames = string.Join(", ", conflictSeats.Select(s => s.SeatInfo));
+
+                    AppToast.ShowToast($"Sorry, the following seats were just taken: {seatNames}", false);
+                    return;
+                }
+
                 _savedTicketIds.Clear();
                 using (var client = new HttpClient())
                 {
@@ -131,21 +154,23 @@ namespace ticketmasterwpf
                         else
                         {
                             string errorDetails = await response.Content.ReadAsStringAsync();
-                            Console.WriteLine($"SERVER ERROR DETAILS: {errorDetails}");
-                            throw new Exception("Server-side validation error!");
+                            throw new Exception($"Server validation error: {errorDetails}");
                         }
                     }
                 }
 
-                (Window.GetWindow(this) as MainWindow)?.HideModal();
+                mainWin?.HideModal();
                 SuccessOverlay.Visibility = Visibility.Visible;
                 TriggerConfetti();
                 AppToast.ShowToast("Purchase successful!", true);
             }
             catch (Exception ex)
             {
-                AppToast.ShowToast("Payment failed! Check the logs.", false);
-                Console.WriteLine($"ERROR: {ex.Message}");
+                AppToast.ShowToast($"Payment failed! {ex.Message}", false);
+            }
+            finally
+            {
+                mainWin?.HideLoading();
             }
         }
 

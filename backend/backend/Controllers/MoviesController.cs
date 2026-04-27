@@ -41,8 +41,7 @@ public class MoviesController : ControllerBase
 
         if (movie == null) return NotFound();
 
-        // Debug: Írd ki a konzolra, hogy hány vetítést talál
-        Console.WriteLine($"Törlés előtt: {movie.Screenings.Count} vetítés tartozik a filmhez.");
+        Console.WriteLine($"Before deletion: {movie.Screenings.Count} screenings are associated with the movie.");
 
         _context.Screenings.RemoveRange(movie.Screenings);
         _context.Movies.Remove(movie);
@@ -54,7 +53,7 @@ public class MoviesController : ControllerBase
     [HttpPut("{id}")] // edithez
     public async Task<IActionResult> PutMovie(int id, Movie movie)
     {
-        if (id != movie.Id) return BadRequest("Az ID-k nem egyeznek.");
+        if (id != movie.Id) return BadRequest("The IDs do not match.");
 
         _context.Entry(movie).State = EntityState.Modified;
 

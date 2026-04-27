@@ -36,36 +36,60 @@
 
                         <Button Content="Verify Ticket" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FF9800" Height="30" Click="VerifyTicket_Click"/>
 
-                        <Border x:Name="ValidationResultPanel" CornerRadius="10" Padding="15" Margin="0,20,0,0" Visibility="Collapsed">
+                        <Border x:Name="ValidationResultPanel" CornerRadius="10" Padding="15" Margin="0,20,0,0" Visibility="Collapsed" ClipToBounds="True">
                             <StackPanel>
                                 <TextBlock x:Name="ValidationIcon" Text="✅" FontSize="30" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 <TextBlock x:Name="ValidationTitle" Text="VALID TICKET" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                                <TextBlock x:Name="ValidationDetails" Text="Movie Title - 19:30&#x0a;Seat: Row 4, Seat 12" FontSize="11" TextAlignment="Center" Foreground="#AAFFFFFF" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="ValidationDetails" Text="..." FontSize="11" TextAlignment="Center" Foreground="#AAFFFFFF" Margin="0,5,0,0" TextWrapping="Wrap"/>
+
                                 <StackPanel x:Name="GroupValidationPanel" Visibility="Collapsed" Margin="0,15,0,0">
                                     <TextBlock Text="Select seats to validate:" Foreground="#88FFFFFF" FontSize="10" Margin="0,0,0,10" HorizontalAlignment="Center"/>
 
-                                    <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-
+                                    <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                         <ItemsControl x:Name="OrderSeatsList">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="#1AFFFFFF" CornerRadius="8" Margin="0,0,5,5" Padding="10,5">
+                                                    <Border Background="#1AFFFFFF" CornerRadius="8" Margin="0,0,5,5" Padding="10,5" Height="40">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="80"/>
+                                                                <ColumnDefinition Width="60"/>
                                                             </Grid.ColumnDefinitions>
+
                                                             <StackPanel VerticalAlignment="Center">
                                                                 <TextBlock Text="{Binding SeatDisplay}" Foreground="White" FontWeight="Bold" FontSize="11"/>
                                                                 <TextBlock Text="{Binding StatusText}" FontSize="9" Foreground="#66FFFFFF"/>
                                                             </StackPanel>
-                                                            <Button Grid.Column="1" Content="VALIDATE" IsEnabled="{Binding CanValidate}" Click="SingleSeatValidate_Click" Tag="{Binding Id}" Style="{StaticResource GlowButtonStyle}" BorderBrush="#16C098" Width="70" Height="22" FontSize="8"/>
+
+                                                            <Button Grid.Column="1" Content="VALIDATE" IsEnabled="{Binding CanValidate}" Click="SingleSeatValidate_Click" Tag="{Binding Id}" BorderBrush="#16C098" Width="70" Height="24" FontSize="8" VerticalAlignment="Center">
+                                                                <Button.Style>
+                                                                    <Style TargetType="Button" BasedOn="{StaticResource GlowButtonStyle}">
+                                                                        <Style.Triggers>
+                                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                                <Setter Property="Opacity" Value="0.3"/>
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Button.Style>
+                                                            </Button>
+
+                                                            <Button Grid.Column="2" Content="CANCEL" IsEnabled="{Binding CanCancel}" Click="SingleSeatCancel_Click" Tag="{Binding Id}" BorderBrush="#FF5555" Width="55" Height="24" FontSize="8" VerticalAlignment="Center">
+                                                                <Button.Style>
+                                                                    <Style TargetType="Button" BasedOn="{StaticResource GlowButtonStyle}">
+                                                                        <Style.Triggers>
+                                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                                <Setter Property="Opacity" Value="0.3"/>
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Button.Style>
+                                                            </Button>
                                                         </Grid>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
-
                                     </ScrollViewer>
                                 </StackPanel>
                             </StackPanel>
@@ -134,10 +158,10 @@
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Ticket Type" Foreground="#88FFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
                             <Border Style="{StaticResource InputBorderStyle}" Height="30">
-                                <ComboBox x:Name="PosTicketType" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="5,0">
-                                    <ComboBoxItem Content="Adult (Full Price)" Tag="FULL" IsSelected="True" Foreground="White"/>
-                                    <ComboBoxItem Content="Student (-200 Ft)" Tag="STUDENT" Foreground="White"/>
-                                    <ComboBoxItem Content="Senior (-400 Ft)" Tag="SENIOR" Foreground="White"/>
+                                <ComboBox x:Name="PosTicketType" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="5,0" Margin="0,-3,0,0">
+                                    <ComboBoxItem Content="Adult (Full Price)" Tag="1.0" IsSelected="True" Foreground="White"/>
+                                    <ComboBoxItem Content="Student (-20%)" Tag="0.8" Foreground="White"/>
+                                    <ComboBoxItem Content="Senior (-30%)" Tag="0.7" Foreground="White"/>
                                 </ComboBox>
                             </Border>
                         </StackPanel>
@@ -145,7 +169,7 @@
                         <StackPanel Grid.Column="4">
                             <TextBlock Text="Available Seat" Foreground="#88FFFFFF" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
                             <Border Style="{StaticResource InputBorderStyle}" Height="30">
-                                <ComboBox x:Name="PosSeatSelector" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="5,0" DisplayMemberPath="DisplayName"/>
+                                <ComboBox x:Name="PosSeatSelector" Style="{StaticResource CleanComboBox}" FontSize="11" Padding="5,0" Margin="0,-3,0,0" DisplayMemberPath="DisplayName"/>
                             </Border>
                         </StackPanel>
 
