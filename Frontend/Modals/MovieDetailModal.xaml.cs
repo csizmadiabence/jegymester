@@ -148,5 +148,44 @@ namespace ticketmasterwpf.Modals
                 }
             }
         }
+
+        private async void GetEarliestTickets_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedMovie == null) return;
+
+            try
+            {
+                var nextScreening = DataService.AllScreenings
+                    .Where(s => s.MovieId == _selectedMovie.Id && s.StartTime >= DateTime.Now)
+                    .OrderBy(s => s.StartTime)
+                    .FirstOrDefault(); 
+
+                if (nextScreening != null)
+                {
+                    var detailedScreening = await DataService.GetScreeningById(nextScreening.Id);
+                    var occupiedSeats = await DataService.GetOccupiedSeatIds(nextScreening.Id);
+
+                    if (detailedScreening != null)
+                    {
+                        CloseModal();
+
+                        var mainWindow = Application.Current.MainWindow as MainWindow;
+                        mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
+                    }
+                    else
+                    {
+                        ShowToastRequested?.Invoke(this, "Error: Could not load screening details.");
+                    }
+                }
+                else
+                {
+                    ShowToastRequested?.Invoke(this, "No more screenings available for today!");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowToastRequested?.Invoke(this, "An error occurred: " + ex.Message);
+            }
+        }
     }
 }
