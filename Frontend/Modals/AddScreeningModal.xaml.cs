@@ -82,18 +82,47 @@ namespace ticketmasterwpf.Modals
                 DateTime startDateTime = datePart.Date.Add(timePart);
 
                 int selectedMovieId = (int)MovieSelector.SelectedValue;
-                string roomName = "Main Hall";
+                int selectedHallId = (int)HallSelector.SelectedValue;
 
                 bool screeningExists = ticketmasterwpf.Services.DataService.AllScreenings.Any(s =>
                     s.MovieId == selectedMovieId &&
                     s.StartTime == startDateTime &&
-                    s.CinemaHall?.Name == roomName &&
+                    s.CinemaHallId == selectedHallId &&
                     (_editingScreening == null || s.Id != _editingScreening.Id));
 
                 if (screeningExists)
                 {
-                    ShowToastRequested?.Invoke("Error: This movie is already scheduled for this time and room!", false);
+                    ShowToastRequested?.Invoke("Error: This exact screening already exists!", false);
                     return;
+                }
+
+                var selectedMovie = AllMovies.FirstOrDefault(m => m.Id == selectedMovieId);
+                if (selectedMovie == null) return;
+
+                int durationInMinutes = selectedMovie.DurationMinutes;
+
+                DateTime endDateTime = startDateTime.AddMinutes(durationInMinutes + 15);
+
+                var existingScreeningsInHall = ticketmasterwpf.Services.DataService.AllScreenings
+                    .Where(s => s.CinemaHallId == selectedHallId &&
+                                s.StartTime.Date == startDateTime.Date &&
+                                (_editingScreening == null || s.Id != _editingScreening.Id))
+                    .ToList();
+
+                foreach (var existingScreening in existingScreeningsInHall)
+                {
+                    var existingMovie = AllMovies.FirstOrDefault(m => m.Id == existingScreening.MovieId);
+
+                    int existingDuration = existingMovie?.DurationMinutes ?? 120;
+
+                    DateTime existingStart = existingScreening.StartTime;
+                    DateTime existingEnd = existingStart.AddMinutes(existingDuration + 15);
+
+                    if (startDateTime < existingEnd && existingStart < endDateTime)
+                    {
+                        ShowToastRequested?.Invoke($"Time overlap! Room is occupied from {existingStart:HH:mm} to {existingEnd:HH:mm} (includes 15m cleaning).", false);
+                        return;
+                    }
                 }
 
                 SaveScreeningBtn.IsEnabled = false;
@@ -105,10 +134,10 @@ namespace ticketmasterwpf.Modals
                 var screeningData = new Screening
                 {
                     Id = _editingScreening?.Id ?? 0,
-                    MovieId = (int)MovieSelector.SelectedValue,
-                    CinemaHallId = (int)HallSelector.SelectedValue,
-                    StartTime = DateTime.Parse($"{DateInput.Text} {TimeInput.Text}"),
-                    Price = decimal.Parse(PriceInput.Text)
+                    MovieId = selectedMovieId,
+                    CinemaHallId = selectedHallId,
+                    StartTime = startDateTime,
+                    Price = price
                 };
 
                 using (var client = new HttpClient())

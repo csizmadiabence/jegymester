@@ -5,27 +5,35 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              xmlns:local="clr-namespace:ticketmasterwpf.Modals"
-             
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             UseLayoutRounding="True" 
+             SnapsToDevicePixels="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType">
 
-    <Border x:Name="SingleSeatModalOverlay" Background="#AA000000" CornerRadius="20" MouseDown="Background_MouseDown">
+    <Border x:Name="SingleSeatModalOverlay" Background="#AA000000" MouseDown="Background_MouseDown" CornerRadius="20">
 
-        <Border Background="#1A1C23" BorderBrush="#1FFFFFFF" Width="380" Height="200" BorderThickness="1" CornerRadius="20" Padding="30" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Grid Width="380" Height="200" VerticalAlignment="Center" HorizontalAlignment="Center">
 
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="50" ShadowDepth="0" Opacity="0.5" Color="Black"/>
-            </Border.Effect>
+            <Border Background="#1A1C23" CornerRadius="20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="50" ShadowDepth="0" Opacity="0.5" Color="Black"/>
+                </Border.Effect>
+            </Border>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <Border Background="#1A1C23" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="20" Padding="30">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" TextWrapping="Wrap" Foreground="#FFFFFF" FontSize="13" LineHeight="18" TextAlignment="Center" VerticalAlignment="Center" Text="To allow for the maximum occupancy of the cinema hall, please make the selection again without leaving a single seat."/>
+                    <TextBlock Grid.Row="0" TextWrapping="Wrap" Foreground="#FFFFFF" FontSize="13" LineHeight="18" TextAlignment="Center" VerticalAlignment="Center" Text="To allow for the maximum occupancy of the cinema hall, please make the selection again without leaving a single seat."/>
 
-                <Button Grid.Row="1" x:Name="CloseButton" Content="I UNDERSTAND" Click="CloseModal_Click" Cursor="Hand" HorizontalAlignment="Center" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" FontSize="11" Height="35" Width="120" Margin="0,20,0,0"/>
-            </Grid>
-        </Border>
+                    <Button Grid.Row="1" x:Name="CloseButton" Content="I UNDERSTAND" Click="CloseModal_Click" Cursor="Hand" HorizontalAlignment="Center" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FFFF5555" FontSize="11" Height="35" Width="120" Margin="0,20,0,0"/>
+                </Grid>
+            </Border>
+
+        </Grid>
     </Border>
 </UserControl>

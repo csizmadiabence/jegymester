@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Navigation;
 using ticketmasterwpf.Models;
 using ticketmasterwpf.Services;
@@ -18,6 +15,7 @@ namespace ticketmasterwpf
     {
         private Screening _currentScreening;
         private int _selectedCount = 0;
+        private List<int> _occupiedSeats;
 
         public string SelectedMovieTitle => _currentScreening?.Movie?.Title ?? "Loading movie...";
         public string SelectedShowtime => _currentScreening?.StartTime.ToString("yyyy.MM.dd. HH:mm") ?? "00:00";
@@ -25,16 +23,14 @@ namespace ticketmasterwpf
 
         public ObservableCollection<TheaterRow> TheaterRows { get; set; } = new ObservableCollection<TheaterRow>();
 
-        public TicketBuy(Screening screening)
+        public TicketBuy(Screening screening, List<int> occupiedSeats)
         {
             InitializeComponent();
             _currentScreening = screening;
+            _occupiedSeats = occupiedSeats ?? new List<int>();
             DataContext = this;
 
-            if (_currentScreening != null)
-            {
-                LoadHallStructure();
-            }
+            LoadHallStructure();
         }
 
         public TicketBuy() { InitializeComponent(); DataContext = this; }
@@ -46,11 +42,20 @@ namespace ticketmasterwpf
             set { _maxColumns = value; OnPropertyChanged(); }
         }
 
-        private async void LoadHallStructure()
+        private void LoadHallStructure()
         {
-            if (_currentScreening?.CinemaHall == null) return;
+            if (_currentScreening?.CinemaHall == null)
+            {
+                MessageBox.Show("Hiba: A terem adatai nem érkeztek meg az API-tól!");
+                return;
+            }
 
-            List<int> occupiedIds = await DataService.GetOccupiedSeatIds(_currentScreening.Id);
+            var previouslySelectedIds = TheaterRows.SelectMany(r => r.Seats)
+                                                   .Where(s => s.IsSelected)
+                                                   .Select(s => s.Id)
+                                                   .ToList();
+
+            List<int> occupiedIds = _occupiedSeats;
 
             OnPropertyChanged(nameof(SelectedMovieTitle));
             OnPropertyChanged(nameof(SelectedShowtime));
@@ -62,7 +67,6 @@ namespace ticketmasterwpf
             foreach (var dbRow in _currentScreening.CinemaHall.Rows.OrderBy(r => r.RowNumber))
             {
                 var uiRow = new TheaterRow { RowNumber = dbRow.RowNumber, Seats = new ObservableCollection<Seat>() };
-
                 var originalSeats = dbRow.Seats.OrderBy(s => s.Number).ToList();
 
                 int displayCounter = 1;
@@ -73,35 +77,66 @@ namespace ticketmasterwpf
                         seat.Number = displayCounter;
                         displayCounter++;
                     }
-                    else
-                    {
-                        seat.Number = 0;
-                    }
+                    else { seat.Number = 0; }
 
-                    seat.IsSelected = false;
                     seat.IsOccupied = occupiedIds.Contains(seat.Id);
+                    seat.IsSelected = !seat.IsOccupied && previouslySelectedIds.Contains(seat.Id);
                 }
 
                 originalSeats.Reverse();
-
-                foreach (var seat in originalSeats)
-                {
-                    uiRow.Seats.Add(seat);
-                }
+                foreach (var seat in originalSeats) { uiRow.Seats.Add(seat); }
 
                 while (uiRow.Seats.Count < MaxColumns)
                 {
                     uiRow.Seats.Add(new Seat { IsHidden = true, Number = 0 });
                 }
-
                 TheaterRows.Add(uiRow);
             }
+
+            UpdateBottomBar();
         }
 
         // --- UI ESEMÉNYEK (Gombok) ---
         private void Seat_Click(object sender, RoutedEventArgs e)
         {
+            var toggle = sender as System.Windows.Controls.Primitives.ToggleButton;
+            var seat = toggle?.DataContext as Seat;
+            if (seat == null) return;
+
+            var selectedCount = TheaterRows.SelectMany(r => r.Seats).Count(s => s.IsSelected);
+            if (seat.IsSelected && selectedCount > 10)
+            {
+                seat.IsSelected = false;
+                AppToast.ShowToast("Maximum 10 tickets per transaction!", false);
+                return;
+            }
+
             UpdateBottomBar();
+        }
+
+        private bool ValidateSeatSelection(out string errorMessage)
+        {
+            errorMessage = "";
+            foreach (var row in TheaterRows)
+            {
+                var seats = row.Seats.Where(s => !s.IsHidden).OrderBy(s => s.Number).ToList();
+
+                for (int i = 0; i < seats.Count; i++)
+                {
+                    if (!seats[i].IsSelected && !seats[i].IsOccupied)
+                    {
+                        bool leftBlocked = (i == 0) || seats[i - 1].IsSelected || seats[i - 1].IsOccupied;
+                        bool rightBlocked = (i == seats.Count - 1) || seats[i + 1].IsSelected || seats[i + 1].IsOccupied;
+
+                        if (leftBlocked && rightBlocked)
+                        {
+                            errorMessage = $"A single empty seat cannot be left in Row {row.RowNumber}!";
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         private void UpdateBottomBar()
@@ -129,6 +164,16 @@ namespace ticketmasterwpf
         {
             var selected = TheaterRows.SelectMany(r => r.Seats).Where(s => s.IsSelected).ToList();
             if (selected.Count == 0) return;
+
+            if (!ValidateSeatSelection(out string error))
+            {
+                if (SingleSeatPopup != null)
+                {
+                    SingleSeatPopup.Visibility = Visibility.Visible;
+                }
+                return;
+            }
+
             NavigationService?.Navigate(new CheckoutPage(selected, _currentScreening));
         }
 

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using ticketmasterwpf.Models;
+using static ticketmasterwpf.HomePage;
 
 namespace ticketmasterwpf.Views
 {
@@ -15,6 +16,7 @@ namespace ticketmasterwpf.Views
         public event EventHandler<string> SortChanged;
         public event EventHandler<string> ScreeningSearchChanged;
         public event EventHandler<string> ScreeningSortChanged;
+        public event EventHandler<string> TicketSearchChanged;  
         // Ezek a "kábelek", amiken keresztül szólunk a HomePage-nek
         public event EventHandler AddMovieRequested;
         public event EventHandler<Movie> EditMovieRequested;
@@ -25,6 +27,7 @@ namespace ticketmasterwpf.Views
         public event EventHandler AddCustomerRequested;
         public event EventHandler<User> EditCustomerRequested;
         public event EventHandler<User> DeleteCustomerRequested;
+        public event EventHandler<GroupedTicket> RefundTicketRequested;
 
         // Lapozáshoz tartozó események
         public event EventHandler PrevPageRequested;
@@ -49,6 +52,15 @@ namespace ticketmasterwpf.Views
         public static readonly DependencyProperty ScreeningPageNumbersProperty = DependencyProperty.Register("ScreeningPageNumbers", typeof(ObservableCollection<PageItem>), typeof(AdminView));
         public ObservableCollection<PageItem> ScreeningPageNumbers { get => (ObservableCollection<PageItem>)GetValue(ScreeningPageNumbersProperty); set => SetValue(ScreeningPageNumbersProperty, value); }
 
+        public static readonly DependencyProperty TicketsProperty = DependencyProperty.Register("Tickets", typeof(ObservableCollection<GroupedTicket>), typeof(AdminView));
+        public ObservableCollection<GroupedTicket> Tickets { get => (ObservableCollection<GroupedTicket>)GetValue(TicketsProperty); set => SetValue(TicketsProperty, value); }
+
+        public static readonly DependencyProperty TicketPaginationStatusProperty = DependencyProperty.Register("TicketPaginationStatus", typeof(string), typeof(AdminView));
+        public string TicketPaginationStatus { get => (string)GetValue(TicketPaginationStatusProperty); set => SetValue(TicketPaginationStatusProperty, value); }
+
+        public static readonly DependencyProperty TicketPageNumbersProperty = DependencyProperty.Register("TicketPageNumbers", typeof(ObservableCollection<PageItem>), typeof(AdminView));
+        public ObservableCollection<PageItem> TicketPageNumbers { get => (ObservableCollection<PageItem>)GetValue(TicketPageNumbersProperty); set => SetValue(TicketPageNumbersProperty, value); }
+
         public static readonly DependencyProperty CustomerPaginationStatusProperty = DependencyProperty.Register("CustomerPaginationStatus", typeof(string), typeof(AdminView));
 
         public string CustomerPaginationStatus { get => (string)GetValue(CustomerPaginationStatusProperty); set => SetValue(CustomerPaginationStatusProperty, value); }
@@ -57,6 +69,18 @@ namespace ticketmasterwpf.Views
         public ObservableCollection<PageItem> CustomerPageNumbers { get => (ObservableCollection<PageItem>)GetValue(CustomerPageNumbersProperty); set => SetValue(CustomerPageNumbersProperty, value); }
 
         public static readonly DependencyProperty CustomersProperty = DependencyProperty.Register("Customers", typeof(ObservableCollection<User>), typeof(AdminView));
+
+        public static readonly DependencyProperty TotalRevenueProperty = DependencyProperty.Register("TotalRevenue", typeof(string), typeof(AdminView), new PropertyMetadata("0 Ft"));
+        public string TotalRevenue { get => (string)GetValue(TotalRevenueProperty); set => SetValue(TotalRevenueProperty, value); }
+
+        public static readonly DependencyProperty ActiveUserCountProperty = DependencyProperty.Register("ActiveUserCount", typeof(string), typeof(AdminView), new PropertyMetadata("0"));
+        public string ActiveUserCount { get => (string)GetValue(ActiveUserCountProperty); set => SetValue(ActiveUserCountProperty, value); }
+
+        public static readonly DependencyProperty RevenueChartDataProperty = DependencyProperty.Register("RevenueChartData", typeof(ObservableCollection<ChartBar>), typeof(AdminView));
+        public ObservableCollection<ChartBar> RevenueChartData { get => (ObservableCollection<ChartBar>)GetValue(RevenueChartDataProperty); set => SetValue(RevenueChartDataProperty, value); }
+
+        public static readonly DependencyProperty TopMoviesListProperty = DependencyProperty.Register("TopMoviesList", typeof(ObservableCollection<TopMovieStat>), typeof(AdminView));
+        public ObservableCollection<TopMovieStat> TopMoviesList { get => (ObservableCollection<TopMovieStat>)GetValue(TopMoviesListProperty); set => SetValue(TopMoviesListProperty, value); }
         public ObservableCollection<User> Customers
         {
             get => (ObservableCollection<User>)GetValue(CustomersProperty);
@@ -109,6 +133,10 @@ namespace ticketmasterwpf.Views
                 ScreeningSortChanged?.Invoke(this, item.Content.ToString());
             }
         }
+        private void SearchTicketInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TicketSearchChanged?.Invoke(this, (sender as TextBox).Text);
+        }
 
         // --- GOMBOK KATTINTÁSA (Csak továbbküldjük a kérést) ---
 
@@ -156,6 +184,13 @@ namespace ticketmasterwpf.Views
             if (sender is Button btn && btn.DataContext is User user)
             {
                 DeleteCustomerRequested?.Invoke(this, user);
+            }
+        }
+        private void RefundTicket_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is GroupedTicket groupedTicket)
+            {
+                RefundTicketRequested?.Invoke(this, groupedTicket);
             }
         }
 

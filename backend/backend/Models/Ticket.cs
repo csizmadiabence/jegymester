@@ -7,7 +7,7 @@ public class Ticket
     public int ScreeningId { get; set; }
 
     [JsonIgnore]
-    public Screening Screening { get; set; }
+    public Screening? Screening { get; set; }
 
     public int? UserId { get; set; }
     
@@ -16,7 +16,7 @@ public class Ticket
 
     public int SeatId { get; set; }
     [JsonIgnore] 
-    public Seat Seat { get; set; }
+    public Seat? Seat { get; set; }
     
     public string? GuestEmail { get; set; }
     public string? GuestPhone { get; set; }

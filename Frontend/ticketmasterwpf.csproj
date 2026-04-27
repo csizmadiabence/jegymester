@@ -59,6 +59,9 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="QRCoder, Version=1.8.0.0, Culture=neutral, PublicKeyToken=c4ed5b9ae8358a28, processorArchitecture=MSIL">
+      <HintPath>..\packages\QRCoder.1.8.0\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
@@ -123,8 +126,14 @@
     <Compile Include="Modals\AddUserModal.xaml.cs">
       <DependentUpon>AddUserModal.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Modals\BookingModal.xaml.cs">
+      <DependentUpon>BookingModal.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Modals\DeleteConfirmModal.xaml.cs">
       <DependentUpon>DeleteConfirmModal.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modals\DigitalTicketModal.xaml.cs">
+      <DependentUpon>DigitalTicketModal.xaml</DependentUpon>
     </Compile>
     <Compile Include="Modals\MovieDetailModal.xaml.cs">
       <DependentUpon>MovieDetailModal.xaml</DependentUpon>
@@ -194,7 +203,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Modals\BookingModal.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Modals\DeleteConfirmModal.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modals\DigitalTicketModal.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

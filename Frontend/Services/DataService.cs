@@ -17,6 +17,7 @@ namespace ticketmasterwpf.Services
         public static ObservableCollection<Movie> AllMovies { get; set; } = new ObservableCollection<Movie>();
         public static ObservableCollection<Screening> AllScreenings { get; set; } = new ObservableCollection<Screening>();
         public static ObservableCollection<CinemaHall> AllCinemaHalls { get; set; } = new ObservableCollection<CinemaHall>();
+        public static ObservableCollection<Ticket> AllTickets { get; set; } = new ObservableCollection<Ticket>();
         public static User CurrentUser { get; set; } = null;
         public static ObservableCollection<User> AllUsers { get; set; } = new ObservableCollection<User>();
 
@@ -77,9 +78,17 @@ namespace ticketmasterwpf.Services
                             foreach (var s in screenings) AllScreenings.Add(s);
                         });
                     }
-                }
+                } 
+
             }
-            catch (Exception ex) { Console.WriteLine($"Error fetching screenings: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching screenings: {ex.Message}");
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show($"API Hiba a Screenings lekérésekor:\n{ex.Message}", "Hiba", MessageBoxButton.OK, MessageBoxImage.Error);
+                });
+            }
         }
 
         public static async Task FetchCinemaHalls()
@@ -105,6 +114,31 @@ namespace ticketmasterwpf.Services
                 }
             }
             catch (Exception ex) { Console.WriteLine($"Error fetching halls: {ex.Message}"); }
+        }
+
+        public static async Task FetchAllTickets()
+        {
+            string apiUrl = "http://localhost:5035/api/Tickets";
+            try
+            {
+                var response = await _httpClient.GetAsync(apiUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var tickets = JsonSerializer.Deserialize<List<Ticket>>(jsonString, options);
+
+                    if (tickets != null)
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            AllTickets.Clear();
+                            foreach (var t in tickets.OrderByDescending(x => x.Id)) AllTickets.Add(t);
+                        });
+                    }
+                }
+            }
+            catch (Exception ex) { Console.WriteLine($"Error fetching tickets: {ex.Message}"); }
         }
 
         public static async Task FetchUsers()
@@ -152,6 +186,28 @@ namespace ticketmasterwpf.Services
             }
             catch (Exception ex) { Console.WriteLine($"Error fetching tickets: {ex.Message}"); }
             return new List<int>();
+        }
+        public static async Task<Screening> GetScreeningById(int id)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync($"http://localhost:5035/api/Screenings/{id}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string json = await response.Content.ReadAsStringAsync();
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        return JsonSerializer.Deserialize<Screening>(json, options);
+                    }
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public static async Task<bool> RegisterUserAsync(User newUser)

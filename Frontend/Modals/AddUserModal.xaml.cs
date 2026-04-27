@@ -25,7 +25,6 @@ namespace ticketmasterwpf.Modals
         {
             _editingUser = user;
 
-            // 1. Alapból minden CheckBox-ról levesszük a pipát
             foreach (CheckBox cb in RoleCheckboxes.Children)
             {
                 cb.IsChecked = false;
@@ -49,9 +48,31 @@ namespace ticketmasterwpf.Modals
 
                 UsernameInput.Text = _editingUser.Username;
                 EmailInput.Text = _editingUser.Email;
-                PhoneInput.Text = _editingUser.PhoneNumber;
                 PasswordInput.Password = "";
                 ConfirmPasswordInput.Password = "";
+
+                string fullPhone = _editingUser.PhoneNumber ?? "";
+                string matchedPrefix = "";
+
+                foreach (ComboBoxItem item in PhonePrefixCombo.Items)
+                {
+                    string prefixStr = item.Tag.ToString();
+                    if (fullPhone.StartsWith(prefixStr))
+                    {
+                        matchedPrefix = prefixStr;
+                        PhonePrefixCombo.SelectedItem = item;
+                        break;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(matchedPrefix))
+                {
+                    PhoneInput.Text = fullPhone.Substring(matchedPrefix.Length);
+                }
+                else
+                {
+                    PhoneInput.Text = fullPhone;
+                }
 
                 if (_editingUser.Roles != null)
                 {
@@ -110,13 +131,20 @@ namespace ticketmasterwpf.Modals
                 return;
             }
 
+            string prefix = ((ComboBoxItem)PhonePrefixCombo.SelectedItem).Tag.ToString();
+            string pureNumber = PhoneInput.Text.Trim().Replace(" ", "").Replace("-", "");
+
+            if (pureNumber.StartsWith("06")) pureNumber = pureNumber.Substring(2);
+            if (pureNumber.StartsWith("+36")) pureNumber = pureNumber.Substring(3);
+
+            string finalPhoneNumber = prefix + pureNumber;
+
             var userData = new User
             {
-                Id = _editingUser?.Id ?? 0,
+                Id = _editingUser != null ? _editingUser.Id : 0,
                 Username = UsernameInput.Text,
                 Email = EmailInput.Text,
-                PhoneNumber = PhoneInput.Text,
-                PasswordHash = PasswordInput.Password,
+                PhoneNumber = finalPhoneNumber,
                 Roles = new()
             };
 

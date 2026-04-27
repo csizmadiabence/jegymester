@@ -17,8 +17,17 @@
 			</RadialGradientBrush>
 		</Border.Background>
 
-		<Grid>
-			<Frame x:Name="MainFrame" Source="SplashPage.xaml" NavigationUIVisibility="Hidden" Background="Transparent"/>
-		</Grid>
-	</Border>
+        <Grid>
+            <Border CornerRadius="20" ClipToBounds="True">
+                <Grid>
+                    <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
+                </Grid>
+            </Border>
+
+            <Grid x:Name="ModalOverlay" Visibility="Collapsed" Panel.ZIndex="1000">
+                <Border Background="#CC000000" CornerRadius="20"/>
+                <ContentControl x:Name="ModalContent" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

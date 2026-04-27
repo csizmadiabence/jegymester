@@ -18,11 +18,7 @@
 			<GradientStop Color="#606575" Offset="1.0"/>
 		</LinearGradientBrush>
 
-		<DropShadowEffect x:Key="SplashSubtleGlow"
-                      Color="#A0A5B5"
-                      BlurRadius="15"
-                      ShadowDepth="0"
-                      Opacity="0.6"/>
+		<DropShadowEffect x:Key="SplashSubtleGlow" Color="#A0A5B5" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
 
 		<Style x:Key="ConcentricFocusBorderStyle" TargetType="Border">
 			<Setter Property="Background" Value="White"/>
@@ -104,141 +100,81 @@
 
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding}" FontSize="40" FontFamily="Resources/Assets/#Calistoga"
-                       FontWeight="Bold" Foreground="{StaticResource SplashPremiumBrush}"
-                       Effect="{StaticResource SplashSubtleGlow}" Margin="0,0,-6,0" />
+						<TextBlock Text="{Binding}" FontSize="40" FontFamily="Resources/Assets/#Calistoga" FontWeight="Bold" Foreground="{StaticResource SplashPremiumBrush}" Effect="{StaticResource SplashSubtleGlow}" Margin="0,0,-6,0" />
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 
-			<TextBlock Text="Create an account" FontSize="14pt" FontWeight="SemiBold" Foreground="White"
-                   HorizontalAlignment="Center" Margin="0,0,0,5"/>
-			<TextBlock Text="Enter your details to sign up for this app" FontSize="11pt" Foreground="#A0A0A0"
-                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
-			<Border x:Name="NameBorder" ToolTip="Kérlek, add meg a nevedet!" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275">
+			<TextBlock Text="Create an account" FontSize="14pt" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+			<TextBlock Text="Enter your details to sign up for this app" FontSize="11pt" Foreground="#A0A0A0" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+			<Border x:Name="NameBorder" ToolTip="Please enter your name!" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="*"/>
 					</Grid.ColumnDefinitions>
 
-					<Image Grid.Column="0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Height="15" Width="15"
-                        Margin="8,0,0,0"
-                        Source="/Resources/Icons/user_icon.png"/>
+					<Image Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="15" Width="15" Margin="8,0,0,0" Source="/Resources/Icons/user_icon.png"/>
 
-					<TextBox Grid.Column="1"
-                        x:Name="NameInput"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Padding="5,0,5,0"
-                        FontSize="11pt"
-                        Foreground="Black"
-                        VerticalContentAlignment="Center"
-                        Text=""/>
+					<TextBox Grid.Column="1" x:Name="NameInput" Background="Transparent" BorderThickness="0" Padding="5,0,5,0" FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center" Text=""/>
 				</Grid>
 			</Border>
-			<Border x:Name="EmailBorder" ToolTip="Példa: nev@domain.hu" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
+			<Border x:Name="EmailBorder" ToolTip="Example: name@domain.com" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="*"/>
 					</Grid.ColumnDefinitions>
 
-					<Image Grid.Column="0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Height="14" Width="14"
-                        Margin="8,0,0,0"
-                        Source="/Resources/Icons/mail_icon.png"/>
+					<Image Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="14" Width="14" Margin="8,0,0,0" Source="/Resources/Icons/mail_icon.png"/>
 
-					<TextBox Grid.Column="1"
-                        x:Name="EmailInput"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Padding="5,0,5,0"
-                        FontSize="11pt"
-                        Foreground="Black"
-                        VerticalContentAlignment="Center"
-                        Text=""/>
+					<TextBox Grid.Column="1" x:Name="EmailInput" Background="Transparent" BorderThickness="0" Padding="5,0,5,0" FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center" Text=""/>
 				</Grid>
 			</Border>
-			<Border x:Name="PhoneBorder" ToolTip="Formátum: +36 123456789 vagy 06 123456789" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
+            <Border x:Name="PhoneBorder" ToolTip="Please enter your phone number (e.g., 301234567)" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="85"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Image Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="14" Width="14" Margin="8,0,0,0" Source="/Resources/Icons/phone_icon.png"/>
+
+                    <ComboBox x:Name="PhonePrefixCombo" Grid.Column="1" Style="{StaticResource LightCleanComboBox}" ItemContainerStyle="{StaticResource LightComboBoxItem}" BorderBrush="#DDD" BorderThickness="0,0,1,0">
+                        <ComboBoxItem Content="+36 (HU)" Tag="+36" IsSelected="True"/>
+                        <ComboBoxItem Content="+43 (AT)" Tag="+43"/>
+                        <ComboBoxItem Content="+49 (DE)" Tag="+49"/>
+                        <ComboBoxItem Content="+44 (UK)" Tag="+44"/>
+                        <ComboBoxItem Content="+40 (RO)" Tag="+40"/>
+                        <ComboBoxItem Content="+421 (SK)" Tag="+421"/>
+                        <ComboBoxItem Content="+1 (US)" Tag="+1"/>
+                        <ComboBoxItem Content="+" Tag="+"/>
+                    </ComboBox>
+
+                    <TextBox Grid.Column="2" x:Name="PhoneInput" Background="Transparent" BorderThickness="0" Padding="5,0,5,0" FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center" Text="" MaxLength="15"/>
+                </Grid>
+            </Border>
+            <Border x:Name="PasswordBorder" ToolTip="Min. 6 characters, 1 uppercase letter and 1 special character (e.g., !@#$)" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="*"/>
-					</Grid.ColumnDefinitions>
-
-					<Image Grid.Column="0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Height="14" Width="14"
-                        Margin="8,0,0,0"
-                        Source="/Resources/Icons/phone_icon.png"/>
-
-					<TextBox Grid.Column="1"
-                        x:Name="PhoneInput"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Padding="5,0,5,0"
-                        FontSize="11pt"
-                        Foreground="Black"
-                        VerticalContentAlignment="Center"
-                        Text=""/>
-				</Grid>
-			</Border>
-			<Border x:Name="PasswordBorder" ToolTip="Min. 6 karakter, 1 nagybetű és 1 különleges karakter (pl: !@#$)" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="*"/>
 						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
 
-					<Image Grid.Column="0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Height="14" Width="14"
-                        Margin="8,0,0,0"
-                        Source="/Resources/Icons/lock_icon.png"/>
+					<Image Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="14" Width="14" Margin="8,0,0,0" Source="/Resources/Icons/lock_icon.png"/>
 
-					<PasswordBox Grid.Column="1"
-                        x:Name="PasswordInput"
-                        PasswordChanged="PasswordInput_PasswordChanged"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Padding="5,0,5,0"
-                        FontSize="11pt"
-                        Foreground="Black"
-                        VerticalContentAlignment="Center"/>
+					<PasswordBox Grid.Column="1" x:Name="PasswordInput" PasswordChanged="PasswordInput_PasswordChanged" Background="Transparent" BorderThickness="0" Padding="5,0,5,0" FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center"/>
 
-					<TextBox Grid.Column="1"
-                         x:Name="PasswordVisibleInput"
-                         Visibility="Collapsed"
-                         IsReadOnly="True"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Padding="5,0,5,0"
-                         FontSize="11pt"
-                         Foreground="Black"
-                         VerticalContentAlignment="Center"/>
+					<TextBox Grid.Column="1" x:Name="PasswordVisibleInput" Visibility="Collapsed" IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="5,0,5,0" FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center"/>
 
-					<Button Grid.Column="2"
-                        x:Name="TogglePasswordButton"
-                        Visibility="Collapsed"
-                        PreviewMouseLeftButtonDown="TogglePasswordButton_PreviewMouseLeftButtonDown"
-                        PreviewMouseLeftButtonUp="TogglePasswordButton_PreviewMouseLeftButtonUp"
-                        MouseLeave="TogglePasswordButton_MouseLeave"
-                        Background="Transparent" BorderThickness="0"
-                        Margin="0,0,8,0" Cursor="Hand">
+					<Button Grid.Column="2" x:Name="TogglePasswordButton" Visibility="Collapsed" PreviewMouseLeftButtonDown="TogglePasswordButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="TogglePasswordButton_PreviewMouseLeftButtonUp" MouseLeave="TogglePasswordButton_MouseLeave" Background="Transparent" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
 						<Image Source="/Resources/Icons/eye_icon.png" Height="10" Width="10"/>
 					</Button>
 				</Grid>
 			</Border>
-			<Border x:Name="PasswordConfirmBorder" ToolTip="A két jelszónak meg kell egyeznie!" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
+			<Border x:Name="PasswordConfirmBorder" ToolTip="The two passwords must match!" Style="{StaticResource ConcentricFocusBorderStyle}" Height="28" Width="275" Margin="0,15,0,0">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"/>
@@ -246,60 +182,28 @@
 						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
 
-					<Image Grid.Column="0"
-               HorizontalAlignment="Center" VerticalAlignment="Center"
-               Height="14" Width="14" Margin="8,0,0,0"
-               Source="/Resources/Icons/lock_icon.png"/>
+					<Image Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="14" Width="14" Margin="8,0,0,0" Source="/Resources/Icons/lock_icon.png"/>
 
-					<PasswordBox Grid.Column="1"
-                     x:Name="PasswordConfirmInput"
-                     PasswordChanged="PasswordConfirmInput_PasswordChanged"
-                     Background="Transparent" BorderThickness="0" Padding="5,0,5,0"
-                     FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center"/>
+					<PasswordBox Grid.Column="1" x:Name="PasswordConfirmInput" PasswordChanged="PasswordConfirmInput_PasswordChanged" Background="Transparent" BorderThickness="0" Padding="5,0,5,0" FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center"/>
 
-					<TextBox Grid.Column="1"
-                 x:Name="PasswordConfirmVisibleInput"
-                 Visibility="Collapsed"
-                 IsReadOnly="True"
-                 Background="Transparent" BorderThickness="0" Padding="5,0,5,0"
-                 FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center"/>
+					<TextBox Grid.Column="1" x:Name="PasswordConfirmVisibleInput" Visibility="Collapsed" IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="5,0,5,0" FontSize="11pt" Foreground="Black" VerticalContentAlignment="Center"/>
 
-					<Button Grid.Column="2"
-                x:Name="TogglePasswordConfirmButton"
-                Visibility="Collapsed"
-                PreviewMouseLeftButtonDown="TogglePasswordConfirmButton_PreviewMouseLeftButtonDown"
-                PreviewMouseLeftButtonUp="TogglePasswordConfirmButton_PreviewMouseLeftButtonUp"
-                MouseLeave="TogglePasswordConfirmButton_MouseLeave"
-                Background="Transparent" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
+					<Button Grid.Column="2" x:Name="TogglePasswordConfirmButton" Visibility="Collapsed" PreviewMouseLeftButtonDown="TogglePasswordConfirmButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="TogglePasswordConfirmButton_PreviewMouseLeftButtonUp" MouseLeave="TogglePasswordConfirmButton_MouseLeave" Background="Transparent" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
 						<Image Source="/Resources/Icons/eye_icon.png" Height="10" Width="10"/>
 					</Button>
 				</Grid>
 			</Border>
 
-			<Button Content="Register"
-                    Click="RegisterButton_Click"
-            Background="#D99058"
-            Foreground="White"
-            Height="28"
-            Width="275"
-            Margin="0,15,0,15"
-            FontSize="9pt"
-            Cursor="Hand">
-
-				<Button.Style>
+            <Button Content="Register" Click="RegisterButton_Click" Background="#D99058" Foreground="White" Height="28" Width="275" Margin="0,15,0,15" FontSize="9pt" Cursor="Hand">
+                <Button.Style>
 					<Style TargetType="Button">
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="Button">
-									<Border x:Name="btnBorder"
-                                    Background="{TemplateBinding Background}"
-                                    CornerRadius="5"
-                                    BorderThickness="0">
-										<ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-									</Border>
-
-									<ControlTemplate.Triggers>
+                                    <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="5" BorderThickness="0">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
 										<Trigger Property="IsMouseOver" Value="True">
 											<Setter TargetName="btnBorder" Property="Background" Value="#D99958"/>
 										</Trigger>
@@ -322,16 +226,10 @@
 
 				<Separator Background="#444" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
-				<Button Grid.Column="1"
-                    Content="Already have an account? Sign in"
-                    Click="GoToLogin_Click"
-                    Foreground="#A0A0A0"
-                    FontSize="9pt"
-                    Cursor="Hand">
+				<Button Grid.Column="1" Content="Already have an account? Sign in" Click="GoToLogin_Click" Foreground="#A0A0A0" FontSize="9pt" Cursor="Hand">
 					<Button.Template>
 						<ControlTemplate TargetType="{x:Type Button}">
-							<TextBlock Text="{TemplateBinding Content}"
-                            Background="Transparent">
+							<TextBlock Text="{TemplateBinding Content}" Background="Transparent">
 								<TextBlock.Style>
 									<Style TargetType="{x:Type TextBlock}">
 										<Style.Triggers>
@@ -379,18 +277,14 @@
 										<Trigger.EnterActions>
 											<BeginStoryboard>
 												<Storyboard>
-													<DoubleAnimation Storyboard.TargetName="HoverBorder"
-                                                                     Storyboard.TargetProperty="Opacity"
-                                                                     To="1" Duration="0:0:0.15"/>
+													<DoubleAnimation Storyboard.TargetName="HoverBorder" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15"/>
 												</Storyboard>
 											</BeginStoryboard>
 										</Trigger.EnterActions>
 										<Trigger.ExitActions>
 											<BeginStoryboard>
 												<Storyboard>
-													<DoubleAnimation Storyboard.TargetName="HoverBorder"
-                                                                     Storyboard.TargetProperty="Opacity"
-                                                                     To="0" Duration="0:0:0.2"/>
+													<DoubleAnimation Storyboard.TargetName="HoverBorder" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
 												</Storyboard>
 											</BeginStoryboard>
 										</Trigger.ExitActions>

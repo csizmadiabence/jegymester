@@ -34,5 +34,16 @@ namespace ticketmasterwpf
                 this.DragMove();
             }
         }
+        public void ShowModal(UserControl modal)
+        {
+            ModalContent.Content = modal;
+            ModalOverlay.Visibility = Visibility.Visible;
+        }
+
+        public void HideModal()
+        {
+            ModalOverlay.Visibility = Visibility.Collapsed;
+            ModalContent.Content = null;
+        }
     }
 }

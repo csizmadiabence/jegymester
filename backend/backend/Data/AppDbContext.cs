@@ -27,6 +27,14 @@ public class AppDbContext : DbContext
             new Role { Id = 2, Name = "Cashier" },
             new Role { Id = 3, Name = "User" }
         );
+
+        modelBuilder.Entity<User>()
+        .HasIndex(u => u.Email)
+        .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.PhoneNumber)
+            .IsUnique();
     }
     
 }

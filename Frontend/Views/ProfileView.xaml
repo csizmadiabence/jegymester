@@ -16,8 +16,8 @@
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="380"/>
-                <ColumnDefinition Width="600"/>
+                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Margin="0,0,25,0" VerticalAlignment="Top">
@@ -62,15 +62,29 @@
                         <Border Style="{StaticResource InputBorderStyle}" Height="28" Margin="0, 0, 0, 15">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Width="12" Height="12" Margin="10,0,0,0" Background="#88FFFFFF" VerticalAlignment="Center">
+
+                                <Border Grid.Column="0" Width="12" Height="12" Background="#88FFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <Border.OpacityMask>
                                         <ImageBrush ImageSource="/Resources/Icons/phone_icon.png" Stretch="Uniform"/>
                                     </Border.OpacityMask>
                                 </Border>
-                                <TextBox x:Name="ProfilePhoneInput" Grid.Column="1" Text="+36 30 123 4567" BorderThickness="0" Background="Transparent" Padding="8,0,10,0" VerticalContentAlignment="Center" FontSize="11" Foreground="White" CaretBrush="White"/>
+
+                                <ComboBox x:Name="PhonePrefixCombo" Grid.Column="1" Style="{StaticResource CleanComboBox}" Height="28" FontSize="11" Foreground="White" BorderBrush="#33FFFFFF" BorderThickness="0,0,1,0" Padding="0" Margin="0,-2.4,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Left">
+                                    <ComboBoxItem Content="+36 (HU)" Tag="+36" IsSelected="True"/>
+                                    <ComboBoxItem Content="+43 (AT)" Tag="+43"/>
+                                    <ComboBoxItem Content="+49 (DE)" Tag="+49"/>
+                                    <ComboBoxItem Content="+44 (UK)" Tag="+44"/>
+                                    <ComboBoxItem Content="+40 (RO)" Tag="+40"/>
+                                    <ComboBoxItem Content="+421 (SK)" Tag="+421"/>
+                                    <ComboBoxItem Content="+1 (US)" Tag="+1"/>
+                                    <ComboBoxItem Content="+" Tag="+"/>
+                                </ComboBox>
+
+                                <TextBox x:Name="ProfilePhoneInput" Grid.Column="2" BorderThickness="0" Background="Transparent" Margin="-23,0,0,-1.5"  Padding="0,0,10,0" VerticalAlignment="Center" VerticalContentAlignment="Center" FontSize="11" Foreground="White" CaretBrush="White" MaxLength="15"/>
                             </Grid>
                         </Border>
 
@@ -129,45 +143,86 @@
 
                     <TextBlock Text="MY ACTIVE TICKETS" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,0,0,20"/>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding UserTickets}">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding PagedUserTickets, RelativeSource={RelativeSource AncestorType=UserControl}}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="#0FFFFFFF" BorderThickness="0,0,0,1" Padding="0,12">
+                                    <Border BorderBrush="#0FFFFFFF" BorderThickness="0,0,0,1" Padding="0,15">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="40"/>
+                                                <ColumnDefinition Width="50"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="180"/>
                                             </Grid.ColumnDefinitions>
-                                            <Border Width="30" Height="30" Background="#1AFFFFFF" CornerRadius="8">
-                                                <TextBlock Text="🎟️" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                                            <Border Grid.Column="0" Width="36" Height="36" Background="#1AFFFFFF" CornerRadius="10" HorizontalAlignment="Left">
+                                                <TextBlock Text="🎟️" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                             </Border>
-                                            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding MovieTitle}" Foreground="White" FontSize="12" FontWeight="Bold"/>
-                                                <TextBlock Text="Room 1 | 2024.12.01 - 19:30" Foreground="#44FFFFFF" FontSize="9" Margin="0,1,0,0"/>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+                                                <TextBlock Text="{Binding MainTicket.MovieTitle}" Foreground="White" FontSize="14" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding CombinedSeats}" Foreground="#66FFFFFF" FontSize="10" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                             </StackPanel>
-                                            <Button Grid.Column="2" Content="CANCEL" Cursor="Hand" Foreground="#FF5555" BorderBrush="#FF5555" Width="60" Height="24" BorderThickness="1" FontSize="8" FontWeight="Bold">
-                                                <Button.Template>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="btnBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="5" Background="Transparent">
-                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="btnBorder" Property="Background" Value="#1AFF5555"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Button.Template>
-                                            </Button>
+
+                                            <Border Grid.Column="2" CornerRadius="6" Height="24" Width="65" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#1A00B087"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Refunded">
+                                                                <Setter Property="Background" Value="#1AFF5555"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Validated">
+                                                                <Setter Property="Background" Value="#1A4FACFE"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding MainTicket.StatusText}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="#16C098"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Refunded">
+                                                                    <Setter Property="Foreground" Value="#FF5555"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Validated">
+                                                                    <Setter Property="Foreground" Value="#4FACFE"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+
+                                                <Button Content="VIEW PASS" Click="ViewPass_Click" Cursor="Hand" Foreground="#16C098" BorderBrush="#16C098" Width="85" Height="26" BorderThickness="1" FontSize="9" FontWeight="Bold" Margin="0,0,8,0">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="btnBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6" Background="Transparent">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="btnBorder" Property="Background" Value="#1A16C098"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+
+                                                <Button Content="CANCEL" Click="CancelTicket_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FF5555" Width="70" Height="26" FontSize="9"/>
+
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                    <TextBlock Grid.Row="2" Text="Active tickets" Foreground="#22FFFFFF" FontSize="9" HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                    <TextBlock Grid.Row="2" Text="Past tickets are automatically removed." Foreground="#22FFFFFF" FontSize="9" HorizontalAlignment="Center" Margin="0,15,0,0"/>
                 </Grid>
             </Border>
         </Grid>

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -15,16 +18,26 @@ using ticketmasterwpf.Services;
 
 namespace ticketmasterwpf
 {
-    public partial class CheckoutPage : Page
+    public partial class CheckoutPage : Page, INotifyPropertyChanged
     {
         private List<Seat> _seats;
         private Screening _screening;
-        private dynamic currentUser = null;
+        private List<int> _savedTicketIds = new List<int>();
+        private int _basePrice;
 
         public string SelectedMovieTitle { get; set; }
         public string SelectedShowtime { get; set; }
-        public List<SeatDisplayModel> SelectedSeatsList { get; set; }
-        public string TotalAmount { get; set; }
+        public string SelectedRoomName { get; set; }
+        public string SelectedDuration { get; set; }
+        public string SelectedMoviePoster { get; set; }
+
+        public ObservableCollection<SeatDisplayModel> SelectedSeatsList { get; set; }
+        private string _totalAmount;
+        public string TotalAmount
+        {
+            get => _totalAmount;
+            set { _totalAmount = value; OnPropertyChanged(); }
+        }
 
         public CheckoutPage(List<Seat> seats, Screening screening)
         {
@@ -32,151 +45,158 @@ namespace ticketmasterwpf
 
             _seats = seats;
             _screening = screening;
+            _basePrice = (int)(screening?.Price ?? 3090);
 
             SelectedMovieTitle = screening?.Movie?.Title ?? "Unknown Movie";
             SelectedShowtime = screening?.StartTime.ToString("yyyy.MM.dd. HH:mm") ?? "00:00";
+            SelectedRoomName = screening?.CinemaHall?.Name ?? "Unknown Room";
+            SelectedDuration = screening?.Movie?.Duration.ToString() ?? "120 min";
+            SelectedMoviePoster = screening?.Movie?.PosterUrl ?? "/Resources/Posters/default.jpg";
 
-            SelectedSeatsList = seats.Select(s => new SeatDisplayModel
+            SelectedSeatsList = new ObservableCollection<SeatDisplayModel>();
+            foreach (var s in seats)
             {
-                SeatInfo = $"ROW: {s.Row} | SEAT: {s.Number}"
-            }).ToList();
+                SelectedSeatsList.Add(new SeatDisplayModel { Seat = s, SeatInfo = $"ROW: {s.Row} | SEAT: {s.Number}", Price = _basePrice });
+            }
 
-            decimal pricePerTicket = screening?.Price ?? 3090;
-            decimal total = seats.Count * pricePerTicket;
-            TotalAmount = $"{total:N0} Ft";
-
+            RecalculateTotal();
             this.DataContext = this;
         }
 
-        private void Back_Click(object sender, RoutedEventArgs e)
+        private void TicketType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (NavigationService.CanGoBack) NavigationService.GoBack();
+            if (sender is ComboBox cb && cb.SelectedItem is ComboBoxItem item && cb.Tag is SeatDisplayModel model)
+            {
+                double multiplier = double.Parse(item.Tag.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+                model.Price = (int)(_basePrice * multiplier);
+                RecalculateTotal();
+            }
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
-
-        private void Minimize_Click(object sender, RoutedEventArgs e)
+        private void RecalculateTotal()
         {
-            Window window = Window.GetWindow(this);
-            if (window != null) window.WindowState = WindowState.Minimized;
+            int total = SelectedSeatsList.Sum(s => s.Price);
+            TotalAmount = $"{total:N0} Ft";
         }
+
+        // --- MODÁLOK MEGHÍVÁSA ---
 
         private void ProceedToPayment_Click(object sender, RoutedEventArgs e)
         {
-            OverlayMovieTitle.Text = SelectedMovieTitle;
-            OverlayTotalPrice.Text = TotalAmount;
-            OverlaySeatInfo.Text = string.Join(", ", SelectedSeatsList.Select(s => s.SeatInfo.Replace("ROW: ", "R").Replace(" | SEAT: ", " S")));
+            string seatsSummary = string.Join(", ", SelectedSeatsList.Select(s => $"R{s.Seat.Row}S{s.Seat.Number}"));
 
-            if (currentUser != null)
+            var bookingModal = new Modals.BookingModal(SelectedMovieTitle, seatsSummary, TotalAmount);
+
+            bookingModal.PaymentConfirmed += async (s, args) =>
             {
-                GuestEmailBox.Text = currentUser.Email;
-                GuestPhoneBox.Text = currentUser.Phone;
-            }
+                await ExecuteFinalPayment(args.email, args.phone);
+            };
 
-            PurchaseOverlay.Visibility = Visibility.Visible;
+            (Window.GetWindow(this) as MainWindow)?.ShowModal(bookingModal);
         }
 
-        private void CancelPurchase_Click(object sender, RoutedEventArgs e)
+        private async Task ExecuteFinalPayment(string email, string phone)
         {
-            PurchaseOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        // VÁSÁRLÁS VÉGLEGESÍTÉS - Bekötve a Backendhez
-        private async void FinalPay_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(GuestEmailBox.Text))
-            {
-                AppToast.ShowToast("Email is required!", false);
-                return;
-            }
-
-            ActionButtonGrid.IsEnabled = false;
-            PaymentProcessing.Visibility = Visibility.Visible;
-
             try
             {
-                // Jegyek elmentése a szerverre
+                _savedTicketIds.Clear();
                 using (var client = new HttpClient())
                 {
-                    foreach (var seat in _seats)
+                    foreach (var seatModel in SelectedSeatsList)
                     {
-                        var ticket = new Ticket
+                        var ticketData = new
                         {
                             ScreeningId = _screening.Id,
-                            SeatId = seat.Id,
-                            GuestEmail = GuestEmailBox.Text,
-                            GuestPhone = GuestPhoneBox.Text,
-                            Price = (int)_screening.Price,
-                            PurchaseDate = DateTime.Now
+                            SeatId = seatModel.Seat.Id,
+                            Price = seatModel.Price,
+                            PurchaseDate = DateTime.Now,
+                            UserId = DataService.CurrentUser?.Id,
+                            GuestEmail = string.IsNullOrEmpty(email) ? null : email,
+                            GuestPhone = string.IsNullOrEmpty(phone) ? null : phone
                         };
 
-                        string json = JsonSerializer.Serialize(ticket);
+                        string json = JsonSerializer.Serialize(ticketData);
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
-                        await client.PostAsync("http://localhost:5035/api/Tickets", content);
+
+                        var response = await client.PostAsync("http://localhost:5035/api/Tickets", content);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var responseJson = await response.Content.ReadAsStringAsync();
+                            var savedTicket = JsonSerializer.Deserialize<Ticket>(responseJson,
+                                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                            if (savedTicket != null) _savedTicketIds.Add(savedTicket.Id);
+                        }
+                        else
+                        {
+                            string errorDetails = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"SERVER ERROR DETAILS: {errorDetails}");
+                            throw new Exception("Server-side validation error!");
+                        }
                     }
                 }
 
-                await Task.Delay(1500);
-
-                PurchaseOverlay.Visibility = Visibility.Collapsed;
+                (Window.GetWindow(this) as MainWindow)?.HideModal();
                 SuccessOverlay.Visibility = Visibility.Visible;
-                StartConfettiExplosion();
+                TriggerConfetti();
+                AppToast.ShowToast("Purchase successful!", true);
+            }
+            catch (Exception ex)
+            {
+                AppToast.ShowToast("Payment failed! Check the logs.", false);
+                Console.WriteLine($"ERROR: {ex.Message}");
+            }
+        }
 
-                AppToast.ShowToast("Payment Successful!", true);
-            }
-            catch (Exception)
-            {
-                AppToast.ShowToast("Connection error: Jegymentés sikertelen!", false);
-            }
-            finally
-            {
-                ResetPurchaseProcess();
-            }
+        private void ShowDigitalTicket()
+        {
+            string timestamp = DateTime.Now.ToString("yyyyMMddHHmm");
+            string mainId = _savedTicketIds.Count > 0 ? _savedTicketIds[0].ToString() : "000";
+            string finalTicketId = $"TID-{timestamp}-{mainId}";
+            string mySeats = string.Join(", ", SelectedSeatsList.Select(s => $"R{s.Seat.Row}S{s.Seat.Number}"));
+
+            var ticketModal = new Modals.DigitalTicketModal(
+                SelectedMovieTitle,
+                SelectedShowtime,
+                SelectedRoomName,
+                mySeats,
+                finalTicketId,
+                SelectedMoviePoster,
+                TotalAmount,
+                true
+            );
+
+            (Window.GetWindow(this) as MainWindow)?.HideModal();
+            (Window.GetWindow(this) as MainWindow)?.ShowModal(ticketModal);
         }
 
         private void ViewTicket_Click(object sender, RoutedEventArgs e)
         {
-            TicketMovieName.Text = SelectedMovieTitle;
-            TicketDateTime.Text = SelectedShowtime;
-            string generatedID = "TIC-" + new Random().Next(10000000, 99999999).ToString();
-            TicketID.Text = generatedID;
-            TicketSeats.Text = string.Join(", ", SelectedSeatsList.Select(s => s.SeatInfo.Replace("ROW: ", "R").Replace(" | SEAT: ", " S")));
-
-            // Barcode generálás
-            Random rnd = new Random();
-            List<double> barWidths = new List<double>();
-            double[] possibleWidths = { 1.0, 2.0, 3.0 };
-            for (int i = 0; i < 40; i++) barWidths.Add(possibleWidths[rnd.Next(possibleWidths.Length)]);
-            BarcodeVector.ItemsSource = barWidths;
-
             SuccessOverlay.Visibility = Visibility.Collapsed;
-            TicketDigitalOverlay.Visibility = Visibility.Visible;
+            ShowDigitalTicket();
         }
 
-        private void CloseTicket_Click(object sender, RoutedEventArgs e)
-        {
-            TicketDigitalOverlay.Visibility = Visibility.Collapsed;
-            NavigationService.Navigate(new HomePage());
-        }
-
-        private void ResetPurchaseProcess()
-        {
-            ActionButtonGrid.IsEnabled = true;
-            PaymentProcessing.Visibility = Visibility.Collapsed;
-        }
-
-        private void StartConfettiExplosion()
+        private void TriggerConfetti()
         {
             ConfettiCanvas.Children.Clear();
+            this.UpdateLayout();
+
+            double centerX = ConfettiCanvas.ActualWidth / 2;
+            double centerY = (ConfettiCanvas.ActualHeight / 2) - 90;
+
+            if (centerX <= 0) centerX = this.ActualWidth / 2;
+            if (centerY <= 0) centerY = (this.ActualHeight / 2) - 90;
+
             Random rnd = new Random();
             Color[] colors = { Colors.Gold, Colors.DodgerBlue, Colors.DeepPink, Colors.LimeGreen, Colors.DarkOrange, Colors.Cyan };
 
-            for (int i = 0; i < 35; i++)
+            for (int i = 0; i < 45; i++)
             {
                 Rectangle confetti = new Rectangle
                 {
-                    Width = rnd.Next(2, 8),
-                    Height = rnd.Next(6, 14),
+                    Width = rnd.Next(2, 10),
+                    Height = rnd.Next(6, 16),
                     Fill = new SolidColorBrush(colors[rnd.Next(colors.Length)]),
                     RenderTransformOrigin = new Point(0.5, 0.5),
                     RenderTransform = new TransformGroup
@@ -186,26 +206,27 @@ namespace ticketmasterwpf
                     Opacity = 0
                 };
 
-                Canvas.SetLeft(confetti, 120);
-                Canvas.SetTop(confetti, 80);
+                Canvas.SetLeft(confetti, centerX);
+                Canvas.SetTop(confetti, centerY);
                 ConfettiCanvas.Children.Add(confetti);
 
                 double angle = rnd.NextDouble() * 2 * Math.PI;
-                double distance = rnd.Next(40, 100);
+                double distance = rnd.Next(50, 150);
                 double targetX = Math.Cos(angle) * distance;
                 double targetY = Math.Sin(angle) * distance;
 
-                TimeSpan duration = TimeSpan.FromSeconds(rnd.NextDouble() * 2.0 + 2.0);
+                TimeSpan duration = TimeSpan.FromSeconds(rnd.NextDouble() * 1.5 + 1.5);
                 var sb = new Storyboard();
 
                 var animX = new DoubleAnimation(0, targetX, duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
                 var animY = new DoubleAnimation(0, targetY, duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-                var animRot = new DoubleAnimation(0, rnd.Next(180, 540), duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+                var animRot = new DoubleAnimation(0, rnd.Next(180, 720), duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
 
                 var animOpacity = new DoubleAnimationUsingKeyFrames();
                 animOpacity.KeyFrames.Add(new LinearDoubleKeyFrame(0, TimeSpan.FromSeconds(0)));
-                animOpacity.KeyFrames.Add(new LinearDoubleKeyFrame(1, TimeSpan.FromSeconds(0.3)));
-                animOpacity.KeyFrames.Add(new LinearDoubleKeyFrame(1, duration));
+                animOpacity.KeyFrames.Add(new LinearDoubleKeyFrame(1, TimeSpan.FromSeconds(0.2)));
+                animOpacity.KeyFrames.Add(new LinearDoubleKeyFrame(1, duration.Subtract(TimeSpan.FromSeconds(0.4))));
+                animOpacity.KeyFrames.Add(new LinearDoubleKeyFrame(0, duration));
 
                 Storyboard.SetTarget(animX, confetti);
                 Storyboard.SetTargetProperty(animX, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.X)"));
@@ -217,13 +238,34 @@ namespace ticketmasterwpf
                 Storyboard.SetTargetProperty(animOpacity, new PropertyPath("Opacity"));
 
                 sb.Children.Add(animX); sb.Children.Add(animY); sb.Children.Add(animRot); sb.Children.Add(animOpacity);
+                sb.Completed += (s, args) => ConfettiCanvas.Children.Remove(confetti);
                 sb.Begin();
             }
         }
+
+        // --- SEGÉD GOMBOK ---
+        private void Back_Click(object sender, RoutedEventArgs e) { if (NavigationService.CanGoBack) NavigationService.GoBack(); }
+        private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
+        private void Minimize_Click(object sender, RoutedEventArgs e) { if (Window.GetWindow(this) is Window w) w.WindowState = WindowState.Minimized; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    public class SeatDisplayModel
+    public class SeatDisplayModel : INotifyPropertyChanged
     {
+        public Seat Seat { get; set; }
         public string SeatInfo { get; set; }
+
+        private int _price;
+        public int Price
+        {
+            get => _price;
+            set { _price = value; OnPropertyChanged(); }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

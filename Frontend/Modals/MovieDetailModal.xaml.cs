@@ -13,6 +13,7 @@ namespace ticketmasterwpf.Modals
     public partial class MovieDetailModal : UserControl
     {
         private Movie _selectedMovie;
+        private DateTime _currentDate;
         public event EventHandler<string> ShowToastRequested;
         public MovieDetailModal()
         {
@@ -20,13 +21,14 @@ namespace ticketmasterwpf.Modals
         }
 
         // --- MODÁL MEGNYITÁSA ---
-        public void OpenModal(Movie movie)
+        public void OpenModal(Movie movie, DateTime selectedDate)
         {
             if (movie == null) return;
             this.Visibility = Visibility.Visible;
             ModalRoot.Visibility = Visibility.Visible;
 
             _selectedMovie = movie;
+            _currentDate = selectedDate;
 
             this.DataContext = _selectedMovie;
 
@@ -78,31 +80,70 @@ namespace ticketmasterwpf.Modals
             if (e.Key == Key.Escape) CloseModal();
         }
 
-        private void Showtime_Click(object sender, RoutedEventArgs e)
+        private async void Showtime_Click(object sender, RoutedEventArgs e)
         {
+            var button = sender as Button;
+            if (button == null) return;
+
             var movie = this.DataContext as Movie;
-            string selectedTime = (sender as Button)?.Content?.ToString() ?? "00:00";
+            string selectedTime = button.Content?.ToString() ?? "00:00";
 
             if (movie != null)
             {
                 var tempScreening = movie.Screenings?.FirstOrDefault(s =>
+                    s.StartTime.Date == _currentDate.Date &&
                     s.StartTime.ToString("HH:mm") == selectedTime);
 
                 if (tempScreening != null)
                 {
+                    if (tempScreening.StartTime <= DateTime.Now)
+                    {
+                        ShowToastRequested?.Invoke(this, "Sorry, this screening has already started!");
+                        CloseModal();
+                        return;
+                    }
+
                     var fullScreening = DataService.AllScreenings.FirstOrDefault(s => s.Id == tempScreening.Id);
 
-                    if (fullScreening != null)
+                    string originalText = button.Content.ToString();
+                    button.Content = "Loading...";
+                    button.IsEnabled = false;
+
+                    try
                     {
-                        CloseModal();
-                        var mainWindow = Application.Current.MainWindow as MainWindow;
-                        mainWindow?.MainFrame.Navigate(new TicketBuy(fullScreening));
+                        if (fullScreening != null)
+                        {
+                            var detailedScreening = await DataService.GetScreeningById(fullScreening.Id);
+                            var occupiedSeats = await DataService.GetOccupiedSeatIds(fullScreening.Id);
+
+                            if (detailedScreening != null)
+                            {
+                                CloseModal();
+                                var mainWindow = Application.Current.MainWindow as MainWindow;
+                                mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
+                            }
+                            else
+                            {
+                                ShowToastRequested?.Invoke(this, "Error loading theater data!");
+                            }
+                        }
+                        else
+                        {
+                            var detailedScreening = await DataService.GetScreeningById(tempScreening.Id);
+                            var occupiedSeats = await DataService.GetOccupiedSeatIds(tempScreening.Id);
+
+                            if (detailedScreening != null)
+                            {
+                                CloseModal();
+                                var mainWindow = Application.Current.MainWindow as MainWindow;
+                                mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
+                            }
+                        }
                     }
-                    else
+                    finally
                     {
-                        var mainWindow = Application.Current.MainWindow as MainWindow;
-                        mainWindow?.MainFrame.Navigate(new TicketBuy(tempScreening));
-                        ShowToastRequested?.Invoke(this, "Warning: Detailed screening data still loading...");
+                        button.Content = originalText;
+                        button.IsEnabled = true;
                     }
                 }
             }

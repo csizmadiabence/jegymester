@@ -84,10 +84,13 @@ namespace ticketmasterwpf
         }
         private bool CheckTextBoxValidity(TextBox tb)
         {
-            string input = tb.Text.Trim();
+            string input = tb.Text.Trim().Replace(" ", "").Replace("-", "");
             if (string.IsNullOrWhiteSpace(input)) return false;
+
             if (tb.Name == "EmailInput") return Regex.IsMatch(input, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-            if (tb.Name == "PhoneInput") return Regex.IsMatch(input, @"^((\+36)|(06))[0-9]{1,9}$");
+
+            if (tb.Name == "PhoneInput") return Regex.IsMatch(input, @"^[0-9]{6,15}$");
+
             return true;
         }
 
@@ -258,11 +261,19 @@ namespace ticketmasterwpf
                 return;
             }
 
+            string prefix = ((ComboBoxItem)PhonePrefixCombo.SelectedItem).Tag.ToString();
+            string pureNumber = PhoneInput.Text.Trim().Replace(" ", "").Replace("-", "");
+
+            if (pureNumber.StartsWith("06")) pureNumber = pureNumber.Substring(2);
+            if (pureNumber.StartsWith("+36")) pureNumber = pureNumber.Substring(3);
+
+            string finalPhone = prefix + pureNumber;
+
             var newUser = new User
             {
                 Username = NameInput.Text,
                 Email = EmailInput.Text,
-                PhoneNumber = PhoneInput.Text,
+                PhoneNumber = finalPhone,
                 PasswordHash = PasswordInput.Password,
                 Roles = new()
             };

@@ -107,8 +107,40 @@
                                         </Button.Template>
                                     </Button>
 
-                                    <Grid x:Name="PART_MonthView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Visibility="Visible" Margin="0,10,0,0"/>
-                                    <Grid x:Name="PART_YearView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Visibility="Hidden" Margin="0,10,0,0"/>
+                                    <Grid x:Name="PART_MonthView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Visibility="Visible" Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                    </Grid>
+
+                                    <Grid x:Name="PART_YearView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Visibility="Hidden" Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                    </Grid>
                                 </Grid>
                             </Border>
                         </Grid>

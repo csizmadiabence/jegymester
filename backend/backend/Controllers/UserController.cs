@@ -36,20 +36,21 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<User>> CreateUser(User user)
     {
+        // Email ellenõrzése
         if (await _context.Users.AnyAsync(u => u.Email == user.Email))
-            return BadRequest("Ezzel az e-mail címmel már regisztráltak!");
-
-        if (user.Roles == null) user.Roles = new List<Role>();
-
-        if (!user.Roles.Any())
         {
-            var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
-            if (defaultRole != null) user.Roles.Add(defaultRole);
+            return BadRequest("This email address is already registered.");
+        }
+
+        // Telefonszám ellenõrzése (ha nem üres)
+        if (!string.IsNullOrEmpty(user.PhoneNumber) &&
+            await _context.Users.AnyAsync(u => u.PhoneNumber == user.PhoneNumber))
+        {
+            return BadRequest("This phone number is already linked to another account.");
         }
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
-
         return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }
 
@@ -62,7 +63,7 @@ public class UsersController : ControllerBase
 
         if (user == null || user.PasswordHash != request.Password)
         {
-            return Unauthorized("Hibás e-mail cím vagy jelszó!");
+            return Unauthorized("Wrong email or password!");
         }
 
         return Ok(user);
@@ -72,6 +73,22 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUser(int id, User updatedUser)
     {
+        if (id != updatedUser.Id)
+        {
+            return BadRequest("ID mismatch");
+        }
+
+        if (await _context.Users.AnyAsync(u => u.Email == updatedUser.Email && u.Id != id))
+        {
+            return BadRequest("User already registered with this email");
+        }
+
+        if (!string.IsNullOrEmpty(updatedUser.PhoneNumber) &&
+            await _context.Users.AnyAsync(u => u.PhoneNumber == updatedUser.PhoneNumber && u.Id != id))
+        {
+            return BadRequest("This phone number is already in use.");
+        }
+
         var user = await _context.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == id);
 
         if (user == null) return NotFound();

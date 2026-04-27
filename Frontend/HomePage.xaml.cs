@@ -34,9 +34,14 @@ namespace ticketmasterwpf
         public ObservableCollection<Movie> ComingSoonMovies { get; set; } = new ObservableCollection<Movie>();
         public ObservableCollection<DateItem> AvailableDates { get; set; } = new ObservableCollection<DateItem>();
         public ObservableCollection<User> Customers { get; set; } = new ObservableCollection<User>();
-        public ObservableCollection<object> AllTickets { get; set; } = new ObservableCollection<object>();
-        public ObservableCollection<object> UserTickets { get; set; } = new ObservableCollection<object>();
+        public ObservableCollection<GroupedTicket> PagedTickets { get; set; } = new ObservableCollection<GroupedTicket>();
+        public ObservableCollection<PageItem> TicketPageNumbers { get; set; } = new ObservableCollection<PageItem>();
         public ObservableCollection<int> PageNumbers { get; set; } = new ObservableCollection<int>();
+        public ObservableCollection<ChartBar> RevenueChartData { get; set; } = new ObservableCollection<ChartBar>();
+        public ObservableCollection<TopMovieStat> TopMoviesList { get; set; } = new ObservableCollection<TopMovieStat>();
+
+        public string TotalRevenue { get; set; } = "0 Ft";
+        public string ActiveUserCount { get; set; } = "0";
 
         private string _currentSearch = "";
         private string _currentSort = "ID_DESC";
@@ -50,6 +55,7 @@ namespace ticketmasterwpf
         // Változók a szűréshez
         private string _screeningSearch = "";
         private string _screeningSort = "Date (Newest)";
+        private string _ticketSearchText = "";
 
         public DateTime SelectedDate
         {
@@ -86,6 +92,7 @@ namespace ticketmasterwpf
         private int _moviePage = 1;
         private int _screeningPage = 1;
         private int _customerPage = 1;
+        private int _ticketPage = 1;
 
         private string _moviePaginationStatus;
         public string MoviePaginationStatus
@@ -99,6 +106,13 @@ namespace ticketmasterwpf
         {
             get => _screeningPaginationStatus;
             set { _screeningPaginationStatus = value; OnPropertyChanged(); }
+        }
+
+        private string _ticketPaginationStatus;
+        public string TicketPaginationStatus
+        {
+            get => _ticketPaginationStatus;
+            set { _ticketPaginationStatus = value; OnPropertyChanged(); }
         }
 
         private object _itemToDelete;
@@ -128,6 +142,10 @@ namespace ticketmasterwpf
             };
             ProfilePanel.ProfileUpdated += (s, e) => {
                 ApplyTestRole(DataService.CurrentUser);
+            };
+            CashierPanel.ShowToastRequested += (message, isSuccess) =>
+            {
+                AppToast.ShowToast(message, isSuccess);
             };
 
             for (int i = 0; i < 7; i++)
@@ -161,6 +179,8 @@ namespace ticketmasterwpf
             await DataService.FetchMovies();
             await DataService.FetchScreenings();
             await DataService.FetchUsers();
+            await DataService.FetchCinemaHalls();
+            await DataService.FetchAllTickets();
 
             if (DataService.CurrentUser != null)
             {
@@ -171,13 +191,14 @@ namespace ticketmasterwpf
                 ApplyTestRole(null);
             }
 
-            //await DataService.FetchCinemaHalls(); 
-
             InitializeSpecialLists();
             RefreshAdminPage();
             RefreshScreeningsPage();
             UpdateHomeCatalogByDate(DateTime.Today);
             RefreshUsersPage();
+            RefreshTicketsPage();
+            UpdateDashboardStats();
+            ProfilePanel.FetchUserTickets();
         }
 
         private void InitializeSpecialLists()
@@ -334,15 +355,102 @@ namespace ticketmasterwpf
                     }
                     else if (itemToDelete is Screening screening)
                     {
-                        var response = await client.DeleteAsync($"http://localhost:5035/api/Screenings/{screening.Id}");
+                        try
+                        {
+                            var ticketsToCancel = DataService.AllTickets
+                                .Where(t => t.ScreeningId == screening.Id && !t.IsCancelled)
+                                 .ToList();
+
+                            if (ticketsToCancel.Any())
+                            {
+                                foreach (var ticket in ticketsToCancel)
+                                {
+                                     var cancelRequest = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5035/api/Tickets/{ticket.Id}/cancel");
+                                     await client.SendAsync(cancelRequest);
+                                }
+
+                                AppToast.ShowToast($"{ticketsToCancel.Count} tickets have been automatically cancelled.", true);
+                            }
+
+                            var response = await client.DeleteAsync($"http://localhost:5035/api/Screenings/{screening.Id}");
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                               AppToast.ShowToast("Screening successfully removed!", true);
+
+                               await DataService.FetchScreenings();
+                               await DataService.FetchAllTickets();
+
+                               RefreshScreeningsPage();
+                               RefreshTicketsPage();
+                               UpdateHomeCatalogByDate(_selectedDate);
+                               UpdateDashboardStats();
+                            }
+                            else
+                            {
+                               string error = await response.Content.ReadAsStringAsync();
+                               AppToast.ShowToast($"Error deleting screening: {error}", false);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            AppToast.ShowToast("Error: " + ex.Message, false);
+                        }
+                    }
+                    else if (itemToDelete is User user)
+                    {
+                        if (DataService.CurrentUser != null && user.Id == DataService.CurrentUser.Id)
+                        {
+                            AppToast.ShowToast("You cannot delete your own account!", false);
+                            return;
+                        }
+
+                        var response = await client.DeleteAsync($"http://localhost:5035/api/Users/{user.Id}");
                         if (response.IsSuccessStatusCode)
                         {
-                            AppToast.ShowToast("Screening successfully deleted!", true);
-                            await DataService.FetchScreenings();
-                            await DataService.FetchMovies();
+                            AppToast.ShowToast($"{user.Username} successfully deleted!", true);
 
-                            RefreshScreeningsPage();
-                            UpdateHomeCatalogByDate(_selectedDate);
+                            await DataService.FetchUsers();
+
+                            RefreshUsersPage();
+                        }
+                        else
+                        {
+                            var error = await response.Content.ReadAsStringAsync();
+                            AppToast.ShowToast($"Delete failed: {error}", false);
+                        }
+                    }
+                    else if (itemToDelete is GroupedTicket gt || itemToDelete is Views.ProfileView.GroupedTicket)
+                    {
+                        try
+                        {
+                            var ticketsToCancel = (itemToDelete is GroupedTicket adminGt)
+                                ? adminGt.AllTicketsInGroup
+                                : ((Views.ProfileView.GroupedTicket)itemToDelete).AllTicketsInGroup;
+
+                            foreach (var ticket in ticketsToCancel)
+                            {
+                                var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5035/api/Tickets/{ticket.Id}/cancel");
+                                var response = await client.SendAsync(request);
+
+                                if (!response.IsSuccessStatusCode)
+                                {
+                                    string err = await response.Content.ReadAsStringAsync();
+                                    throw new Exception($"API Error: {err}");
+                                }
+                                ticket.IsCancelled = true;
+                            }
+
+                            AppToast.ShowToast("Tickets successfully cancelled!", true);
+
+                            await DataService.FetchAllTickets();
+                            RefreshTicketsPage();
+                            ProfilePanel.FetchUserTickets();
+                            UpdateDashboardStats();
+                        }
+                        catch (Exception ex)
+                        {
+                            AppToast.ShowToast("Cancellation failed: " + ex.Message, false);
                         }
                     }
                 }
@@ -382,8 +490,8 @@ namespace ticketmasterwpf
                     string.Equals(movie.Status, "Upcoming", StringComparison.OrdinalIgnoreCase))
                 {
                     var dailyScreenings = movie.Screenings != null
-                        ? movie.Screenings.Where(s => s.StartTime.Date == targetDate.Date).OrderBy(s => s.StartTime).ToList()
-                        : new List<Screening>();
+                        ? movie.Screenings.Where(s => s.StartTime.Date == targetDate.Date && s.StartTime > DateTime.Now).OrderBy(s => s.StartTime).ToList()
+                            : new List<Screening>();
 
                     if (dailyScreenings.Any())
                     {
@@ -428,6 +536,104 @@ namespace ticketmasterwpf
             }
         }
 
+        // ================= DASHBOARD STATS FRISSÍTÉSE =================
+
+        private void UpdateDashboardStats()
+        {
+            if (DataService.AllTickets == null) return;
+
+            var validTickets = DataService.AllTickets.Where(t => !t.IsCancelled).ToList();
+            var totalRev = validTickets.Sum(t => t.Price);
+
+            TotalRevenue = $"{totalRev:N0} Ft";
+            ActiveUserCount = DataService.AllUsers.Count.ToString();
+
+            var topMovies = validTickets
+                .GroupBy(t => t.MovieTitle)
+                .Select(g => new TopMovieStat { Title = g.Key, Sales = g.Count() })
+                .OrderByDescending(x => x.Sales).Take(3).ToList();
+
+            TopMoviesList.Clear();
+            for (int i = 0; i < topMovies.Count; i++)
+            {
+                topMovies[i].Rank = i + 1;
+                TopMoviesList.Add(topMovies[i]);
+            }
+
+            RevenueChartData.Clear();
+            DateTime today = DateTime.Today;
+            double maxDaily = 0;
+            var last7Days = new Dictionary<DateTime, double>();
+
+            for (int i = 6; i >= 0; i--)
+            {
+                DateTime d = today.AddDays(-i);
+                double dayRev = validTickets.Where(t => t.PurchaseDate.Date == d.Date).Sum(t => t.Price);
+                last7Days[d] = dayRev;
+                if (dayRev > maxDaily) maxDaily = dayRev;
+            }
+
+            foreach (var day in last7Days)
+            {
+                double height = maxDaily > 0 ? (day.Value / maxDaily) * 140 : 0;
+                RevenueChartData.Add(new ChartBar
+                {
+                    Day = day.Key.ToString("ddd"),
+                    Value = Math.Max(height, 5),
+                    Label = day.Value >= 1000 ? $"{day.Value / 1000.0:N1}k" : day.Value.ToString()
+                });
+            }
+
+            OnPropertyChanged(nameof(TotalRevenue));
+            OnPropertyChanged(nameof(ActiveUserCount));
+        }
+
+        // USER
+
+        private void ProfilePanel_CancelTicketRequested(object sender, Views.ProfileView.GroupedTicket groupedTicket)
+        {
+            if (groupedTicket.MainTicket.IsValidated)
+            {
+                AppToast.ShowToast("You cannot cancel a ticket that has already been validated!", false);
+                return;
+            }
+
+            var screening = DataService.AllScreenings.FirstOrDefault(s => s.Id == groupedTicket.MainTicket.ScreeningId);
+
+            if (screening != null)
+            {
+                double hoursUntilShow = (screening.StartTime - DateTime.Now).TotalHours;
+
+                if (hoursUntilShow < 4)
+                {
+                    AppToast.ShowToast("Cancellations are only allowed up to 4 hours before the show!", false);
+                    return;
+                }
+            }
+
+            // Ha minden ellenőrzésen átment, megnyitjuk a törlési ablakot
+            _itemToDelete = groupedTicket;
+            DeletePopup.OpenModal(groupedTicket);
+        }
+        private void ProfilePanel_ViewDigitalPassRequested(object sender, Ticket ticket)
+        {
+            string formattedTicketId = $"TID-{ticket.PurchaseDate:yyyyMMddHHmm}-{ticket.Id}";
+
+            var ticketModal = new ticketmasterwpf.Modals.DigitalTicketModal(
+                ticket.MovieTitle,
+                ticket.SessionTime,
+                ticket.RoomName,
+                ticket.SeatInfo,
+                formattedTicketId,
+                ticket.LinkedScreening?.Movie?.PosterUrl,
+                $"{ticket.Price} Ft",
+                false
+            );
+
+            var mainWindow = Application.Current.MainWindow as MainWindow;
+            mainWindow?.ShowModal(ticketModal);
+        }
+
         // ================= ADMIN PANEL ESEMÉNYEK =================
 
         private void AdminPanel_AddMovieRequested(object sender, EventArgs e) => AddMoviePopup.OpenModal(null);
@@ -439,14 +645,26 @@ namespace ticketmasterwpf
         private void AdminPanel_AddCustomerRequested(object sender, EventArgs e) => AddUserPopup.OpenModal(null);
         private void AdminPanel_EditCustomerRequested(object sender, User user) => AddUserPopup.OpenModal(user);
         private void AdminPanel_DeleteCustomerRequested(object sender, User user) { _itemToDelete = user; DeletePopup.OpenModal(user); }
+        private void AdminPanel_RefundTicketRequested(object sender, GroupedTicket groupedTicket)
+        {
+            if (groupedTicket.MainTicket.IsValidated)
+            {
+                AppToast.ShowToast("Cannot refund a ticket that has already been validated!", false);
+                return;
+            }
 
-        private void AdminPanel_PageNumberRequested(object sender, int page)    
+            _itemToDelete = groupedTicket;
+            DeletePopup.OpenModal(groupedTicket);
+        }
+
+        private void AdminPanel_PageNumberRequested(object sender, int page)
         {
             if (AdminTab.IsChecked == true)
             {
                 if (AdminPanel.SubMovies.IsChecked == true) { _moviePage = page; RefreshAdminPage(); }
                 else if (AdminPanel.SubScreenings.IsChecked == true) { _screeningPage = page; RefreshScreeningsPage(); }
                 else if (AdminPanel.SubCustomers.IsChecked == true) { _customerPage = page; RefreshUsersPage(); }
+                else if (AdminPanel.SubTickets.IsChecked == true) { _ticketPage = page; RefreshTicketsPage(); }
             }
         }
 
@@ -467,10 +685,15 @@ namespace ticketmasterwpf
                 int maxPage = (int)Math.Ceiling((double)DataService.AllUsers.Count / itemsPerPage);
                 if (_customerPage < maxPage) { _customerPage++; RefreshUsersPage(); }
             }
+            else if (AdminPanel.SubTickets.IsChecked == true)
+            {
+                int maxPage = (int)Math.Ceiling((double)DataService.AllTickets.Count / itemsPerPage);
+                if (_ticketPage < maxPage) { _ticketPage++; RefreshTicketsPage(); }
+            }
         }
 
         private void AdminPanel_PrevPageRequested(object sender, EventArgs e)
-        {
+        {   
             if (AdminPanel.SubMovies.IsChecked == true && _moviePage > 1)
             {
                 _moviePage--; RefreshAdminPage();
@@ -482,6 +705,10 @@ namespace ticketmasterwpf
             else if (AdminPanel.SubCustomers.IsChecked == true && _customerPage > 1)
             {
                 _customerPage--; RefreshUsersPage();
+            }
+            else if (AdminPanel.SubTickets.IsChecked == true && _ticketPage > 1)
+            {
+                _ticketPage--; RefreshTicketsPage();
             }
         }
 
@@ -510,12 +737,170 @@ namespace ticketmasterwpf
             _screeningSort = sortTag;
             RefreshScreeningsPage();
         }
+        private void AdminPanel_TicketSearchChanged(object sender, string searchText)
+        {
+            _ticketSearchText = searchText == "Search ticket ID..." ? "" : searchText;
+            _ticketPage = 1;
+            RefreshTicketsPage();
+        }
 
         private async void AddUserPopup_UserSaved(object sender, EventArgs e)
         {
             await DataService.FetchUsers();
             RefreshUsersPage();
+
+            if (DataService.CurrentUser != null)
+            {
+                var updatedSelf = DataService.AllUsers.FirstOrDefault(u => u.Id == DataService.CurrentUser.Id);
+
+                if (updatedSelf != null)
+                {
+                    DataService.CurrentUser = updatedSelf;
+                    ApplyTestRole(DataService.CurrentUser);
+                }
+            }
         }
+
+        // CASHIER
+        private string GetFormattedSeatName(Ticket t)
+        {
+            string seatName = $"ID:{t.SeatId}";
+            var screening = DataService.AllScreenings.FirstOrDefault(scr => scr.Id == t.ScreeningId);
+            var hall = DataService.AllCinemaHalls.FirstOrDefault(h => h.Id == screening?.CinemaHallId);
+
+            if (hall?.Rows != null)
+            {
+                foreach (var row in hall.Rows)
+                {
+                    var seat = row.Seats?.FirstOrDefault(s => s.Id == t.SeatId);
+                    if (seat != null)
+                    {
+                        seatName = $"R{row.RowNumber} S{row.Seats.IndexOf(seat) + 1}";
+                        break;
+                    }
+                }
+            }
+            return seatName;
+        }
+
+        private void CashierPanel_VerifyTicketRequested(object sender, string inputId)
+        {
+            if (string.IsNullOrWhiteSpace(inputId)) return;
+
+            string rawId = inputId.Contains("-") ? inputId.Split('-').Last() : inputId;
+            if (!int.TryParse(rawId, out int id))
+            {
+                CashierPanel.ShowValidationResult(false, "Invalid Ticket ID format.");
+                AppToast.ShowToast("Validation failed: Invalid format.", false);
+                return;
+            }
+
+            var mainTicket = DataService.AllTickets.FirstOrDefault(t => t.Id == id);
+
+            if (mainTicket == null)
+            {
+                CashierPanel.ShowValidationResult(false, $"Order #{id} not found.");
+                AppToast.ShowToast("Order not found in database.", false);
+                return;
+            }
+
+            var orderGroup = DataService.AllTickets.Where(t =>
+                t.PurchaseDate.ToString("yyyyMMddHHmmss") == mainTicket.PurchaseDate.ToString("yyyyMMddHHmmss") &&
+                t.UserId == mainTicket.UserId &&
+                t.GuestEmail == mainTicket.GuestEmail
+            ).ToList();
+
+            var uiItems = orderGroup.Select(t => new Views.CashierTicketItem
+            {
+                Id = t.Id,
+                SeatDisplay = GetFormattedSeatName(t),
+                StatusText = t.IsCancelled ? "CANCELLED" : (t.IsValidated ? "ALREADY USED" : "VALID"),
+                CanValidate = !t.IsCancelled && !t.IsValidated
+            }).ToList();
+
+            CashierPanel.ShowOrderDetails(uiItems);
+        }
+        private async void CashierPanel_ValidateSingleTicketRequested(object sender, int ticketId)
+        {
+            var ticket = DataService.AllTickets.FirstOrDefault(t => t.Id == ticketId);
+            if (ticket == null || ticket.IsCancelled || ticket.IsValidated) return;
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5035/api/Tickets/{ticketId}/validate");
+                    var response = await client.SendAsync(request);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        ticket.IsValidated = true;
+                        AppToast.ShowToast($"Seat {GetFormattedSeatName(ticket)} successfully validated!", true);
+
+                        RefreshTicketsPage();
+                        ProfilePanel.FetchUserTickets();
+
+                        CashierPanel_VerifyTicketRequested(this, ticketId.ToString());
+                    }
+                    else
+                    {
+                        string errorDetail = await response.Content.ReadAsStringAsync();
+                        AppToast.ShowToast($"Validation failed: {errorDetail}", false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppToast.ShowToast("Network error: " + ex.Message, false);
+            }
+        }
+
+        private async void CashierPanel_IssueAllTicketsRequested(object sender, ObservableCollection<Views.OrderItem> orderItems)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    foreach (var item in orderItems)
+                    {
+                        var newTicket = new Ticket
+                        {
+                            ScreeningId = item.ScreeningId,
+                            SeatId = item.SeatId,
+                            Price = item.Price,
+                            PurchaseDate = DateTime.Now,
+                            GuestEmail = "walk-in@cinema.com",
+                            GuestPhone = "+36300000000",
+                            IsValidated = false
+                        };
+
+                        var json = JsonSerializer.Serialize(newTicket);
+                        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                        var response = await client.PostAsync("http://localhost:5035/api/Tickets", content);
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            string errorMsg = await response.Content.ReadAsStringAsync();
+                            AppToast.ShowToast($"Failed to save ticket for {item.MovieTitle}: {errorMsg}", false);
+                            return;
+                        }
+                    }
+                }
+
+                AppToast.ShowToast($"{orderItems.Count} ticket(s) successfully issued and saved!", true);
+
+                await DataService.FetchAllTickets();
+                RefreshTicketsPage();
+                UpdateDashboardStats();
+            }
+            catch (Exception ex)
+            {
+                AppToast.ShowToast("Connection error: " + ex.Message, false);
+            }
+        }
+
+        // REFRESH LOGIKA (SZŰRÉS + LAPOZÁS)
 
         private void RefreshAdminPage()
         {
@@ -571,6 +956,56 @@ namespace ticketmasterwpf
 
             UpdateScreeningPagination(filteredList.Count);
         }
+        private void RefreshTicketsPage()
+        {
+            if (DataService.AllTickets == null) return;
+
+            var flattenedTickets = new List<GroupedTicket>();
+
+            foreach (var ticket in DataService.AllTickets)
+            {
+                string seatName = $"ID:{ticket.SeatId}";
+                var screening = DataService.AllScreenings.FirstOrDefault(scr => scr.Id == ticket.ScreeningId);
+                var hall = DataService.AllCinemaHalls.FirstOrDefault(h => h.Id == screening?.CinemaHallId);
+
+                if (hall?.Rows != null && hall.Rows.Any())
+                {
+                    foreach (var row in hall.Rows)
+                    {
+                        var seatInRow = row.Seats?.FirstOrDefault(st => st.Id == ticket.SeatId);
+                        if (seatInRow != null)
+                        {
+                            int seatNum = row.Seats.IndexOf(seatInRow) + 1;
+                            seatName = $"R{row.RowNumber} S{seatNum}";
+                            break;
+                        }
+                    }
+                }
+
+                flattenedTickets.Add(new GroupedTicket
+                {
+                    MainTicket = ticket,
+                    TotalPrice = ticket.Price,
+                    CombinedSeats = seatName,
+                    AllTicketsInGroup = new List<Ticket> { ticket }
+                });
+            }
+
+            var filteredList = flattenedTickets.Where(g =>
+                string.IsNullOrEmpty(_ticketSearchText) ||
+                _ticketSearchText == "Search ticket ID..." ||
+                g.MainTicket.Id.ToString().Contains(_ticketSearchText) ||
+                (g.MainTicket.CustomerEmail != null && g.MainTicket.CustomerEmail.ToLower().Contains(_ticketSearchText.ToLower()))
+            ).OrderByDescending(g => g.MainTicket.PurchaseDate).ThenBy(g => g.MainTicket.Id).ToList();
+
+            var pagedData = filteredList.Skip((_ticketPage - 1) * itemsPerPage).Take(itemsPerPage).ToList();
+
+            PagedTickets.Clear();
+            foreach (var grp in pagedData) PagedTickets.Add(grp);
+
+            UpdateTicketPagination(filteredList.Count);
+            UpdateDashboardStats();
+        }
 
         private void RefreshUsersPage()
         {
@@ -587,23 +1022,9 @@ namespace ticketmasterwpf
 
         // ================= MOVIE LIST & CASHIER ESEMÉNYEK =================
 
-        private void MovieCatalog_MovieDetailRequested(object sender, Movie selectedMovie) => MovieDetailPopup.OpenModal(selectedMovie);
+        private void MovieCatalog_MovieDetailRequested(object sender, Movie selectedMovie) { MovieDetailPopup.OpenModal(selectedMovie, SelectedDate); }
         private void MovieCatalog_DateChanged(object sender, DateTime newDate) => SelectedDate = newDate;
         private void CalendarPopup_DateSelected(object sender, DateTime newDate) => SelectedDate = newDate;
-
-        private void CashierPanel_VerifyTicketRequested(object sender, string ticketId)
-        {
-            if (ticketId == "12345" || ticketId == "0000")
-                CashierPanel.ShowValidationResult(true, "Dune: Part Two - 19:30\nRoom 1 | Seat: Row 4, Seat 12");
-            else
-                CashierPanel.ShowValidationResult(false, $"No ticket found in database with ID: {ticketId}");
-        }
-
-        private void CashierPanel_IssueAllTicketsRequested(object sender, ObservableCollection<Views.OrderItem> orderItems)
-        {
-            int totalTickets = orderItems.Count;
-            AppToast.ShowToast($"Transaction successful! {totalTickets} tickets issued.", true);
-        }
 
         // ================= USER & SYSTEM =================
         public void ApplyTestRole(User user)
@@ -624,12 +1045,29 @@ namespace ticketmasterwpf
                 {
                     ProfileTab.Visibility = Visibility.Visible;
 
-                    if (user.Roles.Any(r => r.Name == "Admin"))
+                    bool isAdmin = user.Roles.Any(r => r.Name == "Admin");
+                    bool isCashier = user.Roles.Any(r => r.Name == "Cashier");
+
+                    if (isAdmin)
                         AdminTab.Visibility = Visibility.Visible;
 
-                    if (user.Roles.Any(r => r.Name == "Cashier"))
+                    if (isCashier)
                         CashierTab.Visibility = Visibility.Visible;
+
+                    if (AdminTab.IsChecked == true && !isAdmin)
+                    {
+                        HomeTab.IsChecked = true;
+                    }
+
+                    if (CashierTab.IsChecked == true && !isCashier)
+                    {
+                        HomeTab.IsChecked = true;
+                    }
                 }
+            }
+            else
+            {
+                HomeTab.IsChecked = true;
             }
         }
 
@@ -644,8 +1082,11 @@ namespace ticketmasterwpf
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            HomeTab.IsChecked = true;
             AppToast.ShowToast("Successfully logged out!", true);
+
+            DataService.CurrentUser = null;
+
+            NavigationService?.Navigate(new HomePage());
         }
 
         private void Login_Click(object sender, RoutedEventArgs e) => NavigationService.Navigate(new LoginPage());
@@ -698,6 +1139,27 @@ namespace ticketmasterwpf
             ScreeningPaginationStatus = $"Showing screenings {startItem} to {endItem} of {totalItems} entries";
         }
 
+        private void UpdateTicketPagination(int totalItems)
+        {
+            int totalPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
+            if (totalPages == 0) totalPages = 1;
+
+            int maxPagesToShow = 3;
+            int startPage = Math.Max(1, _ticketPage - 1);
+            int endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage < maxPagesToShow - 1)
+                startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+
+            TicketPageNumbers.Clear();
+            for (int i = startPage; i <= endPage; i++)
+                TicketPageNumbers.Add(new PageItem { Number = i, IsActive = (i == _ticketPage) });
+
+            int startItem = totalItems == 0 ? 0 : ((_ticketPage - 1) * itemsPerPage) + 1;
+            int endItem = Math.Min(_ticketPage * itemsPerPage, totalItems);
+
+            TicketPaginationStatus = $"Showing tickets {startItem} to {endItem} of {totalItems} entries";
+        }
+
         private void UpdateCustomerPagination(int totalItems)
         {
             int totalPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
@@ -718,7 +1180,6 @@ namespace ticketmasterwpf
 
             AdminPanel.CustomerPaginationStatus = $"Showing users {startItem} to {endItem} of {totalItems} entries";
         }
-
         // ================= PROPERTY CHANGED =================
 
         public event PropertyChangedEventHandler PropertyChanged;

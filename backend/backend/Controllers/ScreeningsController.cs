@@ -19,12 +19,27 @@ public class ScreeningsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Screening>>> GetScreenings()
     {
-        return await _context.Screenings
+        var screenings = await _context.Screenings
             .Include(s => s.Movie)
             .Include(s => s.CinemaHall)
-            .ThenInclude(ch => ch.Rows)
-            .ThenInclude(r => r.Seats)
             .ToListAsync();
+
+        return Ok(screenings);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Screening>> GetScreening(int id)
+    {
+        var screening = await _context.Screenings
+            .Include(s => s.Movie)
+            .Include(s => s.CinemaHall)
+                .ThenInclude(ch => ch.Rows)
+                .ThenInclude(r => r.Seats)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (screening == null) return NotFound();
+
+        return screening;
     }
 
     [HttpPost] //uj vetites felvetele (admin)

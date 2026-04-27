@@ -21,10 +21,29 @@ namespace ticketmasterwpf.Modals
         {
             _itemToDelete = item;
 
+            ModalTitleText.Text = "Confirm Deletion";
+            ConfirmBtn.Content = "Delete";
+
             if (item is Movie m)
-                DeleteMessageText.Text = $"Biztosan törlöd a(z) {m.Title} filmet?";
+            {
+                DeleteMessageText.Text = $"Are you sure you want to delete the movie: {m.Title}?";
+            }
             else if (item is Screening s)
-                DeleteMessageText.Text = $"Biztosan törlöd a vetítést: {s.CinemaHall?.Name} ({s.StartTime:HH:mm})?";
+            {
+                DeleteMessageText.Text = $"Are you sure you want to delete the screening: {s.CinemaHall?.Name} ({s.StartTime:HH:mm})?";
+            }
+            else if (item is GroupedTicket adminTicket)
+            {
+                ModalTitleText.Text = "Confirm Refund";
+                ConfirmBtn.Content = "Refund";
+                DeleteMessageText.Text = $"Are you sure you want to refund this ticket? ({adminTicket.CombinedSeats})";
+            }
+            else if (item is Views.ProfileView.GroupedTicket userTicket)
+            {
+                ModalTitleText.Text = "Cancel Ticket";
+                ConfirmBtn.Content = "Cancel Ticket";
+                DeleteMessageText.Text = $"Are you sure you want to cancel your reservation for {userTicket.MainTicket.MovieTitle}? ({userTicket.CombinedSeats})";
+            }
 
             this.Visibility = Visibility.Visible;
         }

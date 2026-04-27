@@ -32,8 +32,26 @@
                             </Border>
 
                             <TextBlock Text="Phone Number" Foreground="#88FFFFFF" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <Border Style="{StaticResource InputBorderStyle}">
-                                <TextBox x:Name="PhoneInput" BorderThickness="0" Background="Transparent" Padding="13,8" FontSize="13" Foreground="White" CaretBrush="White"/>
+                            <Border Style="{StaticResource InputBorderStyle}" Height="35">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ComboBox x:Name="PhonePrefixCombo" Grid.Column="0"  Style="{StaticResource CleanComboBox}" Foreground="White" BorderBrush="#33FFFFFF" BorderThickness="0,0,1,0" Padding="0" Margin="0,-2.4,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Left">
+                                        <ComboBoxItem Content="+36 (HU)" Tag="+36" IsSelected="True"/>
+                                        <ComboBoxItem Content="+43 (AT)" Tag="+43"/>
+                                        <ComboBoxItem Content="+49 (DE)" Tag="+49"/>
+                                        <ComboBoxItem Content="+44 (UK)" Tag="+44"/>
+                                        <ComboBoxItem Content="+40 (RO)" Tag="+40"/>
+                                        <ComboBoxItem Content="+421 (SK)" Tag="+421"/>
+                                        <ComboBoxItem Content="+1 (US)" Tag="+1"/>
+                                        <ComboBoxItem Content="+" Tag="+"/>
+                                    </ComboBox>
+
+                                    <TextBox x:Name="PhoneInput" Grid.Column="1" Margin="-25,0,0,0" Background="Transparent" Foreground="White" BorderThickness="0" Padding="10,0,10,0" VerticalAlignment="Center" VerticalContentAlignment="Center" FontSize="12" CaretBrush="White" MaxLength="15"/>
+                                </Grid>
                             </Border>
                         </StackPanel>
 
