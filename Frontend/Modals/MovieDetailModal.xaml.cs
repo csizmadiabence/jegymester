@@ -13,9 +13,11 @@ namespace ticketmasterwpf.Modals
     public partial class MovieDetailModal : UserControl
     {
         private Movie _selectedMovie;
+
         private DateTime _currentDate;
         public event EventHandler<string> ShowToastRequested;
         public MovieDetailModal()
+
         {
             InitializeComponent();
         }
@@ -25,6 +27,7 @@ namespace ticketmasterwpf.Modals
         {
             if (movie == null) return;
             this.Visibility = Visibility.Visible;
+
             ModalRoot.Visibility = Visibility.Visible;
 
             _selectedMovie = movie;
@@ -32,13 +35,18 @@ namespace ticketmasterwpf.Modals
 
             this.DataContext = _selectedMovie;
 
+
             PosterDisplay.BorderBrush = new System.Windows.Media.SolidColorBrush(_selectedMovie.PlaceholderColor);
             PosterDisplay.BorderThickness = new Thickness(1);
+
             PosterDisplay.Opacity = 1.0;
+
 
             if (_selectedMovie.Showtimes == null || _selectedMovie.Showtimes.Count == 0)
             {
                 ShowtimesItemsControl.Visibility = Visibility.Collapsed;
+
+
                 NoShowtimesMessage.Visibility = Visibility.Visible;
             }
             else
@@ -55,6 +63,7 @@ namespace ticketmasterwpf.Modals
 
         // --- MODÁL BEZÁRÁSA ---
         public void CloseModal()
+
         {
             var sb = (Storyboard)this.Resources["CloseModal"];
             sb?.Begin();
@@ -68,6 +77,7 @@ namespace ticketmasterwpf.Modals
         private void CloseModal_Click(object sender, RoutedEventArgs e)
         {
             ModalRoot.Visibility = Visibility.Collapsed;
+
         }
 
         private void CloseModal_Click(object sender, MouseButtonEventArgs e)
@@ -78,6 +88,7 @@ namespace ticketmasterwpf.Modals
         private void UserControl_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape) CloseModal();
+
         }
 
         private async void Showtime_Click(object sender, RoutedEventArgs e)
@@ -95,19 +106,23 @@ namespace ticketmasterwpf.Modals
                     s.StartTime.ToString("HH:mm") == selectedTime);
 
                 if (tempScreening != null)
+
                 {
                     if (tempScreening.StartTime <= DateTime.Now)
                     {
                         ShowToastRequested?.Invoke(this, "Sorry, this screening has already started!");
                         CloseModal();
                         return;
+
                     }
 
                     var fullScreening = DataService.AllScreenings.FirstOrDefault(s => s.Id == tempScreening.Id);
 
                     string originalText = button.Content.ToString();
+
                     button.Content = "Loading...";
                     button.IsEnabled = false;
+
 
                     try
                     {
@@ -124,6 +139,7 @@ namespace ticketmasterwpf.Modals
                             }
                             else
                             {
+
                                 ShowToastRequested?.Invoke(this, "Error loading theater data!");
                             }
                         }
@@ -135,14 +151,17 @@ namespace ticketmasterwpf.Modals
                             if (detailedScreening != null)
                             {
                                 CloseModal();
+
                                 var mainWindow = Application.Current.MainWindow as MainWindow;
                                 mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
                             }
                         }
                     }
                     finally
+
                     {
                         button.Content = originalText;
+
                         button.IsEnabled = true;
                     }
                 }
@@ -158,11 +177,13 @@ namespace ticketmasterwpf.Modals
                 var nextScreening = DataService.AllScreenings
                     .Where(s => s.MovieId == _selectedMovie.Id && s.StartTime >= DateTime.Now)
                     .OrderBy(s => s.StartTime)
+
                     .FirstOrDefault(); 
 
                 if (nextScreening != null)
                 {
                     var detailedScreening = await DataService.GetScreeningById(nextScreening.Id);
+
                     var occupiedSeats = await DataService.GetOccupiedSeatIds(nextScreening.Id);
 
                     if (detailedScreening != null)
@@ -170,6 +191,7 @@ namespace ticketmasterwpf.Modals
                         CloseModal();
 
                         var mainWindow = Application.Current.MainWindow as MainWindow;
+
                         mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
                     }
                     else
@@ -183,6 +205,7 @@ namespace ticketmasterwpf.Modals
                 }
             }
             catch (Exception ex)
+
             {
                 ShowToastRequested?.Invoke(this, "An error occurred: " + ex.Message);
             }
