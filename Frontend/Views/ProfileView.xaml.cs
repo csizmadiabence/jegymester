@@ -113,15 +113,28 @@ namespace ticketmasterwpf.Views
                         {
                             foreach (var row in hall.Rows)
                             {
-                                var seat = row.Seats?.FirstOrDefault(s => s.Id == t.SeatId);
-                                if (seat != null)
+                                bool seatIsInThisRow = row.Seats.Any(s => s.Id == t.SeatId);
+
+                                if (seatIsInThisRow)
                                 {
-                                    seatName = $"R{row.RowNumber} S{row.Seats.IndexOf(seat) + 1}";
+                                    int displayCounter = 1;
+                                    foreach (var s in row.Seats.OrderBy(x => x.Id))
+                                    {
+                                        if (!s.IsHidden)
+                                        {
+                                            if (s.Id == t.SeatId)
+                                            {
+                                                seatName = $"R{row.RowNumber} S{displayCounter}";
+                                                break;
+                                            }
+                                            displayCounter++;
+                                        }
+                                    }
                                     break;
                                 }
                             }
                         }
-                        return $"{seatName}";
+                        return seatName;
                     })),
 
                     AllTicketsInGroup = group.ToList()

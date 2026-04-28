@@ -185,6 +185,7 @@ namespace ticketmasterwpf
                 await DataService.FetchUsers();
                 await DataService.FetchCinemaHalls();
                 await DataService.FetchAllTickets();
+                await AutoCancelExpiredTickets();
 
                 ApplyTestRole(DataService.CurrentUser);
                 InitializeSpecialLists();
@@ -197,6 +198,44 @@ namespace ticketmasterwpf
                 ProfilePanel.FetchUserTickets();
             }
             finally { mainWin?.HideLoading(); }
+        }
+
+        private async Task AutoCancelExpiredTickets()
+        {
+            bool madeChanges = false;
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var ticketsToCheck = DataService.AllTickets.Where(t => !t.IsCancelled && !t.IsValidated).ToList();
+
+                    foreach (var ticket in ticketsToCheck)
+                    {
+                        var screening = DataService.AllScreenings.FirstOrDefault(s => s.Id == ticket.ScreeningId);
+
+                        if (screening != null && DateTime.Now > screening.StartTime.AddMinutes(10))
+                        {
+                            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5035/api/Tickets/{ticket.Id}/cancel");
+                            var response = await client.SendAsync(request);
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                ticket.IsCancelled = true;
+                                madeChanges = true;
+                            }
+                        }
+                    }
+                }
+
+                if (madeChanges)
+                {
+                    await DataService.FetchAllTickets();
+                }
+            }
+            catch
+            {
+                // Csendes kivételkezelés, nehogy összeomoljon a főoldal betöltése
+            }
         }
 
         private void InitializeSpecialLists()
@@ -779,7 +818,6 @@ namespace ticketmasterwpf
         // CASHIER
         private string GetFormattedSeatName(Ticket t)
         {
-            string seatName = $"ID:{t.SeatId}";
             var screening = DataService.AllScreenings.FirstOrDefault(scr => scr.Id == t.ScreeningId);
             var hall = DataService.AllCinemaHalls.FirstOrDefault(h => h.Id == screening?.CinemaHallId);
 
@@ -787,15 +825,27 @@ namespace ticketmasterwpf
             {
                 foreach (var row in hall.Rows)
                 {
-                    var seat = row.Seats?.FirstOrDefault(s => s.Id == t.SeatId);
-                    if (seat != null)
+                    bool seatIsInThisRow = row.Seats.Any(s => s.Id == t.SeatId);
+
+                    if (seatIsInThisRow)
                     {
-                        seatName = $"R{row.RowNumber} S{row.Seats.IndexOf(seat) + 1}";
-                        break;
+                        int displayCounter = 1;
+
+                        foreach (var s in row.Seats.OrderBy(x => x.Id))
+                        {
+                            if (!s.IsHidden)
+                            {
+                                if (s.Id == t.SeatId)
+                                {
+                                    return $"R{row.RowNumber} S{displayCounter}";
+                                }
+                                displayCounter++;
+                            }
+                        }
                     }
                 }
             }
-            return seatName;
+            return $"ID:{t.SeatId}";
         }
 
         private void CashierPanel_VerifyTicketRequested(object sender, string inputId)
@@ -1046,23 +1096,7 @@ namespace ticketmasterwpf
 
             foreach (var ticket in DataService.AllTickets)
             {
-                string seatName = $"ID:{ticket.SeatId}";
-                var screening = DataService.AllScreenings.FirstOrDefault(scr => scr.Id == ticket.ScreeningId);
-                var hall = DataService.AllCinemaHalls.FirstOrDefault(h => h.Id == screening?.CinemaHallId);
-
-                if (hall?.Rows != null && hall.Rows.Any())
-                {
-                    foreach (var row in hall.Rows)
-                    {
-                        var seatInRow = row.Seats?.FirstOrDefault(st => st.Id == ticket.SeatId);
-                        if (seatInRow != null)
-                        {
-                            int seatNum = row.Seats.IndexOf(seatInRow) + 1;
-                            seatName = $"R{row.RowNumber} S{seatNum}";
-                            break;
-                        }
-                    }
-                }
+                string seatName = GetFormattedSeatName(ticket);
 
                 flattenedTickets.Add(new GroupedTicket
                 {

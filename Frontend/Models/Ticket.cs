@@ -60,7 +60,21 @@ namespace ticketmasterwpf.Models
         public string SeatInfo => $"Seat ID: {SeatId}";
 
         [JsonIgnore]
-        public string StatusText => IsCancelled ? "Cancelled" : (IsValidated ? "Validated" : "Valid");
+        public string StatusText
+        {
+            get
+            {
+                if (IsCancelled) return "Cancelled";
+
+                if (IsValidated) return "Validated";
+
+                if (LinkedScreening != null && DateTime.Now > LinkedScreening.StartTime.AddMinutes(10))
+                {
+                    return "Expired";
+                }
+                return "Valid";
+            }
+        }
 
         [JsonIgnore]
         public string RoomName => LinkedScreening?.CinemaHall?.Name ?? "Unknown Room";

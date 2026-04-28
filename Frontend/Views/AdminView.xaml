@@ -842,6 +842,9 @@
                                                                             <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Cancelled">
                                                                                 <Setter Property="Background" Value="#1AFF5555"/>
                                                                             </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Expired">
+                                                                                <Setter Property="Background" Value="#FF5555"/>
+                                                                            </DataTrigger>
                                                                             <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Validated">
                                                                                 <Setter Property="Background" Value="#1A4FACFE"/>
                                                                             </DataTrigger>
@@ -855,6 +858,9 @@
                                                                             <Style.Triggers>
                                                                                 <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Cancelled">
                                                                                     <Setter Property="Foreground" Value="#FF5555"/>
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Expired">
+                                                                                    <Setter Property="Background" Value="#FF5555"/>
                                                                                 </DataTrigger>
                                                                                 <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Validated">
                                                                                     <Setter Property="Foreground" Value="#4FACFE"/>

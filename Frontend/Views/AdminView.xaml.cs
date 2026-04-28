@@ -17,7 +17,6 @@ namespace ticketmasterwpf.Views
         public event EventHandler<string> ScreeningSearchChanged;
         public event EventHandler<string> ScreeningSortChanged;
         public event EventHandler<string> TicketSearchChanged;  
-        // Ezek a "kábelek", amiken keresztül szólunk a HomePage-nek
         public event EventHandler AddMovieRequested;
         public event EventHandler<Movie> EditMovieRequested;
         public event EventHandler<Screening> EditScreeningRequested;

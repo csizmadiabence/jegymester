@@ -139,7 +139,7 @@
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
 
-                                    <TextBlock Text="-- Nincsen jelenleg aktív vetítés --" IsHitTestVisible="False" Foreground="#88FFFFFF" FontSize="11" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock Text="-- No active screenings --" IsHitTestVisible="False" Foreground="#88FFFFFF" FontSize="11" VerticalAlignment="Center" Margin="15,0,0,0">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
