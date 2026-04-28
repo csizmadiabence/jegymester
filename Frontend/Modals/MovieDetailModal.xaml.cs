@@ -14,7 +14,10 @@ namespace ticketmasterwpf.Modals
     {
         private Movie _selectedMovie;
         private DateTime _currentDate;
+
+        // A helyes, mindenhol használt Action forma a Toasthoz
         public event Action<string, bool> ShowToastRequested;
+
         public MovieDetailModal()
         {
             InitializeComponent();
@@ -24,12 +27,12 @@ namespace ticketmasterwpf.Modals
         public void OpenModal(Movie movie, DateTime selectedDate)
         {
             if (movie == null) return;
+
             this.Visibility = Visibility.Visible;
             ModalRoot.Visibility = Visibility.Visible;
 
             _selectedMovie = movie;
             _currentDate = selectedDate;
-
             this.DataContext = _selectedMovie;
 
             PosterDisplay.BorderBrush = new System.Windows.Media.SolidColorBrush(_selectedMovie.PlaceholderColor);
@@ -82,69 +85,62 @@ namespace ticketmasterwpf.Modals
 
         private async void Showtime_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            if (button == null) return;
+            if (!(sender is Button button)) return;
+            if (!(this.DataContext is Movie movie)) return;
 
-            var movie = this.DataContext as Movie;
             string selectedTime = button.Content?.ToString() ?? "00:00";
 
-            if (movie != null)
+            var tempScreening = movie.Screenings?.FirstOrDefault(s =>
+                s.StartTime.Date == _currentDate.Date &&
+                s.StartTime.ToString("HH:mm") == selectedTime);
+
+            if (tempScreening != null)
             {
-                var tempScreening = movie.Screenings?.FirstOrDefault(s =>
-                    s.StartTime.Date == _currentDate.Date &&
-                    s.StartTime.ToString("HH:mm") == selectedTime);
-
-                if (tempScreening != null)
+                if (tempScreening.StartTime <= DateTime.Now)
                 {
-                    if (tempScreening.StartTime <= DateTime.Now)
-                    {
-                        ShowToastRequested?.Invoke("Sorry, this screening has already started!", false);
-                        CloseModal();
-                        return;
-                    }
+                    ShowToastRequested?.Invoke("Sorry, this screening has already started!", false);
+                    CloseModal();
+                    return;
+                }
 
+                // UI gomb frissítése és letiltása
+                string originalText = button.Content.ToString();
+                button.Content = "Loading...";
+                button.IsEnabled = false;
+
+                // Töltőképernyő bekapcsolása
+                var mainWindow = Application.Current.MainWindow as MainWindow;
+                mainWindow?.ShowLoading();
+
+                try
+                {
+                    // Lekérjük a pontos azonosítót (ha van teljes verzió a DataService-ben, ha nincs, a temp-et használjuk)
                     var fullScreening = DataService.AllScreenings.FirstOrDefault(s => s.Id == tempScreening.Id);
+                    int targetScreeningId = fullScreening != null ? fullScreening.Id : tempScreening.Id;
 
-                    string originalText = button.Content.ToString();
-                    button.Content = "Loading...";
-                    button.IsEnabled = false;
+                    var detailedScreening = await DataService.GetScreeningById(targetScreeningId);
+                    var occupiedSeats = await DataService.GetOccupiedSeatIds(targetScreeningId);
 
-                    try
+                    if (detailedScreening != null)
                     {
-                        if (fullScreening != null)
-                        {
-                            var detailedScreening = await DataService.GetScreeningById(fullScreening.Id);
-                            var occupiedSeats = await DataService.GetOccupiedSeatIds(fullScreening.Id);
-
-                            if (detailedScreening != null)
-                            {
-                                CloseModal();
-                                var mainWindow = Application.Current.MainWindow as MainWindow;
-                                mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
-                            }
-                            else
-                            {
-                                ShowToastRequested?.Invoke("Error loading theater data!", false);
-                            }
-                        }
-                        else
-                        {
-                            var detailedScreening = await DataService.GetScreeningById(tempScreening.Id);
-                            var occupiedSeats = await DataService.GetOccupiedSeatIds(tempScreening.Id);
-
-                            if (detailedScreening != null)
-                            {
-                                CloseModal();
-                                var mainWindow = Application.Current.MainWindow as MainWindow;
-                                mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
-                            }
-                        }
+                        CloseModal();
+                        mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
                     }
-                    finally
+                    else
                     {
-                        button.Content = originalText;
-                        button.IsEnabled = true;
+                        ShowToastRequested?.Invoke("Error loading theater data!", false);
                     }
+                }
+                catch (Exception ex)
+                {
+                    ShowToastRequested?.Invoke($"Error: {ex.Message}", false);
+                }
+                finally
+                {
+                    // Gomb visszaállítása és töltőképernyő kikapcsolása
+                    button.Content = originalText;
+                    button.IsEnabled = true;
+                    mainWindow?.HideLoading();
                 }
             }
         }
@@ -171,6 +167,7 @@ namespace ticketmasterwpf.Modals
                     if (detailedScreening != null)
                     {
                         CloseModal();
+                        // Nem deklaráljuk újra a mainWindow-t, csak használjuk!
                         mainWindow?.MainFrame.Navigate(new TicketBuy(detailedScreening, occupiedSeats));
                     }
                     else

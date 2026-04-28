@@ -3,9 +3,9 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using ticketmasterwpf.Controls;
 using ticketmasterwpf.Models;
 using ticketmasterwpf.Services;
 
@@ -13,9 +13,12 @@ namespace ticketmasterwpf.Modals
 {
     public partial class AddMovieModal : UserControl
     {
-        private MovieService _movieService = new MovieService();
-        public event EventHandler MovieSaved;
+        private readonly MovieService _movieService = new MovieService();
+        private Movie _editingMovie;
+        private string _tempBackdropUrl;
+        private DateTime _tempReleaseDate;
 
+        public event EventHandler MovieSaved;
         public event Action<string, bool> ShowToastRequested;
 
         public AddMovieModal()
@@ -23,76 +26,63 @@ namespace ticketmasterwpf.Modals
             InitializeComponent();
         }
 
-        private Movie _editingMovie = null;
-        private string _tempBackdropUrl = null;
-        private DateTime _tempReleaseDate = DateTime.MinValue;
-
         public void OpenModal(Movie movie = null)
         {
             _editingMovie = movie;
+            ResetForm();
 
-            if (_editingMovie == null)
+            if (_editingMovie != null)
             {
-                _tempBackdropUrl = null;
-                _tempReleaseDate = DateTime.MinValue;
-
-                MovieModalTitle.Text = "Add New Movie to Database";
-                SaveMovieBtn.Content = "Save Movie";
-                ClearInputs();
-                MovieStatusInput.SelectedIndex = 0;
-            }
-            else
-            {
-                _tempBackdropUrl = _editingMovie.BackdropUrl;
-                _tempReleaseDate = _editingMovie.ReleaseDate;
-
-                MovieModalTitle.Text = "Edit Movie Details";
-                SaveMovieBtn.Content = "Update Movie";
-
-                MovieTitleInput.Text = _editingMovie.Title;
-                MovieDescriptionInput.Text = _editingMovie.Description;
-                MovieDurationInput.Text = _editingMovie.DurationMinutes.ToString();
-                MovieGenreInput.Text = _editingMovie.Genre;
-                MovieRatingInput.Text = _editingMovie.ImdbRating;
-                MoviePosterInput.Text = _editingMovie.PosterUrl;
-
-                foreach (ComboBoxItem item in MovieStatusInput.Items)
-                {
-                    if (item.Content.ToString() == _editingMovie.Status)
-                    {
-                        MovieStatusInput.SelectedItem = item;
-                        break;
-                    }
-                }
+                PopulateFields(_editingMovie);
             }
 
             this.Visibility = Visibility.Visible;
         }
 
+        private void ResetForm()
+        {
+            _tempBackdropUrl = null;
+            _tempReleaseDate = DateTime.MinValue;
+
+            MovieModalTitle.Text = _editingMovie == null ? "Add New Movie to Database" : "Edit Movie Details";
+            SaveMovieBtn.Content = _editingMovie == null ? "Save Movie" : "Update Movie";
+
+            ClearInputs();
+            MovieStatusInput.SelectedIndex = 0;
+        }
+
+        private void PopulateFields(Movie movie)
+        {
+            _tempBackdropUrl = movie.BackdropUrl;
+            _tempReleaseDate = movie.ReleaseDate;
+
+            MovieTitleInput.Text = movie.Title;
+            MovieDescriptionInput.Text = movie.Description;
+            MovieDurationInput.Text = movie.DurationMinutes.ToString();
+            MovieGenreInput.Text = movie.Genre;
+            MovieRatingInput.Text = movie.ImdbRating;
+            MoviePosterInput.Text = movie.PosterUrl;
+
+            var statusItem = MovieStatusInput.Items.Cast<ComboBoxItem>()
+                .FirstOrDefault(i => i.Content.ToString() == movie.Status);
+            if (statusItem != null) MovieStatusInput.SelectedItem = statusItem;
+        }
+
         private async void ImdbSearch_Click(object sender, RoutedEventArgs e)
         {
-            string title = MovieTitleInput.Text;
-            if (string.IsNullOrWhiteSpace(title)) return;
+            var title = MovieTitleInput.Text.Trim();
+            if (string.IsNullOrEmpty(title)) return;
 
-            var btn = (Button)sender;
-            btn.IsEnabled = false;
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
+            SetLoadingState(true, (Button)sender);
 
             try
             {
                 var movie = await _movieService.GetMovieFromImdbAsync(title);
-
                 if (movie != null)
                 {
-                    MovieTitleInput.Text = movie.Title;
-                    MovieDescriptionInput.Text = movie.Description;
-                    MovieGenreInput.Text = movie.Genre;
-                    MovieRatingInput.Text = movie.ImdbRating;
-                    MoviePosterInput.Text = movie.PosterUrl;
-                    MovieDurationInput.Text = movie.DurationMinutes.ToString();
-
-                    _tempBackdropUrl = movie.BackdropUrl;
-                    _tempReleaseDate = movie.ReleaseDate;
-
+                    MapMovieToInputs(movie);
                     ShowToastRequested?.Invoke("IMDb data imported successfully!", true);
                 }
                 else
@@ -100,117 +90,147 @@ namespace ticketmasterwpf.Modals
                     ShowToastRequested?.Invoke("Movie not found on IMDb.", false);
                 }
             }
-            finally
-            {
-                btn.IsEnabled = true;
-            }
-        }
-
-        private async void Save_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(MovieTitleInput.Text) || string.IsNullOrWhiteSpace(MovieGenreInput.Text))
-            {
-                ShowToastRequested?.Invoke("Movie title and genre are required!", false);
-                return;
-            }
-
-            if (!int.TryParse(MovieDurationInput.Text, out int duration))
-            {
-                ShowToastRequested?.Invoke("Please enter a valid duration in minutes!", false);
-                return;
-            }
-
-            string inputTitle = MovieTitleInput.Text.Trim();
-
-            bool movieExists = ticketmasterwpf.Services.DataService.AllMovies.Any(m =>
-                m.Title.Equals(inputTitle, StringComparison.OrdinalIgnoreCase) &&
-                (_editingMovie == null || m.Id != _editingMovie.Id));
-
-            if (movieExists)
-            {
-                ShowToastRequested?.Invoke("Error: This movie already exists in the database!", false);
-                return;
-            }
-
-            var movieData = new Movie
-            {
-                Id = _editingMovie?.Id ?? 0,
-                Title = MovieTitleInput.Text,
-                Description = MovieDescriptionInput.Text,
-                DurationMinutes = duration,
-                Genre = MovieGenreInput.Text,
-                ImdbRating = MovieRatingInput.Text,
-                PosterUrl = MoviePosterInput.Text,
-                Status = (MovieStatusInput.SelectedItem as ComboBoxItem)?.Content.ToString(),
-                BackdropUrl = string.IsNullOrWhiteSpace(_tempBackdropUrl)
-                  ? "https://via.placeholder.com/1280x720.png?text=No+Background"
-                  : _tempBackdropUrl,
-                ReleaseDate = _tempReleaseDate == DateTime.MinValue ? DateTime.UtcNow : _tempReleaseDate
-            };
-
-            SaveMovieBtn.IsEnabled = false;
-            SaveMovieBtn.Content = "Saving...";
-
-            var mainWin = Application.Current.MainWindow as MainWindow;
-            mainWin?.ShowLoading();
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    string apiUrl = "http://localhost:5035/api/movies";
-                    var json = JsonConvert.SerializeObject(movieData);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    HttpResponseMessage response;
-
-                    if (_editingMovie == null)
-                    {
-                        response = await client.PostAsync(apiUrl, content);
-                    }
-                    else
-                    {
-                        response = await client.PutAsync($"{apiUrl}/{movieData.Id}", content);
-                    }
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        ShowToastRequested?.Invoke($"{movieData.Title} saved successfully!", true);
-                        MovieSaved?.Invoke(this, EventArgs.Empty);
-                        this.Visibility = Visibility.Collapsed;
-                    }
-                    else
-                    {
-                        var errorMsg = await response.Content.ReadAsStringAsync();
-                        ShowToastRequested?.Invoke($"Server hiba: {errorMsg}", false);
-                    }
-                }
-            }
             catch (Exception ex)
             {
-                ShowToastRequested?.Invoke($"Network error: {ex.Message}", false);
+                ShowToastRequested?.Invoke($"Error fetching IMDb data: {ex.Message}", false);
             }
             finally
             {
-                SaveMovieBtn.IsEnabled = true;
-                SaveMovieBtn.Content = _editingMovie == null ? "Save Movie" : "Update Movie";
+                SetLoadingState(false, (Button)sender);
                 mainWin?.HideLoading();
             }
         }
 
+        private void MapMovieToInputs(Movie movie)
+        {
+            MovieTitleInput.Text = movie.Title;
+            MovieDescriptionInput.Text = movie.Description;
+            MovieGenreInput.Text = movie.Genre;
+            MovieRatingInput.Text = movie.ImdbRating;
+            MoviePosterInput.Text = movie.PosterUrl;
+            MovieDurationInput.Text = movie.DurationMinutes.ToString();
+            _tempBackdropUrl = movie.BackdropUrl;
+            _tempReleaseDate = movie.ReleaseDate;
+        }
+
+        private async void Save_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValidateInputs(out int duration)) return;
+
+            var movieData = CreateMovieObject(duration);
+
+            var mainWin = Application.Current.MainWindow as MainWindow;
+            mainWin?.ShowLoading();
+            SetLoadingState(true, SaveMovieBtn, "Saving...");
+
+            try
+            {
+                bool success = await SendMovieToApi(movieData);
+                if (success)
+                {
+                    ShowToastRequested?.Invoke($"{movieData.Title} saved successfully!", true);
+                    MovieSaved?.Invoke(this, EventArgs.Empty);
+                    this.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowToastRequested?.Invoke($"Error: {ex.Message}", false);
+            }
+            finally
+            {
+                SetLoadingState(false, SaveMovieBtn, _editingMovie == null ? "Save Movie" : "Update Movie");
+                mainWin?.HideLoading();
+            }
+        }
+
+        private bool ValidateInputs(out int duration)
+        {
+            duration = 0;
+
+            if (string.IsNullOrWhiteSpace(MovieTitleInput.Text))
+            {
+                ShowToastRequested?.Invoke("Please enter a movie title!", false);
+                return false;
+            }
+
+            if (!int.TryParse(MovieDurationInput.Text, out duration))
+            {
+                ShowToastRequested?.Invoke("Invalid duration!", false);
+                return false;
+            }
+
+            // Admin jogosultság ellenőrzése
+            if (DataService.CurrentUser == null || !DataService.CurrentUser.Roles.Any(r => r.Name == "Admin"))
+            {
+                ShowToastRequested?.Invoke("Access denied: Admin rights required!", false);
+                return false;
+            }
+
+            string inputTitle = MovieTitleInput.Text.Trim();
+            bool exists = DataService.AllMovies.Any(m =>
+                m.Title.Equals(inputTitle, StringComparison.OrdinalIgnoreCase) &&
+                (_editingMovie == null || m.Id != _editingMovie.Id));
+
+            if (exists)
+            {
+                ShowToastRequested?.Invoke("This movie already exists!", false);
+                return false;
+            }
+
+            return true;
+        }
+
+        private Movie CreateMovieObject(int duration) => new Movie
+        {
+            Id = _editingMovie?.Id ?? 0,
+            Title = MovieTitleInput.Text.Trim(),
+            Description = MovieDescriptionInput.Text,
+            DurationMinutes = duration,
+            Genre = MovieGenreInput.Text,
+            ImdbRating = MovieRatingInput.Text,
+            PosterUrl = MoviePosterInput.Text,
+            Status = (MovieStatusInput.SelectedItem as ComboBoxItem)?.Content.ToString(),
+            BackdropUrl = string.IsNullOrWhiteSpace(_tempBackdropUrl) ? "https://via.placeholder.com/1280x720.png?text=No+Background" : _tempBackdropUrl,
+            ReleaseDate = _tempReleaseDate == DateTime.MinValue ? DateTime.UtcNow : _tempReleaseDate
+        };
+
+        private async Task<bool> SendMovieToApi(Movie movie)
+        {
+            using (var client = new HttpClient())
+            {
+                string url = "http://localhost:5035/api/movies";
+                var json = JsonConvert.SerializeObject(movie);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = (_editingMovie == null)
+                    ? await client.PostAsync(url, content)
+                    : await client.PutAsync($"{url}/{movie.Id}", content);
+
+                if (response.IsSuccessStatusCode) return true;
+
+                var error = await response.Content.ReadAsStringAsync();
+                ShowToastRequested?.Invoke($"Server Error: {error}", false);
+                return false;
+            }
+        }
+
+        private void SetLoadingState(bool isLoading, Button btn, string loadingText = null)
+        {
+            btn.IsEnabled = !isLoading;
+            if (loadingText != null) btn.Content = isLoading ? loadingText : btn.Content;
+        }
+
         private void ClearInputs()
         {
-            MovieTitleInput.Text = "";
-            MovieDescriptionInput.Text = "";
-            MovieDurationInput.Text = "";
-            MovieGenreInput.Text = "";
-            MovieRatingInput.Text = "";
+            MovieTitleInput.Clear();
+            MovieDescriptionInput.Clear();
+            MovieDurationInput.Clear();
+            MovieGenreInput.Clear();
+            MovieRatingInput.Clear();
             MoviePosterInput.Text = "https://...";
         }
 
-        private void CloseModal_Click(object sender, RoutedEventArgs e)
-        {
-            this.Visibility = Visibility.Collapsed;
-        }
+        private void CloseModal_Click(object sender, RoutedEventArgs e) => this.Visibility = Visibility.Collapsed;
     }
 }

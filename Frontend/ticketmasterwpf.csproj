@@ -155,6 +155,7 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Services\DataService.cs" />
     <Compile Include="Services\MovieService.cs" />
+    <Compile Include="Services\UserService.cs" />
     <Compile Include="TicketBuy.xaml.cs">
       <DependentUpon>TicketBuy.xaml</DependentUpon>
     </Compile>
