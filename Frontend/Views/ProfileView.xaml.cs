@@ -94,59 +94,64 @@ namespace ticketmasterwpf.Views
             if (DataService.CurrentUser == null) return;
 
             var groupedData = DataService.AllTickets
-                .Where(t => t.UserId == DataService.CurrentUser.Id && !t.IsCancelled)
+                .Where(t => t.UserId == DataService.CurrentUser.Id && (t.StatusText != "Cancelled"))
                 .GroupBy(t => new {
                     t.ScreeningId,
                     DateKey = t.PurchaseDate.ToString("yyyy-MM-dd HH:mm:ss")
                 })
-                .Select(group => new GroupedTicket
-                {
-                    MainTicket = group.First(),
-                    TotalPrice = group.Sum(t => t.Price),
-
-                    CombinedSeats = "Seats: " + string.Join(", ", group.OrderBy(t => t.SeatId).Select(t => {
-                        string seatName = t.SeatId.ToString();
-                        var screening = DataService.AllScreenings.FirstOrDefault(scr => scr.Id == t.ScreeningId);
-                        var hall = DataService.AllCinemaHalls.FirstOrDefault(h => h.Id == screening?.CinemaHallId);
-
-                        if (hall?.Rows != null)
-                        {
-                            foreach (var row in hall.Rows)
-                            {
-                                bool seatIsInThisRow = row.Seats.Any(s => s.Id == t.SeatId);
-
-                                if (seatIsInThisRow)
-                                {
-                                    int displayCounter = 1;
-                                    foreach (var s in row.Seats.OrderBy(x => x.Id))
-                                    {
-                                        if (!s.IsHidden)
-                                        {
-                                            if (s.Id == t.SeatId)
-                                            {
-                                                seatName = $"R{row.RowNumber} S{displayCounter}";
-                                                break;
-                                            }
-                                            displayCounter++;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        return seatName;
-                    })),
-
-                    AllTicketsInGroup = group.ToList()
-                })
-                .OrderByDescending(g => g.MainTicket.PurchaseDate)
+                .OrderByDescending(g => g.First().PurchaseDate)
                 .ToList();
 
             _totalGroups = groupedData.Count;
+
             var pagedData = groupedData.Skip((_currentPage - 1) * itemsPerPage).Take(itemsPerPage).ToList();
 
             PagedUserTickets.Clear();
-            foreach (var group in pagedData) PagedUserTickets.Add(group);
+            foreach (var group in pagedData)
+            {
+                var mainTicket = group.First();
+                var allTicketsInGroup = group.ToList();
+
+                var seatNames = allTicketsInGroup.OrderBy(t => t.SeatId).Select(t => {
+                    string seatName = t.SeatId.ToString();
+                    var screening = DataService.AllScreenings.FirstOrDefault(scr => scr.Id == t.ScreeningId);
+                    var hall = DataService.AllCinemaHalls.FirstOrDefault(h => h.Id == screening?.CinemaHallId);
+
+                    if (hall?.Rows != null)
+                    {
+                        foreach (var row in hall.Rows)
+                        {
+                            bool seatIsInThisRow = row.Seats.Any(s => s.Id == t.SeatId);
+                            if (seatIsInThisRow)
+                            {
+                                int displayCounter = 1;
+                                foreach (var s in row.Seats.OrderBy(x => x.Id))
+                                {
+                                    if (!s.IsHidden)
+                                    {
+                                        if (s.Id == t.SeatId)
+                                        {
+                                            seatName = $"R{row.RowNumber} S{displayCounter}";
+                                            break;
+                                        }
+                                        displayCounter++;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    return seatName;
+                });
+
+                PagedUserTickets.Add(new GroupedTicket
+                {
+                    MainTicket = mainTicket,
+                    TotalPrice = allTicketsInGroup.Sum(t => t.Price),
+                    CombinedSeats = "Seats: " + string.Join(", ", seatNames),
+                    AllTicketsInGroup = allTicketsInGroup
+                });
+            }
 
             UpdatePagination(_totalGroups);
         }

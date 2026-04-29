@@ -101,14 +101,12 @@ namespace ticketmasterwpf.Modals
             startDateTime = DateTime.MinValue;
             price = 0;
 
-            // 1. Alapvető validáció
             if (MovieSelector.SelectedValue == null || HallSelector.SelectedValue == null)
             {
                 ShowToastRequested?.Invoke("Please select both a movie and a hall!", false);
                 return false;
             }
 
-            // 2. Árazás validálása
             string priceRaw = PriceInput.Text.Replace(',', '.');
             if (!decimal.TryParse(priceRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out price) || price <= 0)
             {
@@ -116,14 +114,12 @@ namespace ticketmasterwpf.Modals
                 return false;
             }
 
-            // 3. Admin jogosultság ellenőrzése (Current-ből átemelve)
             if (DataService.CurrentUser == null || !DataService.CurrentUser.Roles.Any(r => r.Name == "Admin"))
             {
                 ShowToastRequested?.Invoke("Access denied: Admin rights required!", false);
                 return false;
             }
 
-            // 4. Dátum formátum validálása
             try
             {
                 DateTime datePart = DateTime.Parse(DateInput.Text);
@@ -145,9 +141,8 @@ namespace ticketmasterwpf.Modals
             if (selectedMovie == null) return true;
 
             int duration = selectedMovie.DurationMinutes;
-            DateTime end = start.AddMinutes(duration + 15); // +15 perc takarítás
+            DateTime end = start.AddMinutes(duration + 15);
 
-            // 1. Pontos egyezés ellenőrzése
             bool exists = DataService.AllScreenings.Any(s =>
                 s.MovieId == movieId && s.StartTime == start && s.CinemaHallId == hallId &&
                 (_editingScreening == null || s.Id != _editingScreening.Id));
@@ -158,7 +153,6 @@ namespace ticketmasterwpf.Modals
                 return true;
             }
 
-            // 2. Időbeli átfedés ellenőrzése a teremben
             var overlaps = DataService.AllScreenings.Where(s =>
                 s.CinemaHallId == hallId &&
                 s.StartTime.Date == start.Date &&
@@ -182,7 +176,6 @@ namespace ticketmasterwpf.Modals
 
         private async Task ExecuteSave(Screening screening)
         {
-            // Globális töltőképernyő bekapcsolása (Current-ből átemelve)
             var mainWin = Application.Current.MainWindow as MainWindow;
             mainWin?.ShowLoading();
             SetLoadingState(true);
@@ -218,7 +211,7 @@ namespace ticketmasterwpf.Modals
             finally
             {
                 SetLoadingState(false);
-                mainWin?.HideLoading(); // Globális töltőképernyő kikapcsolása
+                mainWin?.HideLoading();
             }
         }
 

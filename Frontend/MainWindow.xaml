@@ -29,7 +29,9 @@
                 <Border Background="#CC000000" CornerRadius="20"/>
                 <ContentControl x:Name="ModalContent" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Grid>
-            <Grid x:Name="LoadingOverlay" Visibility="Collapsed" Panel.ZIndex="9000" Background="#CC0D0E12">
+            <Grid x:Name="LoadingOverlay" Visibility="Collapsed" Panel.ZIndex="9000">
+                <Border Background="#CC0D0E12" CornerRadius="20"/>
+
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Path Data="M 0,20 A 20,20 0 1 1 20,40" Stroke="#16C098" StrokeThickness="4" StrokeStartLineCap="Round" Width="40" Height="40" RenderTransformOrigin="0.5,0.5">
                         <Path.RenderTransform>

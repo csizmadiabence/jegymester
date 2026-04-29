@@ -42,6 +42,8 @@ namespace ticketmasterwpf
 
         public string TotalRevenue { get; set; } = "0 Ft";
         public string ActiveUserCount { get; set; } = "0";
+        public string TotalMoviesCount { get; set; } = "0";
+        public string ActiveSessionsCount { get; set; } = "0";
 
         private string _currentSearch = "";
         private string _currentSort = "ID_DESC";
@@ -187,6 +189,9 @@ namespace ticketmasterwpf
                 await DataService.FetchAllTickets();
                 await AutoCancelExpiredTickets();
 
+                AllMoviesForAdmin = DataService.AllMovies;
+                AllScreeningsForAdmin = DataService.AllScreenings;
+
                 ApplyTestRole(DataService.CurrentUser);
                 InitializeSpecialLists();
                 RefreshAdminPage();
@@ -234,7 +239,6 @@ namespace ticketmasterwpf
             }
             catch
             {
-                // Csendes kivételkezelés, nehogy összeomoljon a főoldal betöltése
             }
         }
 
@@ -369,6 +373,7 @@ namespace ticketmasterwpf
                         InitializeSpecialLists();
                         RefreshAdminPage();
                         UpdateHomeCatalogByDate(_selectedDate);
+                        UpdateDashboardStats();
                     }
                 }
                 catch { AppToast.ShowToast("Error occurred while saving!", false); }
@@ -516,6 +521,7 @@ namespace ticketmasterwpf
 
             RefreshScreeningsPage();
             UpdateHomeCatalogByDate(_selectedDate);
+            UpdateDashboardStats();
         }
 
         private async void AddMoviePopup_RefreshRequested(object sender, EventArgs e)
@@ -524,6 +530,7 @@ namespace ticketmasterwpf
             InitializeSpecialLists();
             RefreshAdminPage();
             UpdateHomeCatalogByDate(_selectedDate);
+            UpdateDashboardStats();
         }
 
         // ================= UI LOGIKA & NAVIGÁCIÓ =================
@@ -596,6 +603,8 @@ namespace ticketmasterwpf
 
             TotalRevenue = $"{totalRev:N0} Ft";
             ActiveUserCount = DataService.AllUsers.Count.ToString();
+            TotalMoviesCount = DataService.AllMovies?.Count.ToString() ?? "0";
+            ActiveSessionsCount = DataService.AllScreenings?.Count.ToString() ?? "0";
 
             var topMovies = validTickets
                 .GroupBy(t => t.MovieTitle)
@@ -635,6 +644,8 @@ namespace ticketmasterwpf
 
             OnPropertyChanged(nameof(TotalRevenue));
             OnPropertyChanged(nameof(ActiveUserCount));
+            OnPropertyChanged(nameof(TotalMoviesCount));
+            OnPropertyChanged(nameof(ActiveSessionsCount));
         }
 
         // USER
@@ -1092,32 +1103,26 @@ namespace ticketmasterwpf
         {
             if (DataService.AllTickets == null) return;
 
-            var flattenedTickets = new List<GroupedTicket>();
-
-            foreach (var ticket in DataService.AllTickets)
-            {
-                string seatName = GetFormattedSeatName(ticket);
-
-                flattenedTickets.Add(new GroupedTicket
-                {
-                    MainTicket = ticket,
-                    TotalPrice = ticket.Price,
-                    CombinedSeats = seatName,
-                    AllTicketsInGroup = new List<Ticket> { ticket }
-                });
-            }
-
-            var filteredList = flattenedTickets.Where(g =>
+            var filteredList = DataService.AllTickets.Where(t =>
                 string.IsNullOrEmpty(_ticketSearchText) ||
                 _ticketSearchText == "Search ticket ID..." ||
-                g.MainTicket.Id.ToString().Contains(_ticketSearchText) ||
-                (g.MainTicket.CustomerEmail != null && g.MainTicket.CustomerEmail.ToLower().Contains(_ticketSearchText.ToLower()))
-            ).OrderByDescending(g => g.MainTicket.PurchaseDate).ThenBy(g => g.MainTicket.Id).ToList();
+                t.Id.ToString().Contains(_ticketSearchText) ||
+                (t.CustomerEmail != null && t.CustomerEmail.ToLower().Contains(_ticketSearchText.ToLower()))
+            ).OrderByDescending(t => t.PurchaseDate).ThenBy(t => t.Id).ToList();
 
             var pagedData = filteredList.Skip((_ticketPage - 1) * itemsPerPage).Take(itemsPerPage).ToList();
 
             PagedTickets.Clear();
-            foreach (var grp in pagedData) PagedTickets.Add(grp);
+            foreach (var ticket in pagedData)
+            {
+                PagedTickets.Add(new GroupedTicket
+                {
+                    MainTicket = ticket,
+                    TotalPrice = ticket.Price,
+                    CombinedSeats = GetFormattedSeatName(ticket),
+                    AllTicketsInGroup = new List<Ticket> { ticket }
+                });
+            }
 
             UpdateTicketPagination(filteredList.Count);
             UpdateDashboardStats();

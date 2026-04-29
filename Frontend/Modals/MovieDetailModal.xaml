@@ -152,9 +152,14 @@
                         </ItemsControl>
 
                         <TextBlock x:Name="NoShowtimesMessage" Text="No screenings available for today." Foreground="#44FFFFFF" FontSize="13" FontStyle="Italic" Visibility="Collapsed"/>
+
+                        <StackPanel x:Name="UpcomingMessagePanel" Orientation="Horizontal" Visibility="Collapsed">
+                            <TextBlock Text="Releasing on: " Foreground="#44FFFFFF" FontSize="13" FontStyle="Italic"/>
+                            <TextBlock Text="{Binding ReleaseDate, StringFormat='MMMM dd, yyyy'}" Foreground="#16C098" FontSize="13" FontWeight="Bold"/>
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Grid.Row="3" Orientation="Horizontal">
-                        <Button Width="200" Height="45" Margin="0,0,15,0" Cursor="Hand" Click="GetEarliestTickets_Click">
+                        <Button x:Name="BtnGetTickets" Width="200" Height="45" Margin="0,0,15,0" Cursor="Hand" Click="GetEarliestTickets_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="BtnBorder" Background="#16C098" CornerRadius="12">

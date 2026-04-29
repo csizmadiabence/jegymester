@@ -39,15 +39,27 @@ namespace ticketmasterwpf.Modals
             PosterDisplay.BorderThickness = new Thickness(1);
             PosterDisplay.Opacity = 1.0;
 
-            if (_selectedMovie.Showtimes == null || _selectedMovie.Showtimes.Count == 0)
+            var btnGetTickets = ModalRoot.FindName("BtnGetTickets") as Button;
+            if (btnGetTickets != null)
+                btnGetTickets.Visibility = movie.Status == "Upcoming" ? Visibility.Collapsed : Visibility.Visible;
+
+            if (movie.Status == "Upcoming")
+            {
+                ShowtimesItemsControl.Visibility = Visibility.Collapsed;
+                NoShowtimesMessage.Visibility = Visibility.Collapsed;
+                UpcomingMessagePanel.Visibility = Visibility.Visible;
+            }
+            else if (_selectedMovie.Showtimes == null || _selectedMovie.Showtimes.Count == 0)
             {
                 ShowtimesItemsControl.Visibility = Visibility.Collapsed;
                 NoShowtimesMessage.Visibility = Visibility.Visible;
+                UpcomingMessagePanel.Visibility = Visibility.Collapsed;
             }
             else
             {
                 ShowtimesItemsControl.Visibility = Visibility.Visible;
                 NoShowtimesMessage.Visibility = Visibility.Collapsed;
+                UpcomingMessagePanel.Visibility = Visibility.Collapsed;
             }
 
             var sb = (Storyboard)this.Resources["OpenModal"];

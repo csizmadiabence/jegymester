@@ -74,6 +74,11 @@ namespace ticketmasterwpf.Views
 
         public static readonly DependencyProperty ActiveUserCountProperty = DependencyProperty.Register("ActiveUserCount", typeof(string), typeof(AdminView), new PropertyMetadata("0"));
         public string ActiveUserCount { get => (string)GetValue(ActiveUserCountProperty); set => SetValue(ActiveUserCountProperty, value); }
+        public static readonly DependencyProperty TotalMoviesCountProperty = DependencyProperty.Register("TotalMoviesCount", typeof(string), typeof(AdminView), new PropertyMetadata("0"));
+        public string TotalMoviesCount { get => (string)GetValue(TotalMoviesCountProperty); set => SetValue(TotalMoviesCountProperty, value); }
+
+        public static readonly DependencyProperty ActiveSessionsCountProperty = DependencyProperty.Register("ActiveSessionsCount", typeof(string), typeof(AdminView), new PropertyMetadata("0"));
+        public string ActiveSessionsCount { get => (string)GetValue(ActiveSessionsCountProperty); set => SetValue(ActiveSessionsCountProperty, value); }
 
         public static readonly DependencyProperty RevenueChartDataProperty = DependencyProperty.Register("RevenueChartData", typeof(ObservableCollection<ChartBar>), typeof(AdminView));
         public ObservableCollection<ChartBar> RevenueChartData { get => (ObservableCollection<ChartBar>)GetValue(RevenueChartDataProperty); set => SetValue(RevenueChartDataProperty, value); }

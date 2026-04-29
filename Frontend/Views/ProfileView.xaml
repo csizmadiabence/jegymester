@@ -141,7 +141,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="MY ACTIVE TICKETS" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,0,0,20"/>
+                    <TextBlock Text="MY TICKETS" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,0,0,20"/>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding PagedUserTickets, RelativeSource={RelativeSource AncestorType=UserControl}}">
@@ -176,6 +176,9 @@
                                                             <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Validated">
                                                                 <Setter Property="Background" Value="#1A4FACFE"/>
                                                             </DataTrigger>
+                                                            <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Expired">
+                                                                <Setter Property="Background" Value="#1AFFFFFF"/>
+                                                            </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
@@ -190,6 +193,9 @@
                                                                 <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Validated">
                                                                     <Setter Property="Foreground" Value="#4FACFE"/>
                                                                 </DataTrigger>
+                                                                <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Expired">
+                                                                    <Setter Property="Foreground" Value="#88FFFFFF"/>
+                                                                </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </TextBlock.Style>
@@ -197,6 +203,19 @@
                                             </Border>
 
                                             <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <StackPanel.Style>
+                                                    <Style TargetType="StackPanel">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Expired">
+                                                                <Setter Property="Visibility" Value="Hidden"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding MainTicket.StatusText}" Value="Validated">
+                                                                <Setter Property="Visibility" Value="Hidden"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </StackPanel.Style>
 
                                                 <Button Content="VIEW PASS" Click="ViewPass_Click" Cursor="Hand" Foreground="#16C098" BorderBrush="#16C098" Width="85" Height="26" BorderThickness="1" FontSize="9" FontWeight="Bold" Margin="0,0,8,0">
                                                     <Button.Template>
@@ -214,7 +233,6 @@
                                                 </Button>
 
                                                 <Button Content="CANCEL" Click="CancelTicket_Click" Style="{StaticResource GlowButtonStyle}" BorderBrush="#FF5555" Width="70" Height="26" FontSize="9"/>
-
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -222,7 +240,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                    <TextBlock Grid.Row="2" Text="Past tickets are automatically removed." Foreground="#22FFFFFF" FontSize="9" HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                    <TextBlock Grid.Row="2" Text="Cancelled tickets are automatically removed." Foreground="#22FFFFFF" FontSize="9" HorizontalAlignment="Center" Margin="0,15,0,0"/>
                 </Grid>
             </Border>
         </Grid>
